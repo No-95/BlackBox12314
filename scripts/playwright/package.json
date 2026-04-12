@@ -1,0 +1,14 @@
+{
+  "name": "agent-box-playwright-poster",
+  "version": "1.0.0",
+  "description": "Generic Playwright social poster webhook for n8n",
+  "main": "social-poster.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node social-poster.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "playwright": "^1.52.0"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "name": "agent-box-v1",
+  "version": "1.0.0",
+  "description": "Portable, zero-budget AI Company in a box for B2B workflows.",
+  "main": "index.js",
+  "scripts": {
+    "dev": "npx convex dev",
+    "deploy": "npx convex deploy",
+    "codegen": "npx convex codegen",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "convex": "^1.22.0",
+    "dotenv": "^16.4.5"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs"
+}

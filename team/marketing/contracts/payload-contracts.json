@@ -1,0 +1,74 @@
+{
+  "trend_brief": {
+    "required": [
+      "run_id",
+      "campaign_id",
+      "niche",
+      "generated_at",
+      "trends"
+    ],
+    "trends_item": [
+      "trend_name",
+      "why_now",
+      "proof_links",
+      "b2b_angle",
+      "recommended_content_hook",
+      "confidence"
+    ]
+  },
+  "content_plan": {
+    "required": [
+      "run_id",
+      "campaign_id",
+      "week_start",
+      "items"
+    ],
+    "items_item": [
+      "content_id",
+      "channel",
+      "format",
+      "funnel_stage",
+      "hook",
+      "cta"
+    ]
+  },
+  "content_drafts": {
+    "required": [
+      "run_id",
+      "campaign_id",
+      "drafts"
+    ],
+    "drafts_item": [
+      "content_id",
+      "channel",
+      "caption",
+      "script",
+      "cta",
+      "tracking_tag"
+    ]
+  },
+  "brand_review": {
+    "required": [
+      "run_id",
+      "campaign_id",
+      "brand_score",
+      "approved_items",
+      "violations"
+    ]
+  },
+  "distribution_log": {
+    "required": [
+      "run_id",
+      "campaign_id",
+      "entries"
+    ],
+    "entries_item": [
+      "content_id",
+      "platform",
+      "scheduled_at",
+      "posted_at",
+      "post_reference",
+      "status"
+    ]
+  }
+}

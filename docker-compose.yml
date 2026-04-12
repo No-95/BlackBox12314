@@ -1,0 +1,164 @@
+version: "3.9"
+
+name: agent-box-v1
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: agentbox-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    ports:
+      - "${POSTGRES_PORT}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./infra/postgres/init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    networks:
+      - agentbox-net
+
+  n8n-ai:
+    image: n8nio/n8n:latest
+    container_name: agentbox-n8n
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+      browserless:
+        condition: service_started
+    ports:
+      - "${N8N_PORT}:5678"
+    environment:
+      DB_TYPE: postgresdb
+      DB_POSTGRESDB_HOST: postgres
+      DB_POSTGRESDB_PORT: 5432
+      DB_POSTGRESDB_DATABASE: ${POSTGRES_DB}
+      DB_POSTGRESDB_USER: ${POSTGRES_USER}
+      DB_POSTGRESDB_PASSWORD: ${POSTGRES_PASSWORD}
+
+      N8N_HOST: ${N8N_HOST}
+      N8N_PORT: 5678
+      N8N_PROTOCOL: ${N8N_PROTOCOL}
+      WEBHOOK_URL: ${WEBHOOK_URL}
+
+      N8N_ENCRYPTION_KEY: ${N8N_ENCRYPTION_KEY}
+      N8N_SECURE_COOKIE: ${N8N_SECURE_COOKIE}
+      N8N_USER_MANAGEMENT_JWT_SECRET: ${N8N_USER_MANAGEMENT_JWT_SECRET}
+
+      GENERIC_TIMEZONE: ${GENERIC_TIMEZONE}
+      TZ: ${GENERIC_TIMEZONE}
+
+      EXECUTIONS_DATA_PRUNE: "true"
+      EXECUTIONS_DATA_MAX_AGE: "336"
+      N8N_LOG_LEVEL: info
+
+      AI_MODE: ${AI_MODE}
+
+      OLLAMA_BASE_URL: ${OLLAMA_BASE_URL}
+
+      GROQ_API_KEY: ${GROQ_API_KEY}
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      DEEPSEEK_API_KEY: ${DEEPSEEK_API_KEY}
+      CONVEX_URL: ${CONVEX_URL}
+      CONVEX_DEPLOY_KEY: ${CONVEX_DEPLOY_KEY}
+
+      BROWSERLESS_ENDPOINT: ws://browserless:3000
+      PLAYWRIGHT_POSTER_URL: ${PLAYWRIGHT_POSTER_URL}
+
+      COMFYUI_BASE_URL: ${COMFYUI_BASE_URL}
+      LOCAL_PC_OLLAMA_URL: ${LOCAL_PC_OLLAMA_URL}
+    volumes:
+      - n8n_data:/home/node/.n8n
+      - ./workflows:/data/workflows
+      - ./scripts:/data/scripts
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - agentbox-net
+
+  browserless:
+    image: browserless/chrome:latest
+    container_name: agentbox-browserless
+    restart: unless-stopped
+    environment:
+      TOKEN: ${BROWSERLESS_TOKEN}
+      MAX_CONCURRENT_SESSIONS: "4"
+      CONNECTION_TIMEOUT: "180000"
+      PREBOOT_CHROME: "true"
+      ENABLE_DEBUGGER: "false"
+      CORS: "true"
+      CORS_ALLOW_ORIGIN: "*"
+    ports:
+      - "${BROWSERLESS_PORT}:3000"
+    shm_size: "1gb"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - agentbox-net
+
+  playwright-poster:
+    image: node:20-alpine
+    container_name: agentbox-playwright-poster
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npx playwright install --with-deps chromium && node social-poster.js"
+    ports:
+      - "${POSTER_PORT}:8080"
+    environment:
+      PORT: 8080
+      BROWSERLESS_WS_ENDPOINT: ws://browserless:3000?token=${BROWSERLESS_TOKEN}
+      TARGET_BASE_URL: ${TARGET_BASE_URL}
+      TARGET_USERNAME: ${TARGET_USERNAME}
+      TARGET_PASSWORD: ${TARGET_PASSWORD}
+      SESSION_STATE_PATH: /app/state/session.json
+    volumes:
+      - ./scripts/playwright:/app
+      - poster_state:/app/state
+    depends_on:
+      browserless:
+        condition: service_started
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - agentbox-net
+
+  ollama:
+    image: ollama/ollama:latest
+    container_name: agentbox-ollama
+    restart: unless-stopped
+    profiles:
+      - local-ai
+    ports:
+      - "${OLLAMA_PORT}:11434"
+    environment:
+      OLLAMA_KEEP_ALIVE: "5m"
+    volumes:
+      - ollama_data:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: all
+              capabilities: [gpu]
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - agentbox-net
+
+networks:
+  agentbox-net:
+    driver: bridge
+
+volumes:
+  postgres_data:
+  n8n_data:
+  poster_state:
+  ollama_data:
