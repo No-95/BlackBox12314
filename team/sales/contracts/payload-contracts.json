@@ -1,0 +1,60 @@
+{
+  "outreach_queue_item": {
+    "required": [
+      "company_name",
+      "email",
+      "main_product",
+      "status"
+    ],
+    "fields": [
+      "stt",
+      "company_name",
+      "address",
+      "phone",
+      "hotline",
+      "sdt_hotline",
+      "email",
+      "main_product",
+      "website",
+      "contact_person",
+      "status",
+      "attempt_count",
+      "error_message"
+    ]
+  },
+  "outreach_email_draft": {
+    "required": [
+      "email_subject",
+      "value_prop",
+      "handshake_line"
+    ]
+  },
+  "outreach_send_result": {
+    "required": [
+      "company_name",
+      "email",
+      "status"
+    ],
+    "fields": [
+      "provider_message_id",
+      "sent_at",
+      "error_message"
+    ]
+  },
+  "outreach_event": {
+    "required": [
+      "queue_id",
+      "event_type",
+      "event_at"
+    ],
+    "event_type": [
+      "sent",
+      "delivered",
+      "opened",
+      "clicked",
+      "bounced",
+      "replied",
+      "complained"
+    ]
+  }
+}

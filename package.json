@@ -7,11 +7,19 @@
     "dev": "npx convex dev",
     "deploy": "npx convex deploy",
     "codegen": "npx convex codegen",
+    "outreach:import": "node scripts/outreach/import-google-sheet.js",
+    "outreach:run": "node scripts/outreach/run-hourly-batch.js",
+    "outreach:schedule": "powershell -ExecutionPolicy Bypass -File scripts/outreach/register-hourly-task.ps1",
+    "outreach:webhook": "node scripts/outreach/receive-resend-events.js",
+    "sales:dashboard": "node apps/sales-dashboard/server.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
     "convex": "^1.22.0",
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "express": "^4.21.2",
+    "googleapis": "^148.0.0",
+    "resend": "^4.1.2"
   },
   "keywords": [],
   "author": "",

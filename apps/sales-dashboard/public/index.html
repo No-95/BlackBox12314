@@ -1,0 +1,1623 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agent Box | Trung tâm điều hành CEO</title>
+    <link rel="stylesheet" href="/styles.css" />
+  </head>
+  <body>
+    <div class="preview-modal" id="previewModal" style="display:none;">
+      <div class="preview-modal-backdrop" id="previewBackdrop"></div>
+      <div class="preview-modal-card">
+        <div class="preview-modal-topbar">
+          <strong>Xem bản nháp email ở chế độ mở rộng</strong>
+          <button class="secondary" id="closePreviewModal">Đóng</button>
+        </div>
+        <iframe id="modalPreviewFrame" class="modal-email-frame" title="Bản xem trước email mở rộng"></iframe>
+      </div>
+    </div>
+
+    <div class="wrap">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Agent Box</p>
+          <h1>Điều hành doanh nghiệp từ một trung tâm duy nhất</h1>
+          <p class="sub">Giao việc cho tác nhân CEO, đặt KPI, rồi chuyển thẳng sang bảng điều khiển của đội sẽ thực thi công việc đó.</p>
+        </div>
+        <div class="status-pill">Hệ thống đang hoạt động</div>
+      </header>
+
+      <section class="hero panel">
+        <div class="hero-copy">
+          <span class="hero-badge">Tác nhân CEO</span>
+          <h2>Bắt đầu với một chỉ đạo rõ ràng</h2>
+          <p>Dùng khung chat CEO để mô tả công việc, độ ưu tiên và kết quả mong muốn cho đội ngũ.</p>
+
+          <div class="prompt-list">
+            <button class="prompt-chip" data-prompt="Khởi chạy chiến dịch tiếp cận B2B cho 50 khách hàng nội thất mới trong tuần này và theo dõi tỷ lệ phản hồi.">Khởi chạy tiếp cận</button>
+            <button class="prompt-chip" data-prompt="Chuẩn bị danh sách rà soát pháp lý cho hợp đồng nhà phân phối và đánh dấu các rủi ro khẩn cấp.">Rà soát pháp lý</button>
+            <button class="prompt-chip" data-prompt="Xây dựng kế hoạch nội dung 30 ngày để tăng số lượng khách hàng tiềm năng chất lượng.">Kế hoạch marketing</button>
+          </div>
+        </div>
+
+        <div class="hero-form">
+          <label for="ceoPrompt">Trao đổi với tác nhân CEO</label>
+          <textarea id="ceoPrompt" placeholder="Ví dụ: Lập kế hoạch bán hàng để tiếp cận 100 nhà nhập khẩu nội thất, mục tiêu tỷ lệ phản hồi 12% và hoàn thành trước thứ Sáu tuần sau."></textarea>
+
+          <div class="kpi-grid">
+            <div>
+              <label for="kpiGoal">Mục tiêu</label>
+              <input id="kpiGoal" placeholder="Tạo thêm cuộc hẹn chất lượng" />
+            </div>
+            <div>
+              <label for="kpiTarget">KPI kỳ vọng</label>
+              <input id="kpiTarget" placeholder="Tỷ lệ phản hồi 12%" />
+            </div>
+            <div>
+              <label for="kpiDeadline">Hạn chót</label>
+              <input id="kpiDeadline" type="date" />
+            </div>
+            <div>
+              <label for="kpiPriority">Mức ưu tiên</label>
+              <select id="kpiPriority">
+                <option>Cao</option>
+                <option selected>Trung bình</option>
+                <option>Thấp</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="hero-actions">
+            <button id="sendToCEO">Gửi cho CEO</button>
+            <button class="secondary" id="jumpToTeams">Xem các bảng điều khiển</button>
+          </div>
+
+          <div class="ceo-summary" id="ceoSummary">
+            <strong>Sẵn sàng phân công.</strong>
+            <span>Bản tóm tắt giao việc cho CEO và KPI sẽ hiển thị ở đây sau khi bạn gửi.</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="team-section">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Bảng điều khiển</p>
+            <h2>Chọn đội bạn muốn làm việc</h2>
+          </div>
+          <p class="muted">Mỗi thẻ sẽ đưa bạn đến khu vực làm việc của đội tương ứng.</p>
+        </div>
+
+        <div class="team-grid" id="teamGrid">
+          <button class="team-card active" data-team="sales">
+            <span class="team-icon">📈</span>
+            <strong>Đội Kinh doanh</strong>
+            <span>Thực hiện tiếp cận, theo dõi phản hồi và cập nhật tiến độ chốt deal.</span>
+          </button>
+          <button class="team-card" data-team="marketing">
+            <span class="team-icon">📣</span>
+            <strong>Đội Marketing</strong>
+            <span>Lập kế hoạch chiến dịch, nội dung và thử nghiệm tăng trưởng.</span>
+          </button>
+          <button class="team-card" data-team="content">
+            <span class="team-icon">🎬</span>
+            <strong>Content Creator Team</strong>
+            <span>Tạo ảnh, video, voiceover và bộ nội dung sáng tạo từ một brief duy nhất.</span>
+          </button>
+          <button class="team-card" data-team="lawyer">
+            <span class="team-icon">⚖️</span>
+            <strong>Luật sư của tôi</strong>
+            <span>Rà soát hợp đồng, chính sách và rủi ro kinh doanh.</span>
+          </button>
+          <button class="team-card" data-team="supports">
+            <span class="team-icon">🛠️</span>
+            <strong>Đội Hỗ trợ</strong>
+            <span>Xử lý vận hành, hành chính và hỗ trợ thực thi công việc.</span>
+          </button>
+        </div>
+      </section>
+
+      <section class="dashboard-shell" id="dashboardArea">
+        <div class="section-head">
+          <div>
+            <p class="eyebrow">Khu làm việc</p>
+            <h2 id="dashboardTitle">Bảng điều khiển Đội Kinh doanh</h2>
+          </div>
+          <span class="status-pill" id="dashboardBadge">Đang hoạt động</span>
+        </div>
+
+        <div class="panel placeholder-panel" id="maintenancePanel" style="display:none;">
+          <h3 id="placeholderHeading">Bảng điều khiển đội</h3>
+          <div class="detail">
+            <p><b id="placeholderTitle">Bảng điều khiển này đang được hoàn thiện.</b></p>
+            <p class="muted" id="placeholderText">Hãy chuyển sang Đội Kinh doanh để sử dụng luồng làm việc hiện có.</p>
+          </div>
+        </div>
+
+        <div id="marketingPanel" style="display:none;">
+          <div class="marketing-overview">
+            <div class="panel">
+              <h3>Điều phối chiến dịch Marketing</h3>
+              <div class="detail">
+                <p class="muted">Điền ngách thị trường, chân dung khách hàng mục tiêu và ưu đãi đang chạy để đội Marketing tạo ra kế hoạch 7 ngày theo đúng pipeline đã định.</p>
+                <div class="planner-grid">
+                  <div>
+                    <label for="marketingNiche">Ngách / thị trường</label>
+                    <input id="marketingNiche" placeholder="Ví dụ: nội thất, logistic, SaaS B2B" />
+                  </div>
+                  <div>
+                    <label for="marketingAudience">ICP mục tiêu</label>
+                    <input id="marketingAudience" placeholder="Ví dụ: CEO, trưởng phòng mua hàng, sales director" />
+                  </div>
+                  <div>
+                    <label for="marketingOffer">Offer / CTA chính</label>
+                    <input id="marketingOffer" placeholder="Ví dụ: Business Roadshow, audit miễn phí, demo 30 phút" />
+                  </div>
+                  <div>
+                    <label for="marketingChannels">Kênh ưu tiên</label>
+                    <input id="marketingChannels" placeholder="LinkedIn, Facebook, Email, Website" />
+                  </div>
+                </div>
+                <div class="hero-actions">
+                  <button id="buildMarketingPlanBtn">Tạo kế hoạch tuần</button>
+                  <button class="secondary" id="refreshMarketingBtn">Làm mới KPI</button>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Pipeline tác nhân Marketing</h3>
+              <div class="detail">
+                <ul class="agent-list">
+                  <li>
+                    <strong>Trend Scout</strong>
+                    <span>Quét tín hiệu thị trường và chọn 3 xu hướng B2B có xác suất tạo lead tốt nhất.</span>
+                  </li>
+                  <li>
+                    <strong>Content Strategist</strong>
+                    <span>Biến xu hướng thành chiến dịch 7 ngày, gắn với đúng funnel và CTA.</span>
+                  </li>
+                  <li>
+                    <strong>Copywriter + Brand Guardian</strong>
+                    <span>Soạn nội dung, giữ đúng giọng thương hiệu và chuyển cho cổng kiểm duyệt.</span>
+                  </li>
+                  <li>
+                    <strong>Social + Analytics</strong>
+                    <span>Lên lịch đăng, theo dõi tương tác và đề xuất tối ưu cho ngày tiếp theo.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cards" id="marketingMetrics"></div>
+          <div class="pipeline-grid" id="marketingPipeline"></div>
+
+          <div class="grid marketing-grid">
+            <div class="panel">
+              <h3>Trend brief ưu tiên</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Xu hướng</th>
+                      <th>Lý do lúc này</th>
+                      <th>Kênh</th>
+                      <th>Độ tin cậy</th>
+                    </tr>
+                  </thead>
+                  <tbody id="marketingTrendRows">
+                    <tr>
+                      <td colspan="4" class="muted">Đang tải trend brief...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Tóm tắt điều hành</h3>
+              <div class="detail">
+                <div class="ceo-summary" id="marketingSummary">
+                  <strong>Đội Marketing đang khởi động.</strong>
+                  <span>Kế hoạch chiến dịch và khuyến nghị tối ưu sẽ hiển thị tại đây.</span>
+                </div>
+                <div class="marketing-alerts" id="marketingAlerts"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel sheet-preview-panel">
+            <h3>Lịch nội dung 7 ngày</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Ngày</th>
+                    <th>Chủ đề</th>
+                    <th>Funnel</th>
+                    <th>Định dạng</th>
+                    <th>Kênh</th>
+                    <th>Trạng thái</th>
+                  </tr>
+                </thead>
+                <tbody id="marketingPlanRows">
+                  <tr>
+                    <td colspan="6" class="muted">Đang tạo lịch nội dung...</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <div id="contentCreatorPanel" style="display:none;">
+          <div class="marketing-overview">
+            <div class="panel">
+              <h3>Content Creator Team</h3>
+              <div class="detail">
+                <p class="muted">Nhập brief bạn muốn và chọn loại đầu ra. Đội này sẽ chuẩn bị hướng tạo ảnh, video và voiceover cho bạn.</p>
+                <div class="planner-grid">
+                  <div style="grid-column: 1 / -1;">
+                    <label for="creatorPrompt">Bạn muốn tạo gì?</label>
+                    <textarea id="creatorPrompt" placeholder="Ví dụ: Tạo một bộ ảnh và video quảng bá cho business roadshow nội thất cao cấp, phong cách sang trọng, dành cho khách hàng B2B."></textarea>
+                  </div>
+                  <div>
+                    <label for="creatorAssetType">Loại nội dung</label>
+                    <select id="creatorAssetType">
+                      <option value="both" selected>Ảnh + Video</option>
+                      <option value="image">Chỉ ảnh</option>
+                      <option value="video">Chỉ video</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorInputMode">Nguồn hình ảnh</label>
+                    <select id="creatorInputMode">
+                      <option value="hybrid" selected>Kết hợp upload + tự tạo</option>
+                      <option value="generate">Tự tạo toàn bộ</option>
+                      <option value="upload">Dùng ảnh tôi tải lên</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorImageProvider">Bộ tạo ảnh</label>
+                    <select id="creatorImageProvider">
+                      <option value="gpt-image-1" selected>GPT Image 1</option>
+                      <option value="imagen">Google Imagen</option>
+                      <option value="recraft">Recraft</option>
+                      <option value="flux">Flux Pro</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorVideoProvider">Video creator</label>
+                    <select id="creatorVideoProvider">
+                      <option value="kling" selected>Kling</option>
+                      <option value="runway">Runway</option>
+                      <option value="veo">Google Veo</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorStyle">Phong cách hình ảnh</label>
+                    <select id="creatorStyle">
+                      <option>Hiện đại, cao cấp, tối giản</option>
+                      <option>Táo bạo, năng lượng cao</option>
+                      <option>Ấm áp, tinh tế, sang trọng</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorDuration">Độ dài video</label>
+                    <select id="creatorDuration">
+                      <option>15-20 giây</option>
+                      <option selected>30-45 giây</option>
+                      <option>45-60 giây</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorChannels">Kênh sử dụng</label>
+                    <input id="creatorChannels" placeholder="TikTok, Facebook, Website, LinkedIn" />
+                  </div>
+                  <div style="grid-column: 1 / -1;" id="creatorUploadWrap">
+                    <label for="creatorUploadInput">Tải ảnh lên cho video creator</label>
+                    <input id="creatorUploadInput" type="file" accept="image/*" multiple />
+                    <div class="creator-upload-preview" id="creatorUploadPreview">
+                      <div class="muted">Bạn có thể tải ảnh sản phẩm, ảnh brand hoặc key visual lên đây.</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="hero-actions">
+                  <button id="generateCreatorPlanBtn">Tạo content brief</button>
+                  <button id="startCreatorRenderBtn">Bắt đầu tạo video</button>
+                  <button class="secondary" id="refreshCreatorBtn">Làm mới gợi ý</button>
+                </div>
+                <p class="muted" id="creatorRunStatus">Nhập yêu cầu rồi bấm Tạo content brief để xem kết quả ảnh và video.</p>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Chuỗi tác nhân sáng tạo</h3>
+              <div class="detail">
+                <ul class="agent-list">
+                  <li>
+                    <strong>Creative Director</strong>
+                    <span>Biến yêu cầu thành concept, mood và hướng triển khai rõ ràng.</span>
+                  </li>
+                  <li>
+                    <strong>Image Agent</strong>
+                    <span>Dùng Flux để dựng key visual, banner, ảnh social và thumbnail.</span>
+                  </li>
+                  <li>
+                    <strong>Video Agent</strong>
+                    <span>Dùng Kling để dựng clip quảng bá ngắn, hook nhanh và có CTA.</span>
+                  </li>
+                  <li>
+                    <strong>Voice and Editor</strong>
+                    <span>Dùng ElevenLabs và CapCut để hoàn thiện voiceover, subtitle và nhịp dựng.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="cards" id="creatorMetrics"></div>
+          <div class="pipeline-grid" id="creatorTools"></div>
+
+          <div class="panel sheet-preview-panel">
+            <h3>Video Structure Builder</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Cảnh</th>
+                    <th>Mục tiêu</th>
+                    <th>Nguồn ảnh</th>
+                    <th>Asset được chọn</th>
+                    <th>Thời lượng</th>
+                  </tr>
+                </thead>
+                <tbody id="videoStructureRows">
+                  <tr>
+                    <td colspan="5" class="muted">Tạo brief để xem cấu trúc video tự động.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="panel sheet-preview-panel">
+            <h3>Video Creator Pipeline</h3>
+            <div class="detail">
+              <div class="ceo-summary" id="creatorRenderStatus">
+                <strong>Chưa bắt đầu render</strong>
+                <span>Chọn bộ tạo ảnh, video creator rồi bấm Bắt đầu tạo video.</span>
+              </div>
+              <div class="pipeline-grid" id="creatorRenderSteps"></div>
+            </div>
+          </div>
+
+          <div class="grid marketing-grid">
+            <div class="panel">
+              <h3>Đầu ra sáng tạo</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>Hạng mục</th>
+                      <th>Đầu ra</th>
+                      <th>Công cụ</th>
+                      <th>Định dạng</th>
+                      <th>Trạng thái</th>
+                    </tr>
+                  </thead>
+                  <tbody id="creatorAssetRows">
+                    <tr>
+                      <td colspan="5" class="muted">Đang chuẩn bị đề xuất nội dung...</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Tóm tắt brief</h3>
+              <div class="detail">
+                <div class="ceo-summary" id="creatorSummary">
+                  <strong>Content Creator Team đã sẵn sàng.</strong>
+                  <span>Nhập yêu cầu của bạn để hệ thống đề xuất ảnh, video và prompt sản xuất.</span>
+                </div>
+                <div class="creator-prompt-output" id="creatorPromptOutput"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="grid marketing-grid">
+            <div class="panel">
+              <h3>Kết quả ảnh xem trước</h3>
+              <div class="detail">
+                <div class="creator-visual-grid" id="creatorImageGallery">
+                  <div class="creator-visual-card">
+                    <div class="creator-visual-artboard gradient-one">
+                      <div class="creator-art-text"><strong>Hero Visual</strong><span>Preview sẽ cập nhật theo brief của bạn</span></div>
+                    </div>
+                  </div>
+                  <div class="creator-visual-card">
+                    <div class="creator-visual-artboard gradient-two">
+                      <div class="creator-art-text"><strong>Social Banner</strong><span>Sẵn sàng hiển thị kết quả ảnh</span></div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Kết quả video xem trước</h3>
+              <div class="detail">
+                <div class="creator-video-preview" id="creatorVideoPreview">
+                  <div class="video-mock-card">
+                    <div class="video-screen">
+                      <div class="video-play">▶</div>
+                      <div class="video-badge">30-45 giây</div>
+                      <div class="video-overlay-text">
+                        <strong>Video preview</strong>
+                        <span>Bản xem trước sẽ cập nhật theo brief của bạn</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div id="salesPanel">
+          <div class="sales-overview">
+            <div class="panel">
+              <h3>Nhập khách hàng từ Google Sheet</h3>
+              <div class="detail">
+                <p class="muted">Dán đường dẫn Google Sheet và Đội Kinh doanh sẽ xem trước danh sách khách hàng, sắp xếp theo STT và lấy email từ dòng đầu tiên đến cuối cùng.</p>
+                <div class="sheet-bar">
+                  <input id="sheetUrlInput" placeholder="Dán URL Google Sheet hoặc mã sheet tại đây" />
+                  <button id="previewSheetBtn">Xem trước</button>
+                  <button class="secondary" id="importSheetBtn">Xếp hàng</button>
+                </div>
+                <p class="muted" id="sheetFeedback">Mỗi lần chỉ xếp hàng 5 công ty để tác nhân Sturdycase, thiết kế và copywriting tập trung xử lý trước.</p>
+                <div class="cards mini-cards" id="sheetStats"></div>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Hệ tác nhân bán hàng</h3>
+              <div class="detail">
+                <ul class="agent-list">
+                  <li>
+                    <strong>Tác nhân AI chọn mục tiêu Sturdycase</strong>
+                    <span>Lọc ra các công ty phù hợp nhất và ưu tiên thứ tự tiếp cận.</span>
+                  </li>
+                  <li>
+                    <strong>Tác nhân thiết kế email kiểu landing page</strong>
+                    <span>Định hình bố cục email rõ ràng, trực quan và có tỷ lệ chuyển đổi tốt hơn.</span>
+                  </li>
+                  <li>
+                    <strong>Tác nhân viết nội dung</strong>
+                    <span>Viết tiêu đề và nội dung email B2B ngắn gọn, thuyết phục cho từng khách hàng.</span>
+                  </li>
+                  <li>
+                    <strong>Tác nhân gửi tự động</strong>
+                    <span>Gửi email theo lô và theo dõi kết quả ngay trong hàng chờ kinh doanh.</span>
+                  </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel sheet-preview-panel">
+            <h3>Danh sách email từ STT 1 đến hết</h3>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>STT</th>
+                    <th>Công ty</th>
+                    <th>Email</th>
+                    <th>Sản phẩm chính</th>
+                    <th>Website</th>
+                    <th>Trạng thái hàng chờ</th>
+                  </tr>
+                </thead>
+                <tbody id="previewRows">
+                  <tr>
+                    <td colspan="6" class="muted">Dán URL Google Sheet để xem trước danh sách email tại đây.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="bar">
+            <button id="refreshBtn">Làm mới</button>
+            <select id="statusFilter">
+              <option value="">Tất cả trạng thái</option>
+              <option value="queued">Đang chờ</option>
+              <option value="drafted">Đã soạn</option>
+              <option value="sent">Đã gửi</option>
+              <option value="failed">Lỗi</option>
+              <option value="skipped">Bỏ qua</option>
+            </select>
+            <input id="searchInput" placeholder="Tìm theo tên công ty hoặc email" />
+          </div>
+
+          <div class="cards" id="metrics"></div>
+
+          <div class="grid">
+            <div class="panel">
+              <h3>Danh sách tiếp cận</h3>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>STT</th>
+                      <th>Công ty</th>
+                      <th>Email</th>
+                      <th>Trạng thái</th>
+                      <th>Số lần thử</th>
+                      <th>Cập nhật</th>
+                    </tr>
+                  </thead>
+                  <tbody id="rows"></tbody>
+                </table>
+              </div>
+            </div>
+
+            <div class="panel">
+              <h3>Chi tiết bản ghi</h3>
+              <div class="detail" id="detail">
+                <p class="muted">Hãy chọn một bản ghi trong bảng.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      const metricsEl = document.getElementById("metrics");
+      const rowsEl = document.getElementById("rows");
+      const detailEl = document.getElementById("detail");
+      const previewRowsEl = document.getElementById("previewRows");
+      const refreshBtn = document.getElementById("refreshBtn");
+      const statusFilter = document.getElementById("statusFilter");
+      const searchInput = document.getElementById("searchInput");
+      const salesPanel = document.getElementById("salesPanel");
+      const marketingPanel = document.getElementById("marketingPanel");
+      const contentCreatorPanel = document.getElementById("contentCreatorPanel");
+      const maintenancePanel = document.getElementById("maintenancePanel");
+      const dashboardArea = document.getElementById("dashboardArea");
+      const dashboardTitle = document.getElementById("dashboardTitle");
+      const dashboardBadge = document.getElementById("dashboardBadge");
+      const placeholderHeading = document.getElementById("placeholderHeading");
+      const placeholderTitle = document.getElementById("placeholderTitle");
+      const placeholderText = document.getElementById("placeholderText");
+      const ceoPrompt = document.getElementById("ceoPrompt");
+      const kpiGoal = document.getElementById("kpiGoal");
+      const kpiTarget = document.getElementById("kpiTarget");
+      const kpiDeadline = document.getElementById("kpiDeadline");
+      const kpiPriority = document.getElementById("kpiPriority");
+      const ceoSummary = document.getElementById("ceoSummary");
+      const sendToCEO = document.getElementById("sendToCEO");
+      const jumpToTeams = document.getElementById("jumpToTeams");
+      const teamCards = Array.from(document.querySelectorAll(".team-card"));
+      const promptChips = Array.from(document.querySelectorAll(".prompt-chip"));
+      const sheetUrlInput = document.getElementById("sheetUrlInput");
+      const previewSheetBtn = document.getElementById("previewSheetBtn");
+      const importSheetBtn = document.getElementById("importSheetBtn");
+      const sheetFeedback = document.getElementById("sheetFeedback");
+      const sheetStats = document.getElementById("sheetStats");
+      const marketingMetrics = document.getElementById("marketingMetrics");
+      const marketingPipeline = document.getElementById("marketingPipeline");
+      const marketingTrendRows = document.getElementById("marketingTrendRows");
+      const marketingPlanRows = document.getElementById("marketingPlanRows");
+      const marketingSummary = document.getElementById("marketingSummary");
+      const marketingAlerts = document.getElementById("marketingAlerts");
+      const buildMarketingPlanBtn = document.getElementById("buildMarketingPlanBtn");
+      const refreshMarketingBtn = document.getElementById("refreshMarketingBtn");
+      const marketingNiche = document.getElementById("marketingNiche");
+      const marketingAudience = document.getElementById("marketingAudience");
+      const marketingOffer = document.getElementById("marketingOffer");
+      const marketingChannels = document.getElementById("marketingChannels");
+      const creatorMetrics = document.getElementById("creatorMetrics");
+      const creatorTools = document.getElementById("creatorTools");
+      const creatorAssetRows = document.getElementById("creatorAssetRows");
+      const creatorSummary = document.getElementById("creatorSummary");
+      const creatorPromptOutput = document.getElementById("creatorPromptOutput");
+      const creatorImageGallery = document.getElementById("creatorImageGallery");
+      const creatorVideoPreview = document.getElementById("creatorVideoPreview");
+      const creatorRunStatus = document.getElementById("creatorRunStatus");
+      const videoStructureRows = document.getElementById("videoStructureRows");
+      const generateCreatorPlanBtn = document.getElementById("generateCreatorPlanBtn");
+      const refreshCreatorBtn = document.getElementById("refreshCreatorBtn");
+      const creatorPrompt = document.getElementById("creatorPrompt");
+      const creatorAssetType = document.getElementById("creatorAssetType");
+      const creatorInputMode = document.getElementById("creatorInputMode");
+      const creatorImageProvider = document.getElementById("creatorImageProvider");
+      const creatorVideoProvider = document.getElementById("creatorVideoProvider");
+      const creatorStyle = document.getElementById("creatorStyle");
+      const creatorDuration = document.getElementById("creatorDuration");
+      const creatorChannels = document.getElementById("creatorChannels");
+      const creatorUploadInput = document.getElementById("creatorUploadInput");
+      const creatorUploadPreview = document.getElementById("creatorUploadPreview");
+      const creatorRenderStatus = document.getElementById("creatorRenderStatus");
+      const creatorRenderSteps = document.getElementById("creatorRenderSteps");
+      const startCreatorRenderBtn = document.getElementById("startCreatorRenderBtn");
+
+      let creatorUploadedAssets = [];
+
+      let records = [];
+      let previewLoaded = false;
+      let selectedDesignStyle = "vercel";
+
+      const teamMeta = {
+        sales: {
+          title: "Bảng điều khiển Đội Kinh doanh",
+          badge: "Đang hoạt động"
+        },
+        marketing: {
+          title: "Bảng điều khiển Đội Marketing",
+          badge: "Đang hoạt động",
+          message: "Pipeline xu hướng, lịch nội dung, cổng duyệt và KPI tăng trưởng đang hoạt động tại đây."
+        },
+        content: {
+          title: "Bảng điều khiển Content Creator Team",
+          badge: "Đang hoạt động",
+          message: "Tạo ảnh, video và hướng sản xuất nội dung sáng tạo từ một brief duy nhất."
+        },
+        lawyer: {
+          title: "Bảng điều khiển Luật sư của tôi",
+          badge: "Sắp ra mắt",
+          message: "Các tác vụ rà soát hợp đồng, kiểm tra rủi ro và pháp lý sẽ được xử lý tại đây."
+        },
+        supports: {
+          title: "Bảng điều khiển Đội Hỗ trợ",
+          badge: "Sắp ra mắt",
+          message: "Các đầu việc vận hành, theo dõi hành chính và hỗ trợ thực thi sẽ hiển thị tại đây."
+        }
+      };
+
+      const statusLabels = {
+        queued: "Đang chờ",
+        drafted: "Đã soạn",
+        sent: "Đã gửi",
+        failed: "Lỗi",
+        skipped: "Bỏ qua"
+      };
+
+      function setActiveTeam(team) {
+        teamCards.forEach((card) => {
+          card.classList.toggle("active", card.dataset.team === team);
+        });
+      }
+
+      function escapeHtml(value) {
+        return String(value || "")
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function parseStt(value) {
+        const numeric = Number(String(value || "").replace(/[^\d.-]/g, ""));
+        return Number.isFinite(numeric) && numeric > 0 ? numeric : Number.MAX_SAFE_INTEGER;
+      }
+
+      function sortRowsByStt(items) {
+        return [...items].sort((a, b) => {
+          const sttDiff = parseStt(a.stt) - parseStt(b.stt);
+          if (sttDiff !== 0) return sttDiff;
+          return String(a.companyName || "").localeCompare(String(b.companyName || ""));
+        });
+      }
+
+      async function openTeam(team, shouldScroll = true) {
+        const meta = teamMeta[team] || teamMeta.sales;
+        setActiveTeam(team);
+        dashboardTitle.textContent = meta.title;
+        dashboardBadge.textContent = meta.badge;
+        window.location.hash = `team-${team}`;
+
+        if (team === "sales") {
+          maintenancePanel.style.display = "none";
+          marketingPanel.style.display = "none";
+          contentCreatorPanel.style.display = "none";
+          salesPanel.style.display = "block";
+          await refresh();
+          if (!previewLoaded) {
+            await previewSheet(true);
+          }
+        } else if (team === "marketing") {
+          maintenancePanel.style.display = "none";
+          salesPanel.style.display = "none";
+          contentCreatorPanel.style.display = "none";
+          marketingPanel.style.display = "block";
+          await loadMarketingDashboard();
+        } else if (team === "content") {
+          maintenancePanel.style.display = "none";
+          salesPanel.style.display = "none";
+          marketingPanel.style.display = "none";
+          contentCreatorPanel.style.display = "block";
+          await loadContentCreatorDashboard();
+        } else {
+          salesPanel.style.display = "none";
+          marketingPanel.style.display = "none";
+          contentCreatorPanel.style.display = "none";
+          maintenancePanel.style.display = "block";
+          placeholderHeading.textContent = meta.title;
+          placeholderTitle.textContent = `${meta.title} sẽ sẵn sàng tiếp theo.`;
+          placeholderText.textContent = meta.message;
+        }
+
+        if (shouldScroll) {
+          dashboardArea.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
+      }
+
+      function formatDate(ts) {
+        if (!ts) return "-";
+        return new Date(ts).toLocaleString();
+      }
+
+      function renderMetrics(data) {
+        const cards = [
+          ["Tổng số", data.total],
+          ["Đang chờ", data.queued],
+          ["Đã gửi", data.sent],
+          ["Lỗi", data.failed],
+          ["Tỷ lệ mở", data.openRate + "%"],
+          ["Tỷ lệ nhấp", data.clickRate + "%"],
+          ["Tỷ lệ phản hồi", data.replyRate + "%"],
+          ["Tỷ lệ lỗi", data.bounceRate + "%"]
+        ];
+        metricsEl.innerHTML = cards
+          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .join("");
+      }
+
+      function renderSheetStats(data = {}) {
+        const totalRows = data.totalRows || 0;
+        const validEmails = data.validEmails || 0;
+        const missingEmails = Math.max(totalRows - validEmails, 0);
+        const cards = [
+          ["Số dòng", totalRows],
+          ["Email hợp lệ", validEmails],
+          ["Thiếu email", missingEmails],
+          ["Giới hạn xếp hàng", 5]
+        ];
+
+        sheetStats.innerHTML = cards
+          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .join("");
+      }
+
+      function renderSheetPreview(rows) {
+        const sorted = sortRowsByStt(rows);
+        const readyKeys = new Set(
+          sorted
+            .filter((row) => row.email)
+            .slice(0, 5)
+            .map((row) => `${row.stt || ""}-${row.email || row.companyName || ""}`)
+        );
+
+        if (!sorted.length) {
+          previewRowsEl.innerHTML = `
+            <tr>
+              <td colspan="6" class="muted">Chưa có dòng nào để hiển thị.</td>
+            </tr>
+          `;
+          return;
+        }
+
+        previewRowsEl.innerHTML = sorted
+          .map((row) => {
+            const key = `${row.stt || ""}-${row.email || row.companyName || ""}`;
+            const queueReady = readyKeys.has(key);
+            return `
+              <tr class="${queueReady ? "queue-ready" : ""}">
+                <td>${escapeHtml(row.stt || "-")}</td>
+                <td>${escapeHtml(row.companyName || "-")}</td>
+                <td>${escapeHtml(row.email || "-")}</td>
+                <td>${escapeHtml(row.mainProduct || "-")}</td>
+                <td>${escapeHtml(row.website || "-")}</td>
+                <td>${queueReady ? '<span class="queue-badge">5 dòng kế tiếp</span>' : '<span class="muted">Đang chờ</span>'}</td>
+              </tr>
+            `;
+          })
+          .join("");
+      }
+
+      function renderRows() {
+        const keyword = searchInput.value.trim().toLowerCase();
+        const filtered = sortRowsByStt(records).filter((r) => {
+          const byKeyword = !keyword ||
+            (r.companyName || "").toLowerCase().includes(keyword) ||
+            (r.email || "").toLowerCase().includes(keyword);
+          return byKeyword;
+        });
+
+        rowsEl.innerHTML = filtered
+          .map(
+            (r) => `<tr data-id="${r._id}">
+              <td>${escapeHtml(r.stt || "-")}</td>
+              <td>${escapeHtml(r.companyName || "-")}</td>
+              <td>${escapeHtml(r.email || "-")}</td>
+              <td><span class="tag ${r.status}">${escapeHtml(statusLabels[r.status] || r.status)}</span></td>
+              <td>${escapeHtml(r.attemptCount ?? 0)}</td>
+              <td>${escapeHtml(formatDate(r.updatedAt))}</td>
+            </tr>`
+          )
+          .join("");
+
+        rowsEl.querySelectorAll("tr").forEach((row) => {
+          row.addEventListener("click", () => loadDetail(row.dataset.id));
+        });
+      }
+
+      function renderMarketingMetrics(data = {}) {
+        const cards = [
+          ["Tín hiệu xu hướng", data.trendSignals || 0],
+          ["Bài đã xuất bản", data.postsPublished || 0],
+          ["Bài đã duyệt", data.approvedPosts || 0],
+          ["Bài đã lên lịch", data.scheduledPosts || 0],
+          ["Engagement", `${data.engagementRate || 0}%`],
+          ["Cuộc trò chuyện chất lượng", data.qualifiedConversations || 0],
+          ["Cuộc hẹn", data.meetingsBooked || 0],
+          ["Chuyển đổi content → lead", `${data.contentLeadConversion || 0}%`]
+        ];
+
+        marketingMetrics.innerHTML = cards
+          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .join("");
+      }
+
+      function renderMarketingPipeline(items = []) {
+        const labelMap = {
+          done: "Hoàn tất",
+          active: "Đang chạy",
+          review: "Chờ duyệt",
+          queued: "Trong hàng đợi"
+        };
+
+        marketingPipeline.innerHTML = items
+          .map((item) => `
+            <div class="pipeline-card">
+              <div class="pipeline-top">
+                <strong>${escapeHtml(item.agent || "-")}</strong>
+                <span class="tag ${escapeHtml(item.status || "queued")}">${escapeHtml(labelMap[item.status] || item.status || "-")}</span>
+              </div>
+              <p><b>Mốc giờ:</b> ${escapeHtml(item.schedule || "-")}</p>
+              <p><b>Đầu ra:</b> ${escapeHtml(item.output || "-")}</p>
+              <p class="muted">${escapeHtml(item.note || "")}</p>
+            </div>
+          `)
+          .join("");
+      }
+
+      function renderMarketingTrends(items = []) {
+        if (!items.length) {
+          marketingTrendRows.innerHTML = `<tr><td colspan="4" class="muted">Chưa có trend brief.</td></tr>`;
+          return;
+        }
+
+        marketingTrendRows.innerHTML = items
+          .map((item) => `
+            <tr>
+              <td>${escapeHtml(item.trend || "-")}</td>
+              <td>${escapeHtml(item.whyNow || "-")}</td>
+              <td>${escapeHtml(item.channel || "-")}</td>
+              <td>${escapeHtml(item.confidence || 0)}%</td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      function renderMarketingPlan(items = []) {
+        if (!items.length) {
+          marketingPlanRows.innerHTML = `<tr><td colspan="6" class="muted">Chưa có kế hoạch nội dung.</td></tr>`;
+          return;
+        }
+
+        marketingPlanRows.innerHTML = items
+          .map((item) => `
+            <tr>
+              <td>${escapeHtml(item.date || "-")}</td>
+              <td>${escapeHtml(item.theme || "-")}</td>
+              <td>${escapeHtml(item.funnel || "-")}</td>
+              <td>${escapeHtml(item.format || "-")}</td>
+              <td>${escapeHtml(item.channel || "-")}</td>
+              <td><span class="tag drafted">${escapeHtml(item.status || "-")}</span></td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      function renderMarketingAlerts(items = []) {
+        marketingAlerts.innerHTML = `
+          <ul class="marketing-alert-list">
+            ${items.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}
+          </ul>
+        `;
+      }
+
+      function renderMarketingSummary(summary = {}) {
+        marketingSummary.innerHTML = `
+          <strong>Chiến dịch ${escapeHtml(summary.campaignId || "MKT")}</strong>
+          <span><b>Ngách:</b> ${escapeHtml(summary.niche || "-")}</span>
+          <span><b>ICP:</b> ${escapeHtml(summary.audience || "-")}</span>
+          <span><b>Offer:</b> ${escapeHtml(summary.offer || "-")}</span>
+          <span><b>Kênh:</b> ${escapeHtml((summary.channels || []).join(", ") || "-")}</span>
+        `;
+      }
+
+      function renderCreatorMetrics(data = {}) {
+        const cards = [
+          ["Yêu cầu đầu ra", data.requestedAssets || 0],
+          ["Tác vụ ảnh", data.imageTasks || 0],
+          ["Tác vụ video", data.videoTasks || 0],
+          ["Ảnh đã tải lên", data.uploadedAssets || 0],
+          ["Sẵn sàng hôm nay", data.readyToday || 0],
+          ["Mức ưu tiên", data.priority || "Trung bình"]
+        ];
+
+        creatorMetrics.innerHTML = cards
+          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .join("");
+      }
+
+      function renderCreatorTools(items = []) {
+        const labelMap = {
+          done: "Sẵn sàng",
+          active: "Đang dùng",
+          review: "Chờ duyệt",
+          queued: "Chờ kích hoạt"
+        };
+
+        creatorTools.innerHTML = items
+          .map((item) => `
+            <div class="pipeline-card">
+              <div class="pipeline-top">
+                <strong>${escapeHtml(item.name || "-")}</strong>
+                <span class="tag ${escapeHtml(item.status || "queued")}">${escapeHtml(labelMap[item.status] || item.status || "-")}</span>
+              </div>
+              <p class="muted">${escapeHtml(item.role || "")}</p>
+            </div>
+          `)
+          .join("");
+      }
+
+      function renderCreatorAssets(items = []) {
+        if (!items.length) {
+          creatorAssetRows.innerHTML = `<tr><td colspan="5" class="muted">Chưa có đề xuất đầu ra.</td></tr>`;
+          return;
+        }
+
+        creatorAssetRows.innerHTML = items
+          .map((item) => `
+            <tr>
+              <td>${escapeHtml(item.type || "-")}</td>
+              <td>${escapeHtml(item.deliverable || "-")}</td>
+              <td>${escapeHtml(item.tool || "-")}</td>
+              <td>${escapeHtml(item.format || "-")}</td>
+              <td><span class="tag drafted">${escapeHtml(item.status || "-")}</span></td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      function renderCreatorSummary(summary = {}) {
+        const typeMap = {
+          both: "Ảnh + Video",
+          image: "Chỉ ảnh",
+          video: "Chỉ video"
+        };
+        const modeMap = {
+          hybrid: "Kết hợp upload + tự tạo",
+          generate: "Tự tạo toàn bộ",
+          upload: "Dùng ảnh tải lên"
+        };
+        const imageProviderMap = {
+          "gpt-image-1": "GPT Image 1",
+          imagen: "Google Imagen",
+          recraft: "Recraft",
+          flux: "Flux Pro"
+        };
+        const videoProviderMap = {
+          kling: "Kling",
+          runway: "Runway",
+          veo: "Google Veo"
+        };
+
+        creatorSummary.innerHTML = `
+          <strong>Brief sáng tạo đã sẵn sàng</strong>
+          <span><b>Yêu cầu:</b> ${escapeHtml(summary.prompt || "-")}</span>
+          <span><b>Loại nội dung:</b> ${escapeHtml(typeMap[summary.assetType] || summary.assetType || "-")}</span>
+          <span><b>Nguồn ảnh:</b> ${escapeHtml(modeMap[summary.inputMode] || summary.inputMode || "-")}</span>
+          <span><b>Bộ tạo ảnh:</b> ${escapeHtml(imageProviderMap[summary.imageProvider] || summary.imageProvider || "-")} · <b>Video creator:</b> ${escapeHtml(videoProviderMap[summary.videoProvider] || summary.videoProvider || "-")}</span>
+          <span><b>Phong cách:</b> ${escapeHtml(summary.visualStyle || "-")} · <b>Thời lượng:</b> ${escapeHtml(summary.duration || "-")}</span>
+          <span><b>Kênh:</b> ${escapeHtml((summary.channels || []).join(", ") || "-")}</span>
+        `;
+      }
+
+      function renderUploadedAssets() {
+        if (!creatorUploadedAssets.length) {
+          creatorUploadPreview.innerHTML = `<div class="muted">Bạn có thể tải ảnh sản phẩm, ảnh brand hoặc key visual lên đây.</div>`;
+          return;
+        }
+
+        creatorUploadPreview.innerHTML = creatorUploadedAssets
+          .map((item) => `
+            <div class="creator-upload-card">
+              <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.name)}" />
+              <span>${escapeHtml(item.name)}</span>
+            </div>
+          `)
+          .join("");
+      }
+
+      function renderVideoStructure(builder = {}) {
+        const scenes = builder.scenes || [];
+        if (!scenes.length) {
+          videoStructureRows.innerHTML = `<tr><td colspan="5" class="muted">Chưa có cấu trúc video.</td></tr>`;
+          return;
+        }
+
+        videoStructureRows.innerHTML = scenes
+          .map((scene) => `
+            <tr>
+              <td>${escapeHtml(scene.title || `Cảnh ${scene.scene || "-"}`)}</td>
+              <td>${escapeHtml(scene.objective || "-")}</td>
+              <td>${escapeHtml(scene.sourceType || "-")}</td>
+              <td>${escapeHtml(scene.assetSuggestion || "-")}</td>
+              <td>${escapeHtml(scene.duration || "-")}</td>
+            </tr>
+          `)
+          .join("");
+      }
+
+      function renderCreatorOutcome(data = {}) {
+        const summary = data.summary || {};
+        const previews = data.previews || {};
+        const prompt = summary.prompt || "Creative campaign";
+        const style = summary.visualStyle || "Hiện đại, cao cấp";
+        const channels = (summary.channels || []).join(", ") || "Facebook, TikTok, Website";
+        const imageItems = previews.images || [];
+        const video = previews.video || null;
+
+        const uploadedCards = creatorUploadedAssets.map((item) => `
+          <div class="creator-visual-card">
+            <img src="${escapeHtml(item.url)}" alt="${escapeHtml(item.name)}" loading="lazy" />
+            <div class="creator-visual-caption">
+              <strong>${escapeHtml(item.name)}</strong>
+              <span>Ảnh do bạn tải lên</span>
+            </div>
+          </div>
+        `);
+
+        if (imageItems.length || uploadedCards.length) {
+          creatorImageGallery.innerHTML = [
+            ...uploadedCards,
+            ...imageItems.map((item, index) => `
+              <div class="creator-visual-card">
+                <img src="${escapeHtml(item.url || "")}" alt="${escapeHtml(item.label || `Ảnh ${index + 1}`)}" loading="lazy" referrerpolicy="no-referrer" onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';" />
+                <div class="creator-visual-artboard gradient-one image-fallback" style="display:none;">
+                  <div class="creator-art-text">
+                    <strong>${escapeHtml(item.label || `Ảnh ${index + 1}`)}</strong>
+                    <span>${escapeHtml(prompt)}</span>
+                  </div>
+                </div>
+                <div class="creator-visual-caption">
+                  <strong>${escapeHtml(item.label || `Ảnh ${index + 1}`)}</strong>
+                  <span>${escapeHtml(item.caption || style)}</span>
+                  <a class="preview-link" href="${escapeHtml(item.url || "")}" target="_blank" rel="noopener noreferrer">Mở ảnh gốc</a>
+                </div>
+              </div>
+            `)
+          ].join("");
+        } else {
+          creatorImageGallery.innerHTML = `
+            <div class="creator-visual-card">
+              <div class="creator-visual-artboard gradient-one">
+                <div class="creator-art-text">
+                  <strong>Không có ảnh trong brief này</strong>
+                  <span>${escapeHtml(prompt)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+
+        if (video) {
+          creatorVideoPreview.innerHTML = `
+            <div class="video-mock-card">
+              <div class="video-screen" style="background-image: linear-gradient(rgba(10,55,96,.45), rgba(10,55,96,.25)), url('${escapeHtml(video.posterUrl || "")}'); background-size: cover; background-position: center;">
+                <div class="video-play">▶</div>
+                <div class="video-badge">${escapeHtml(video.duration || summary.duration || "30-45 giây")}</div>
+                <div class="video-overlay-text">
+                  <strong>${escapeHtml(prompt)}</strong>
+                  <span>${escapeHtml(style)}</span>
+                </div>
+              </div>
+              <div class="video-scenes">
+                ${(video.scenes || []).map((scene, index) => `<div><b>Cảnh ${index + 1}:</b> ${escapeHtml(scene)}</div>`).join("")}
+                <div><b>Trạng thái:</b> ${escapeHtml(video.note || "Preview video đã sẵn sàng")}</div>
+              </div>
+            </div>
+          `;
+        } else {
+          creatorVideoPreview.innerHTML = `
+            <div class="video-mock-card">
+              <div class="video-screen">
+                <div class="video-play">▶</div>
+                <div class="video-badge">Không có video</div>
+                <div class="video-overlay-text">
+                  <strong>Brief hiện chỉ tạo ảnh</strong>
+                  <span>${escapeHtml(channels)}</span>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+      }
+
+      function renderCreatorPrompts(prompts = {}) {
+        creatorPromptOutput.innerHTML = `
+          <div class="prompt-output-card">
+            <p><b>Prompt ảnh</b></p>
+            <div class="preview-body">${escapeHtml(prompts.imagePrompt || "Chưa có prompt ảnh.")}</div>
+          </div>
+          <div class="prompt-output-card">
+            <p><b>Prompt video</b></p>
+            <div class="preview-body">${escapeHtml(prompts.videoPrompt || "Chưa có prompt video.")}</div>
+          </div>
+          <div class="prompt-output-card">
+            <p><b>Voiceover and edit</b></p>
+            <div class="preview-body">${escapeHtml([prompts.voicePrompt, prompts.editPrompt].filter(Boolean).join("\n\n") || "Chưa có gợi ý hậu kỳ.").replace(/\n/g, "<br/>")}</div>
+          </div>
+        `;
+      }
+
+      function renderCreatorRenderJob(job = {}) {
+        if (!job || !job.status) {
+          creatorRenderStatus.innerHTML = `<strong>Chưa bắt đầu render</strong><span>Chọn bộ tạo ảnh, video creator rồi bấm Bắt đầu tạo video.</span>`;
+          creatorRenderSteps.innerHTML = "";
+          return;
+        }
+
+        creatorRenderStatus.innerHTML = `
+          <strong>${escapeHtml(job.statusText || "Đã cập nhật pipeline")}</strong>
+          <span>${escapeHtml(job.outputNote || "")}</span>
+        `;
+
+        creatorRenderSteps.innerHTML = (job.steps || [])
+          .map((step) => `
+            <div class="pipeline-card">
+              <div class="pipeline-top">
+                <strong>${escapeHtml(step.name || "-")}</strong>
+                <span class="tag ${escapeHtml(step.status || "queued")}">${escapeHtml(step.status || "-")}</span>
+              </div>
+              <p class="muted">${escapeHtml(step.note || "")}</p>
+            </div>
+          `)
+          .join("");
+      }
+
+      function buildCreatorPayload() {
+        return {
+          prompt: creatorPrompt.value.trim(),
+          assetType: creatorAssetType.value,
+          inputMode: creatorInputMode.value,
+          imageProvider: creatorImageProvider.value,
+          videoProvider: creatorVideoProvider.value,
+          visualStyle: creatorStyle.value,
+          duration: creatorDuration.value,
+          channels: creatorChannels.value.trim(),
+          uploadedImages: creatorUploadedAssets.map((item) => ({ name: item.name }))
+        };
+      }
+
+      async function loadContentCreatorDashboard(useCustom = false) {
+        generateCreatorPlanBtn.disabled = true;
+        refreshCreatorBtn.disabled = true;
+        creatorSummary.innerHTML = `<strong>Đang tạo brief sáng tạo</strong><span>Hệ thống đang dựng ảnh và video preview cho yêu cầu của bạn.</span>`;
+        creatorRunStatus.textContent = "Đang tạo kết quả xem trước...";
+
+        try {
+          const payload = buildCreatorPayload();
+
+          const res = await fetch(useCustom ? "/api/content-creator/plan" : "/api/content-creator/dashboard", {
+            method: useCustom ? "POST" : "GET",
+            headers: { "Content-Type": "application/json" },
+            body: useCustom ? JSON.stringify(payload) : undefined
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể tải Content Creator Team.");
+          }
+
+          renderCreatorMetrics(data.kpis || {});
+          renderCreatorTools(data.tools || []);
+          renderCreatorAssets(data.assets || []);
+          renderCreatorSummary(data.summary || {});
+          renderCreatorPrompts(data.prompts || {});
+          renderVideoStructure(data.videoBuilder || {});
+          renderCreatorOutcome(data);
+          renderCreatorRenderJob(data.renderJob || {});
+          creatorRunStatus.textContent = `Đã tạo ${data.previews?.images?.length || 0} ảnh xem trước, ${data.videoBuilder?.scenes?.length || 0} cảnh video và ${data.previews?.video ? "1 storyboard video" : "0 video"}.`;
+          creatorImageGallery.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          creatorSummary.innerHTML = `<strong>Lỗi tải dữ liệu</strong><span>${escapeHtml(error.message)}</span>`;
+          creatorPromptOutput.innerHTML = "";
+          creatorImageGallery.innerHTML = `<div class="muted">Không thể tải ảnh xem trước.</div>`;
+          creatorVideoPreview.innerHTML = `<div class="muted">Không thể tải video xem trước.</div>`;
+          renderCreatorRenderJob();
+          creatorRunStatus.textContent = `Không thể tạo preview: ${error.message}`;
+        } finally {
+          generateCreatorPlanBtn.disabled = false;
+          refreshCreatorBtn.disabled = false;
+        }
+      }
+
+      async function loadMarketingDashboard(useCustom = false) {
+        buildMarketingPlanBtn.disabled = true;
+        refreshMarketingBtn.disabled = true;
+
+        try {
+          const payload = {
+            niche: marketingNiche.value.trim(),
+            audience: marketingAudience.value.trim(),
+            offer: marketingOffer.value.trim(),
+            channels: marketingChannels.value.trim()
+          };
+
+          const res = await fetch(useCustom ? "/api/marketing/plan" : "/api/marketing/dashboard", {
+            method: useCustom ? "POST" : "GET",
+            headers: { "Content-Type": "application/json" },
+            body: useCustom ? JSON.stringify(payload) : undefined
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể tải dashboard Marketing.");
+          }
+
+          renderMarketingMetrics(data.kpis || {});
+          renderMarketingPipeline(data.pipeline || []);
+          renderMarketingTrends(data.trends || []);
+          renderMarketingPlan(data.contentPlan || []);
+          renderMarketingAlerts(data.alerts || []);
+          renderMarketingSummary(data.summary || {});
+        } catch (error) {
+          marketingSummary.innerHTML = `<strong>Lỗi tải dữ liệu</strong><span>${escapeHtml(error.message)}</span>`;
+          marketingAlerts.innerHTML = "";
+        } finally {
+          buildMarketingPlanBtn.disabled = false;
+          refreshMarketingBtn.disabled = false;
+        }
+      }
+
+      async function loadDetail(id) {
+        detailEl.innerHTML = "Đang tải bản xem trước...";
+        let res = await fetch(`/api/records/${id}`);
+        let data = await res.json();
+
+        if (!data || !data.record) {
+          detailEl.innerHTML = "<p class='muted'>Không tìm thấy chi tiết.</p>";
+          return;
+        }
+
+        if ((!data.record.emailSubject || !data.record.emailBody || !data.record.emailHtml) && data.record.email) {
+          const prepRes = await fetch(`/api/records/${id}/prepare`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ designStyle: selectedDesignStyle })
+          });
+          const prepData = await prepRes.json();
+          if (prepRes.ok && prepData.record) {
+            data = prepData;
+          }
+        }
+
+        const r = data.record;
+        const eventsHtml = (data.events || [])
+          .map((e) => `<div class="timeline-item"><b>${escapeHtml(e.eventType)}</b> - ${escapeHtml(formatDate(e.eventAt))}</div>`)
+          .join("");
+
+        detailEl.innerHTML = `
+          <p><b>STT:</b> ${escapeHtml(r.stt || "-")}</p>
+          <p><b>Công ty:</b> ${escapeHtml(r.companyName || "-")}</p>
+          <p><b>Email:</b> ${escapeHtml(r.email || "-")}</p>
+          <div class="email-preview-box">
+            <p class="muted"><b>Xem trước email kiểu landing page trước khi gửi</b></p>
+            <p><b>Tiêu đề:</b> ${escapeHtml(r.emailSubject || "Bản nháp sẽ được tạo tại đây.")}</p>
+            <div class="preview-body">${escapeHtml(r.emailBody || "Hãy bấm Làm mới bản nháp để tạo nội dung email. ").replace(/\n/g, "<br/>")}</div>
+            <div class="preview-toolbar">
+              <button class="secondary" id="expandPreviewBtn">Mở rộng bản xem trước</button>
+            </div>
+            <div class="rendered-preview-wrap">
+              <iframe
+                id="inlinePreviewFrame"
+                class="rendered-email-preview"
+                title="Bản xem trước email đã dựng"
+                srcdoc="${escapeHtml(r.emailHtml || "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Bản xem trước sẽ hiển thị tại đây.</body></html>")}">
+              </iframe>
+            </div>
+          </div>
+          <div class="detail-actions">
+            <input id="sendToEmail" placeholder="Gửi tới một địa chỉ email khác" value="${escapeHtml(r.email || "")}" />
+            <select id="designStyle">
+              <option value="vercel" ${selectedDesignStyle === "vercel" ? "selected" : ""}>Tác nhân giao diện kiểu Vercel</option>
+              <option value="landing" ${selectedDesignStyle === "landing" ? "selected" : ""}>Tác nhân thiết kế landing page</option>
+              <option value="executive" ${selectedDesignStyle === "executive" ? "selected" : ""}>Tác nhân phong cách tối giản</option>
+            </select>
+            <button id="refreshPreviewBtn">Làm mới bản nháp</button>
+            <button id="sendEmailBtn">Gửi email</button>
+            <button class="secondary" id="copyEmail">Sao chép email</button>
+          </div>
+          <p class="muted" id="sendStatus">Bản nháp đã sẵn sàng. Bạn có thể xem lại nội dung và thay đổi người nhận trước khi gửi.</p>
+          <div class="timeline">
+            <p><b>Lịch sử sự kiện</b></p>
+            ${eventsHtml || "<p class='muted'>Chưa có sự kiện nào.</p>"}
+          </div>
+          <div style="margin-top:12px;">
+            <textarea id="replyNote" placeholder="Ghi chú tùy chọn về phản hồi của khách hàng"></textarea>
+            <div style="margin-top:8px;display:flex;gap:8px;">
+              <button id="markReplied">Đánh dấu đã phản hồi</button>
+            </div>
+          </div>
+        `;
+
+        document.getElementById("refreshPreviewBtn").addEventListener("click", async () => {
+          const statusEl = document.getElementById("sendStatus");
+          statusEl.textContent = "Đang làm mới bản xem trước...";
+          const prepRes = await fetch(`/api/records/${id}/prepare`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ designStyle: selectedDesignStyle })
+          });
+          const prepData = await prepRes.json();
+          if (!prepRes.ok) {
+            statusEl.textContent = prepData.error || "Không thể làm mới bản xem trước email.";
+            return;
+          }
+          await loadDetail(id);
+        });
+
+        document.getElementById("designStyle").addEventListener("change", async (event) => {
+          selectedDesignStyle = event.target.value;
+          document.getElementById("sendStatus").textContent = "Đang cập nhật giao diện bản xem trước...";
+          await loadDetail(id);
+        });
+
+        document.getElementById("expandPreviewBtn").addEventListener("click", () => {
+          const modal = document.getElementById("previewModal");
+          const modalFrame = document.getElementById("modalPreviewFrame");
+          modalFrame.srcdoc = r.emailHtml || "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Bản xem trước sẽ hiển thị tại đây.</body></html>";
+          modal.style.display = "flex";
+        });
+
+        document.getElementById("sendEmailBtn").addEventListener("click", async () => {
+          const statusEl = document.getElementById("sendStatus");
+          const to = document.getElementById("sendToEmail").value.trim();
+          statusEl.textContent = "Đang gửi email...";
+
+          const sendRes = await fetch(`/api/records/${id}/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ to, designStyle: selectedDesignStyle })
+          });
+          const sendData = await sendRes.json();
+
+          if (!sendRes.ok) {
+            statusEl.textContent = sendData.error || "Không thể gửi email.";
+            return;
+          }
+
+          statusEl.textContent = `Đã gửi email tới ${sendData.to}.`;
+          await refresh();
+          await loadDetail(id);
+        });
+
+        document.getElementById("markReplied").addEventListener("click", async () => {
+          const note = document.getElementById("replyNote").value;
+          await fetch(`/api/records/${id}/replied`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ note })
+          });
+          await refresh();
+          await loadDetail(id);
+        });
+
+        document.getElementById("copyEmail").addEventListener("click", async () => {
+          await navigator.clipboard.writeText(r.email || "");
+          alert("Đã sao chép email");
+        });
+      }
+
+      async function previewSheet(useDefault = false) {
+        const sheetUrl = sheetUrlInput.value.trim();
+        if (!useDefault && !sheetUrl) {
+          sheetFeedback.textContent = "Hãy dán URL Google Sheet trước.";
+          return;
+        }
+
+        previewSheetBtn.disabled = true;
+        importSheetBtn.disabled = true;
+        sheetFeedback.textContent = "Đang đọc Google Sheet...";
+
+        try {
+          const res = await fetch("/api/sheet/preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(useDefault ? {} : { sheetUrl })
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể xem trước Google Sheet.");
+          }
+
+          renderSheetStats(data);
+          renderSheetPreview(data.rows || []);
+          previewLoaded = true;
+          sheetFeedback.textContent = `Đã tải ${data.totalRows} dòng từ sheet ${data.sheetTitle}.`;
+        } catch (error) {
+          renderSheetStats({});
+          renderSheetPreview([]);
+          sheetFeedback.textContent = error.message;
+        } finally {
+          previewSheetBtn.disabled = false;
+          importSheetBtn.disabled = false;
+        }
+      }
+
+      async function importSheet() {
+        const sheetUrl = sheetUrlInput.value.trim();
+
+        importSheetBtn.disabled = true;
+        sheetFeedback.textContent = "Đang xếp hàng 5 công ty và tạo bản nháp email...";
+
+        try {
+          const res = await fetch("/api/sheet/import", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(sheetUrl ? { sheetUrl } : {})
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể xếp hàng các công ty từ sheet.");
+          }
+
+          if (!data.queued) {
+            sheetFeedback.textContent = "Không có công ty mới nào được xếp hàng. Nhóm tiếp theo có thể đã được soạn hoặc đã gửi.";
+          } else {
+            sheetFeedback.textContent = `Đã xếp hàng ${data.queued} công ty và chuẩn bị ${data.prepared} bản nháp.`;
+          }
+
+          await refresh();
+          await previewSheet(Boolean(sheetUrl) ? false : true);
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        } finally {
+          importSheetBtn.disabled = false;
+        }
+      }
+
+      async function startCreatorRender() {
+        startCreatorRenderBtn.disabled = true;
+        creatorRunStatus.textContent = "Đang chuyển scene và asset sang video creator...";
+
+        try {
+          const res = await fetch("/api/content-creator/render", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(buildCreatorPayload())
+          });
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể khởi tạo video creator.");
+          }
+
+          renderCreatorRenderJob(data.renderJob || {});
+          if (data.previews) {
+            renderCreatorOutcome(data);
+          }
+          creatorRunStatus.textContent = data.renderJob?.statusText || "Đã gửi pipeline sang video creator.";
+          creatorVideoPreview.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          creatorRunStatus.textContent = `Không thể tạo video: ${error.message}`;
+        } finally {
+          startCreatorRenderBtn.disabled = false;
+        }
+      }
+
+      async function refresh() {
+        const status = statusFilter.value;
+        const [metricsRes, rowsRes] = await Promise.all([
+          fetch("/api/metrics"),
+          fetch(`/api/records${status ? `?status=${status}` : ""}`)
+        ]);
+        const [metrics, rows] = await Promise.all([metricsRes.json(), rowsRes.json()]);
+        renderMetrics(metrics);
+        records = rows;
+        renderRows();
+      }
+
+      function submitCEOBrief() {
+        const prompt = ceoPrompt.value.trim() || "Chưa có chỉ đạo nào cho CEO.";
+        const goal = kpiGoal.value.trim() || "Chưa đặt mục tiêu";
+        const target = kpiTarget.value.trim() || "Chưa đặt KPI";
+        const deadline = kpiDeadline.value || "Chưa có hạn chót";
+        const priority = kpiPriority.value;
+
+        ceoSummary.innerHTML = `
+          <strong>Bản giao việc cho CEO đã sẵn sàng</strong>
+          <span><b>Công việc:</b> ${escapeHtml(prompt)}</span>
+          <span><b>Mục tiêu:</b> ${escapeHtml(goal)} · <b>KPI:</b> ${escapeHtml(target)} · <b>Hạn chót:</b> ${escapeHtml(deadline)} · <b>Ưu tiên:</b> ${escapeHtml(priority)}</span>
+        `;
+      }
+
+      refreshBtn.addEventListener("click", refresh);
+      statusFilter.addEventListener("change", refresh);
+      searchInput.addEventListener("input", renderRows);
+      previewSheetBtn.addEventListener("click", () => previewSheet(false));
+      importSheetBtn.addEventListener("click", importSheet);
+      buildMarketingPlanBtn.addEventListener("click", () => loadMarketingDashboard(true));
+      refreshMarketingBtn.addEventListener("click", () => loadMarketingDashboard(false));
+      generateCreatorPlanBtn.addEventListener("click", () => loadContentCreatorDashboard(true));
+      startCreatorRenderBtn.addEventListener("click", startCreatorRender);
+      refreshCreatorBtn.addEventListener("click", () => loadContentCreatorDashboard(false));
+      creatorInputMode.addEventListener("change", () => {
+        document.getElementById("creatorUploadWrap").style.display = ["upload", "hybrid"].includes(creatorInputMode.value) ? "block" : "none";
+      });
+      creatorUploadInput.addEventListener("change", (event) => {
+        creatorUploadedAssets.forEach((item) => item.url && item.url.startsWith("blob:") && URL.revokeObjectURL(item.url));
+        creatorUploadedAssets = Array.from(event.target.files || []).slice(0, 6).map((file) => ({
+          name: file.name,
+          url: URL.createObjectURL(file)
+        }));
+        renderUploadedAssets();
+        creatorRunStatus.textContent = creatorUploadedAssets.length
+          ? `${creatorUploadedAssets.length} ảnh đã được nạp cho video structure builder.`
+          : "Chưa có ảnh nào được tải lên.";
+      });
+      sendToCEO.addEventListener("click", submitCEOBrief);
+      jumpToTeams.addEventListener("click", () => {
+        document.getElementById("teamGrid").scrollIntoView({ behavior: "smooth", block: "start" });
+      });
+
+      teamCards.forEach((card) => {
+        card.addEventListener("click", () => openTeam(card.dataset.team));
+      });
+
+      promptChips.forEach((chip) => {
+        chip.addEventListener("click", () => {
+          ceoPrompt.value = chip.dataset.prompt;
+          ceoPrompt.focus();
+        });
+      });
+
+      document.getElementById("closePreviewModal").addEventListener("click", () => {
+        document.getElementById("previewModal").style.display = "none";
+      });
+
+      document.getElementById("previewBackdrop").addEventListener("click", () => {
+        document.getElementById("previewModal").style.display = "none";
+      });
+
+      renderSheetStats({});
+      renderUploadedAssets();
+      renderCreatorRenderJob();
+      document.getElementById("creatorUploadWrap").style.display = ["upload", "hybrid"].includes(creatorInputMode.value) ? "block" : "none";
+      const teamFromHash = (window.location.hash || "").replace("#team-", "");
+      openTeam(teamMeta[teamFromHash] ? teamFromHash : "sales", false);
+    </script>
+  </body>
+</html>
