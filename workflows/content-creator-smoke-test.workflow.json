@@ -1,0 +1,442 @@
+{
+  "name": "content-creator-smoke-test",
+  "nodes": [
+    {
+      "parameters": {},
+      "id": "manual_trigger",
+      "name": "Manual Trigger",
+      "type": "n8n-nodes-base.manualTrigger",
+      "typeVersion": 1,
+      "position": [
+        200,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "run_id",
+              "value": "={{ 'run_' + $now.toMillis() }}"
+            },
+            {
+              "name": "campaign_id",
+              "value": "cmp_smoke_001"
+            },
+            {
+              "name": "niche",
+              "value": "nextjs performance"
+            },
+            {
+              "name": "generated_at",
+              "value": "={{ $now.toISO() }}"
+            }
+          ],
+          "json": [
+            {
+              "name": "trends",
+              "value": "={{ [ { trend_name: 'Server Actions ROI', why_now: 'Teams are shipping faster with fewer API handlers.', proof_links: ['https://nextjs.org/docs/app', 'https://vercel.com/blog'], b2b_angle: 'Lower delivery cost for SaaS teams', recommended_content_hook: '3 mistakes when migrating to App Router', confidence: 84 }, { trend_name: 'Edge Caching Patterns', why_now: 'Latency budgets are tighter for global B2B audiences.', proof_links: ['https://web.dev', 'https://developer.chrome.com'], b2b_angle: 'Faster demo pages improve lead quality', recommended_content_hook: 'How edge caching changed our signup funnel', confidence: 80 }, { trend_name: 'AI Search UX', why_now: 'Users expect instant answer-first product pages.', proof_links: ['https://openai.com', 'https://cloud.google.com'], b2b_angle: 'Higher conversion from intent-aligned content', recommended_content_hook: 'Prompt-driven landing page copy testing', confidence: 78 } ] }}"
+            }
+          ]
+        }
+      },
+      "id": "set_trend_brief",
+      "name": "Trend Scout",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        430,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "week_start",
+              "value": "={{ $now.minus({ days: 1 }).startOf('week').toISODate() }}"
+            }
+          ],
+          "json": [
+            {
+              "name": "items",
+              "value": "={{ [ { content_id: 'c001', channel: 'linkedin', format: 'short_post', funnel_stage: 'awareness', hook: 'Why App Router speed still misses KPIs', cta: 'Comment checklist for template' }, { content_id: 'c002', channel: 'facebook', format: 'carousel_caption', funnel_stage: 'consideration', hook: 'Edge caching wins from real B2B pages', cta: 'Save this for your next sprint' }, { content_id: 'c003', channel: 'tiktok', format: 'script_30s', funnel_stage: 'awareness', hook: '3 performance myths killing SaaS landing pages', cta: 'Follow for part 2' } ] }}"
+            }
+          ]
+        }
+      },
+      "id": "set_content_plan",
+      "name": "Content Strategist",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        670,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "json": [
+            {
+              "name": "drafts",
+              "value": "={{ [ { content_id: 'c001', channel: 'linkedin', caption: 'If your Next.js page is fast in lab tests but slow in real sales calls, this is why.', script: 'Hook -> proof -> CTA', cta: 'Comment CHECKLIST', tracking_tag: 'lnk_smoke' }, { content_id: 'c002', channel: 'facebook', caption: 'Edge caching is not optional for global B2B demand gen.', script: 'Problem -> fix -> result', cta: 'Save this post', tracking_tag: 'fb_smoke' }, { content_id: 'c003', channel: 'tiktok', caption: '3 myths about web performance budgets in SaaS.', script: 'Myth 1/2/3 + punchline', cta: 'Follow for part 2', tracking_tag: 'tt_smoke' } ] }}"
+            }
+          ]
+        }
+      },
+      "id": "set_content_drafts",
+      "name": "Copywriter",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        910,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "number": [
+            {
+              "name": "brand_score",
+              "value": 9
+            }
+          ],
+          "json": [
+            {
+              "name": "approved_items",
+              "value": "={{ $json.drafts }}"
+            },
+            {
+              "name": "violations",
+              "value": "={{ [] }}"
+            }
+          ]
+        }
+      },
+      "id": "set_brand_review",
+      "name": "Brand Guardian",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1150,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.brand_score }}",
+              "operation": "largerEqual",
+              "value2": 8
+            }
+          ]
+        }
+      },
+      "id": "if_brand_gate",
+      "name": "Brand Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1390,
+        300
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "number": [
+            {
+              "name": "legal_risk_score",
+              "value": 2
+            }
+          ],
+          "boolean": [
+            {
+              "name": "cta_present",
+              "value": true
+            }
+          ],
+          "string": [
+            {
+              "name": "legal_notes",
+              "value": "No restricted claims detected in smoke test."
+            }
+          ]
+        }
+      },
+      "id": "set_legal_check",
+      "name": "Legal Check",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1630,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "number": [
+            {
+              "value1": "={{ $json.legal_risk_score }}",
+              "operation": "smallerEqual",
+              "value2": 3
+            }
+          ],
+          "boolean": [
+            {
+              "value1": "={{ $json.cta_present }}",
+              "operation": "isTrue"
+            }
+          ],
+          "string": [
+            {
+              "value1": "={{ $json.campaign_id }}",
+              "operation": "isNotEmpty"
+            }
+          ]
+        }
+      },
+      "id": "if_publish_gate",
+      "name": "Publish Gate",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1870,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "json": [
+            {
+              "name": "entries",
+              "value": "={{ $json.approved_items.map((i) => ({ content_id: i.content_id, platform: i.channel, scheduled_at: $now.toISO(), posted_at: $now.plus({ minutes: 5 }).toISO(), post_reference: i.channel + '_' + i.content_id + '_smoke', status: 'posted' })) }}"
+            }
+          ]
+        }
+      },
+      "id": "set_distribution",
+      "name": "Social Distribution",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2110,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": false,
+        "values": {
+          "string": [
+            {
+              "name": "daily_summary",
+              "value": "Smoke test complete: team pipeline reached analytics stage."
+            },
+            {
+              "name": "next_action",
+              "value": "Replace mock nodes with API/AI nodes and enable schedule triggers."
+            },
+            {
+              "name": "final_status",
+              "value": "ready_for_real_inputs"
+            }
+          ]
+        }
+      },
+      "id": "set_analytics",
+      "name": "Analytics Daily",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2350,
+        220
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "final_status",
+              "value": "blocked"
+            },
+            {
+              "name": "reason",
+              "value": "Brand gate failed in smoke test."
+            }
+          ]
+        }
+      },
+      "id": "set_blocked_brand",
+      "name": "Blocked Brand",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1630,
+        380
+      ]
+    },
+    {
+      "parameters": {
+        "keepOnlySet": true,
+        "values": {
+          "string": [
+            {
+              "name": "final_status",
+              "value": "blocked"
+            },
+            {
+              "name": "reason",
+              "value": "Publish gate failed: legal risk, missing CTA, or missing campaign_id."
+            }
+          ]
+        }
+      },
+      "id": "set_blocked_publish",
+      "name": "Blocked Publish",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2110,
+        380
+      ]
+    }
+  ],
+  "connections": {
+    "Manual Trigger": {
+      "main": [
+        [
+          {
+            "node": "Trend Scout",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Trend Scout": {
+      "main": [
+        [
+          {
+            "node": "Content Strategist",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Content Strategist": {
+      "main": [
+        [
+          {
+            "node": "Copywriter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Copywriter": {
+      "main": [
+        [
+          {
+            "node": "Brand Guardian",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brand Guardian": {
+      "main": [
+        [
+          {
+            "node": "Brand Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Brand Gate": {
+      "main": [
+        [
+          {
+            "node": "Legal Check",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blocked Brand",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Legal Check": {
+      "main": [
+        [
+          {
+            "node": "Publish Gate",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Publish Gate": {
+      "main": [
+        [
+          {
+            "node": "Social Distribution",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Blocked Publish",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Social Distribution": {
+      "main": [
+        [
+          {
+            "node": "Analytics Daily",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "pinData": {},
+  "versionId": "content-creator-smoke-v1"
+}

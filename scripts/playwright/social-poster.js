@@ -82,6 +82,7 @@ app.get("/health", (_req, res) => {
 app.post("/post", async (req, res) => {
   let mediaPath = "";
   let browser;
+  let context;
 
   try {
     ensure(TARGET_BASE_URL, "TARGET_BASE_URL");
@@ -117,10 +118,6 @@ app.post("/post", async (req, res) => {
 
     mediaPath = bodyMediaPath || (await downloadFile(mediaUrl));
 
-    if (!dryRun && !BROWSERLESS_WS_ENDPOINT) {
-      throw new Error("Missing BROWSERLESS_WS_ENDPOINT");
-    }
-
     if (dryRun) {
       return res.json({
         ok: true,
@@ -131,8 +128,15 @@ app.post("/post", async (req, res) => {
       });
     }
 
-    browser = await chromium.connectOverCDP(BROWSERLESS_WS_ENDPOINT);
-    const context = await browser.newContext();
+    if (BROWSERLESS_WS_ENDPOINT) {
+      browser = await chromium.connectOverCDP(BROWSERLESS_WS_ENDPOINT);
+      context = await browser.newContext();
+    } else {
+      // Fall back to a local Chromium instance so Docker Browserless is optional.
+      browser = await chromium.launch({ headless: true });
+      context = await browser.newContext();
+    }
+
     const page = await context.newPage();
 
     await loginGeneric(page, mergedSelectors);
@@ -143,6 +147,10 @@ app.post("/post", async (req, res) => {
 
     res.json({ ok: true, message: "Post flow completed." });
   } catch (error) {
+    if (context) {
+      await context.close().catch(() => {});
+    }
+
     if (browser) {
       await browser.close().catch(() => {});
     }
