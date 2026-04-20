@@ -485,6 +485,13 @@ button:disabled {
   background: #fff;
 }
 
+.rendered-video-player {
+  display: block;
+  width: 100%;
+  min-height: 250px;
+  background: #000;
+}
+
 .video-screen {
   min-height: 250px;
   background: linear-gradient(135deg, #0a3760, #7c4dff 60%, #ff7f50);

@@ -18,6 +18,8 @@ const convexUrl = process.env.CONVEX_URL;
 const tenantId = process.env.OUTREACH_TENANT_ID || "default";
 const port = Number(process.env.SALES_DASHBOARD_PORT || 5177);
 const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null;
+const pixelleRenderTimeoutMs = Number(process.env.PIXELLE_RENDER_TIMEOUT_MS || 900000);
+const pixellePollIntervalMs = Number(process.env.PIXELLE_POLL_INTERVAL_MS || 5000);
 
 function ensureConvex(res) {
   if (!convex) {
@@ -526,6 +528,274 @@ function buildPollinationsImageUrl(prompt, width = 1280, height = 900, seed = Da
   return `https://image.pollinations.ai/prompt/${safePrompt}?model=flux&width=${width}&height=${height}&seed=${seed}&nologo=true&enhance=true&safe=true`;
 }
 
+function sleep(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+function getPixelleBaseUrl() {
+  return normalizeText(process.env.PIXELLE_BASE_URL || "").replace(/\/+$/, "");
+}
+
+function buildServiceUrl(baseUrl, servicePath) {
+  return `${String(baseUrl || "").replace(/\/+$/, "")}/${String(servicePath || "").replace(/^\/+/, "")}`;
+}
+
+function toAbsoluteServiceUrl(baseUrl, assetUrl) {
+  const value = normalizeText(assetUrl);
+  if (!value) {
+    return "";
+  }
+  if (/^https?:\/\//i.test(value)) {
+    return value;
+  }
+  return buildServiceUrl(baseUrl, value);
+}
+
+function inferSceneCount(duration) {
+  const value = normalizeText(duration);
+  if (value.includes("45") || value.includes("60")) {
+    return 6;
+  }
+  if (value.includes("30")) {
+    return 5;
+  }
+  return 4;
+}
+
+function buildFixedPixelleScript(prompt, visualStyle, duration) {
+  const beats = [
+    `${prompt}. Mở đầu bằng một điểm chạm mạnh và hình ảnh thương hiệu rõ ràng.`,
+    `Nhấn mạnh lợi ích chính của sản phẩm theo phong cách ${visualStyle}.`,
+    "Tập trung vào cảm giác cao cấp, độ hoàn thiện và trải nghiệm thực tế của khách hàng.",
+    "Kết thúc bằng lời kêu gọi hành động rõ ràng để khách hàng liên hệ ngay hôm nay."
+  ];
+
+  if (String(duration || "").includes("45") || String(duration || "").includes("60")) {
+    beats.splice(2, 0, "Thêm một cảnh chuyển nhịp đẹp để nhấn mạnh chất liệu, không gian và độ tin cậy của thương hiệu.");
+  }
+
+  return beats.join("\n\n");
+}
+
+function parseBooleanSetting(value, defaultValue = true) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (!normalized) {
+    return defaultValue;
+  }
+  return !["false", "0", "off", "no"].includes(normalized);
+}
+
+function formatPixelleError(error) {
+  const message = String(error?.message || error || "Unknown Pixelle error");
+
+  if (/invalid authentication credentials|unauthenticated|access_token_type_unsupported|multiple authentication credentials/i.test(message)) {
+    return "Gemini chưa được cấu hình đúng cho chế độ AI scene. Hãy dùng Fixed scenes hoặc cập nhật GEMINI_API_KEY bằng API key hợp lệ từ Google AI Studio.";
+  }
+
+  if (/quota exceeded|resource_exhausted|429/i.test(message)) {
+    return "Gemini đã kết nối đúng nhưng tài khoản hiện đã hết quota. Cần bật billing hoặc chờ quota reset để dùng AI scene generation thật.";
+  }
+
+  if (/comfyui|workflow|model/i.test(message)) {
+    return "Workflow visual cục bộ của Pixelle chưa sẵn sàng, nên hệ thống đang dùng chế độ an toàn.";
+  }
+
+  if (/timeout/i.test(message)) {
+    return "Pixelle phản hồi quá lâu, nên hệ thống đã chuyển sang chế độ an toàn.";
+  }
+
+  return message;
+}
+
+function hasCompatibleGeminiApiKey() {
+  const geminiKey = normalizeText(process.env.GEMINI_API_KEY || "");
+  return /^AIza[0-9A-Za-z_-]{20,}$/.test(geminiKey);
+}
+
+function resolvePixelleScriptMode(value) {
+  const requestedMode = normalizeText(value || "fixed").toLowerCase();
+  if (requestedMode !== "generate") {
+    return "fixed";
+  }
+  return hasCompatibleGeminiApiKey() ? "generate" : "fixed";
+}
+
+function resolvePixelleTemplate(options = {}, channels = []) {
+  const explicitTemplate = normalizeText(options.frameTemplate || options.template);
+  if (explicitTemplate && explicitTemplate !== "auto") {
+    return explicitTemplate;
+  }
+
+  const requestedProfile = normalizeText(options.pixelleMode || "full").toLowerCase();
+  const aspectRatio = normalizeText(
+    options.aspectRatio || (channels.some((item) => ["website", "linkedin", "youtube"].includes(item.toLowerCase())) ? "landscape" : "portrait")
+  ).toLowerCase();
+
+  if (requestedProfile === "safe") {
+    return "1080x1920/static_default.html";
+  }
+
+  if (aspectRatio === "landscape") {
+    return "1920x1080/image_full.html";
+  }
+  if (aspectRatio === "square") {
+    return "1080x1080/image_minimal_framed.html";
+  }
+  return "1080x1920/image_default.html";
+}
+
+function resolvePixelleMediaWorkflow(options = {}, requestedProfile = "full") {
+  const explicitWorkflow = normalizeText(options.mediaWorkflow || options.media_workflow);
+  if (explicitWorkflow === "none") {
+    return "";
+  }
+  if (explicitWorkflow && explicitWorkflow !== "auto") {
+    return explicitWorkflow;
+  }
+  if (requestedProfile === "safe") {
+    return "";
+  }
+
+  const explicitTemplate = normalizeText(options.frameTemplate || options.template);
+  if (/\/video_/i.test(explicitTemplate)) {
+    return "selfhost/video_wan2.1_fusionx.json";
+  }
+
+  return normalizeText(process.env.PIXELLE_DEFAULT_MEDIA_WORKFLOW || "selfhost/image_flux.json");
+}
+
+function resolvePixelleTtsWorkflow(options = {}, requestedProfile = "full") {
+  const explicitWorkflow = normalizeText(options.ttsWorkflow || options.tts_workflow);
+  if (explicitWorkflow === "none") {
+    return "";
+  }
+  if (explicitWorkflow && explicitWorkflow !== "auto") {
+    return explicitWorkflow;
+  }
+  if (requestedProfile === "safe") {
+    return "";
+  }
+
+  return normalizeText(process.env.PIXELLE_DEFAULT_TTS_WORKFLOW);
+}
+
+function buildPixellePayload(options = {}) {
+  const prompt = normalizeText(options.prompt) || "AI video concept";
+  const channels = Array.isArray(options.channels)
+    ? options.channels
+    : String(options.channels || "")
+        .split(/[;,\n]/)
+        .map((item) => normalizeText(item))
+        .filter(Boolean);
+
+  const requestedProfile = normalizeText(options.pixelleMode || "full").toLowerCase();
+  const scriptMode = resolvePixelleScriptMode(options.scriptMode || "fixed");
+  const visualStyle = normalizeText(options.visualStyle) || "Hiện đại, cao cấp, tối giản";
+  const frameTemplate = resolvePixelleTemplate(options, channels);
+  const mediaWorkflow = resolvePixelleMediaWorkflow({ ...options, frameTemplate }, requestedProfile);
+  const ttsWorkflow = resolvePixelleTtsWorkflow(options, requestedProfile);
+  const bgmPath = normalizeText(options.bgmPath || process.env.PIXELLE_BGM_PATH);
+  const bgmVolume = Number(options.bgmVolume || process.env.PIXELLE_BGM_VOLUME || 0.3);
+
+  const payload = {
+    text: scriptMode === "generate" ? prompt : buildFixedPixelleScript(prompt, visualStyle, options.duration),
+    mode: scriptMode === "generate" ? "generate" : "fixed",
+    n_scenes: inferSceneCount(options.duration),
+    title: prompt.slice(0, 80),
+    frame_template: frameTemplate,
+    prompt_prefix: normalizeText(options.promptPrefix || process.env.PIXELLE_PROMPT_PREFIX || options.visualStyle) || undefined,
+    template_params: {
+      accent_color: "#0f4c81",
+      brand_name: normalizeText(options.brandName || "Agent Box") || "Agent Box"
+    }
+  };
+
+  if (mediaWorkflow) {
+    payload.media_workflow = mediaWorkflow;
+  }
+  if (ttsWorkflow) {
+    payload.tts_workflow = ttsWorkflow;
+  }
+  if (bgmPath) {
+    payload.bgm_path = bgmPath;
+  }
+  if (Number.isFinite(bgmVolume)) {
+    payload.bgm_volume = bgmVolume;
+  }
+
+  return payload;
+}
+
+async function callPixelleJson(endpoint, options = {}) {
+  const baseUrl = getPixelleBaseUrl();
+  if (!baseUrl) {
+    throw new Error("PIXELLE_BASE_URL is not configured. Start Pixelle and set PIXELLE_BASE_URL in .env.");
+  }
+
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), pixelleRenderTimeoutMs);
+
+  try {
+    const response = await fetch(buildServiceUrl(baseUrl, endpoint), {
+      ...options,
+      headers: {
+        "Content-Type": "application/json",
+        ...(process.env.PIXELLE_API_KEY ? { Authorization: `Bearer ${process.env.PIXELLE_API_KEY}` } : {}),
+        ...(options.headers || {})
+      },
+      signal: controller.signal
+    });
+
+    const rawText = await response.text();
+    let payload = {};
+    try {
+      payload = rawText ? JSON.parse(rawText) : {};
+    } catch {
+      payload = { raw: rawText };
+    }
+
+    if (!response.ok) {
+      const apiMessage = payload?.message || payload?.error || payload?.detail || payload?.raw;
+      throw new Error(apiMessage ? `Pixelle ${response.status}: ${apiMessage}` : `Pixelle request failed with status ${response.status}`);
+    }
+
+    return payload;
+  } catch (error) {
+    if (error.name === "AbortError") {
+      throw new Error("Pixelle request timed out. Increase PIXELLE_RENDER_TIMEOUT_MS or switch to async mode.");
+    }
+    if (/fetch failed|ECONNREFUSED|ENOTFOUND/i.test(String(error?.message || error))) {
+      throw new Error(`Cannot reach Pixelle at ${baseUrl}. Start the Pixelle API server and try again.`);
+    }
+    throw error;
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
+async function waitForPixelleTask(taskId) {
+  const startedAt = Date.now();
+
+  while (Date.now() - startedAt < pixelleRenderTimeoutMs) {
+    const taskData = await callPixelleJson(`/api/tasks/${taskId}`, {
+      method: "GET",
+      headers: {}
+    });
+
+    const status = normalizeText(taskData?.status).toLowerCase();
+    if (status === "completed") {
+      return taskData;
+    }
+    if (["failed", "error", "cancelled"].includes(status)) {
+      throw new Error(taskData?.message || taskData?.error || "Pixelle task failed.");
+    }
+
+    await sleep(pixellePollIntervalMs);
+  }
+
+  throw new Error("Pixelle task did not finish before the configured timeout.");
+}
+
 function getImageProviderMeta(name) {
   const provider = String(name || "gpt-image-1").toLowerCase();
   const catalog = {
@@ -538,18 +808,22 @@ function getImageProviderMeta(name) {
 }
 
 function getVideoProviderMeta(name) {
-  const provider = String(name || "kling").toLowerCase();
+  const provider = String(name || "pixelle").toLowerCase();
   const catalog = {
+    pixelle: { label: "Pixelle", env: "PIXELLE_BASE_URL" },
     kling: { label: "Kling", env: "KLING_API_KEY" },
     runway: { label: "Runway", env: "RUNWAY_API_KEY" },
     veo: { label: "Google Veo", env: "VEO_API_KEY" }
   };
-  return catalog[provider] || catalog.kling;
+  return catalog[provider] || catalog.pixelle;
 }
 
 function hasProviderAccess(meta, allowFallback = false) {
   if (allowFallback) {
     return true;
+  }
+  if (meta?.env === "PIXELLE_BASE_URL") {
+    return Boolean(getPixelleBaseUrl());
   }
   return Boolean(meta?.env && process.env[meta.env]);
 }
@@ -673,6 +947,159 @@ function buildVideoStructure({ prompt, duration, channels, visualStyle, inputMod
   };
 }
 
+async function renderVideoWithPixelle(options = {}) {
+  const baseUrl = getPixelleBaseUrl();
+  if (!baseUrl) {
+    throw new Error("PIXELLE_BASE_URL is not configured. Start Pixelle locally and keep it listening on port 8000.");
+  }
+
+  const requestedScriptMode = normalizeText(options.scriptMode || "fixed").toLowerCase();
+  const effectiveScriptMode = resolvePixelleScriptMode(requestedScriptMode);
+  const payload = buildPixellePayload({ ...options, scriptMode: effectiveScriptMode });
+  const renderMode = normalizeText(process.env.PIXELLE_RENDER_MODE || "sync").toLowerCase();
+  const allowFallback = parseBooleanSetting(options.allowFallback, true);
+  const requestedProfile = normalizeText(options.pixelleMode || "full").toLowerCase();
+  let taskId = null;
+  let renderResult = null;
+  let usedFallback = false;
+
+  async function submitPixelleRender(activePayload) {
+    if (renderMode === "async") {
+      const queuedTask = await callPixelleJson("/api/video/generate/async", {
+        method: "POST",
+        body: JSON.stringify(activePayload)
+      });
+
+      const queuedTaskId = queuedTask?.task_id;
+      if (!queuedTaskId) {
+        throw new Error("Pixelle did not return a task ID for the async render.");
+      }
+
+      const completedTask = await waitForPixelleTask(queuedTaskId);
+      return {
+        taskId: queuedTaskId,
+        renderResult: completedTask?.result || completedTask
+      };
+    }
+
+    const syncResult = await callPixelleJson("/api/video/generate/sync", {
+      method: "POST",
+      body: JSON.stringify(activePayload)
+    });
+
+    return {
+      taskId: null,
+      renderResult: syncResult
+    };
+  }
+
+  try {
+    const result = await submitPixelleRender(payload);
+    taskId = result.taskId;
+    renderResult = result.renderResult;
+  } catch (error) {
+    const errorMessage = formatPixelleError(error);
+    const shouldRetryStatic = allowFallback && (
+      Boolean(payload.media_workflow) ||
+      payload.mode === "generate" ||
+      /workflow|comfyui|refused|connect|timeout|internal server error|status 5\d\d|status 500|browsertype\.launch|multiple authentication credentials|authentication|api key|model|gemini|unauthenticated/i.test(String(error?.message || error))
+    );
+
+    if (!shouldRetryStatic) {
+      throw error;
+    }
+
+    const fallbackPayload = {
+      ...payload,
+      text: buildFixedPixelleScript(
+        normalizeText(options.prompt) || payload.title || "AI video concept",
+        normalizeText(options.visualStyle) || "Hiện đại, cao cấp, tối giản",
+        options.duration
+      ),
+      mode: "fixed",
+      frame_template: "1080x1920/static_default.html"
+    };
+    delete fallbackPayload.media_workflow;
+    delete fallbackPayload.tts_workflow;
+
+    try {
+      const result = await submitPixelleRender(fallbackPayload);
+      taskId = result.taskId;
+      renderResult = result.renderResult;
+      payload.frame_template = fallbackPayload.frame_template;
+      delete payload.media_workflow;
+      delete payload.tts_workflow;
+      usedFallback = true;
+    } catch (fallbackError) {
+      throw new Error(`Pixelle full-target failed, and safe fallback also failed: ${String(fallbackError?.message || fallbackError)} | original error: ${errorMessage}`);
+    }
+  }
+
+  const videoUrl = toAbsoluteServiceUrl(baseUrl, renderResult?.video_url || renderResult?.result?.video_url);
+  const duration = renderResult?.duration || renderResult?.result?.duration || options.duration || "N/A";
+  const fileSize = Number(renderResult?.file_size || renderResult?.result?.file_size || 0);
+  const sizeLabel = fileSize > 0 ? `${(fileSize / (1024 * 1024)).toFixed(2)} MB` : "đang cập nhật";
+  const posterUrl = buildPollinationsImageUrl(`${payload.text}. cinematic poster frame, polished ad composition`, 1280, 720, Math.floor(Date.now() / 1000) + 53);
+
+  return {
+    videoUrl,
+    renderJob: {
+      status: "completed",
+      statusText: usedFallback
+        ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
+          ? "Pixelle đã hoàn tất bằng Safe Mode fallback và tự chuyển sang Fixed scenes"
+          : "Pixelle đã hoàn tất bằng Safe Mode fallback"
+        : requestedProfile === "full"
+          ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
+            ? "Pixelle đã tạo xong video và tự chuyển sang Fixed scenes"
+            : "Pixelle đã tạo xong video ở Full Target Mode"
+          : "Pixelle đã tạo xong video",
+      outputNote: videoUrl
+        ? usedFallback
+          ? "Video MP4 thật đã sẵn sàng. Hệ thống đã tự chuyển sang template tĩnh khi workflow visual chưa sẵn sàng."
+          : `Video MP4 thật đã sẵn sàng để xem và tải xuống. Template: ${payload.frame_template}${payload.media_workflow ? ` · Workflow: ${payload.media_workflow}` : ""}`
+        : "Pixelle đã hoàn thành job.",
+      posterUrl,
+      steps: [
+        {
+          name: "Brief to storyboard",
+          status: "done",
+          note: `${payload.n_scenes} cảnh đã được tạo cho Pixelle.`
+        },
+        {
+          name: "Pixelle render",
+          status: "done",
+          note: taskId ? `Task ${taskId} đã hoàn tất.` : "Render đồng bộ đã hoàn tất."
+        },
+        {
+          name: "Final MP4 output",
+          status: videoUrl ? "done" : "review",
+          note: videoUrl ? `Đã xuất video thật. Kích thước file: ${sizeLabel}.` : "Pixelle chưa trả về đường dẫn video."
+        }
+      ]
+    },
+    previewVideo: {
+      enabled: Boolean(videoUrl),
+      posterUrl,
+      duration: String(duration),
+      note: `Pixelle render hoàn tất. Kích thước file: ${sizeLabel}.`,
+      scenes: [
+        `Số phân cảnh: ${payload.n_scenes}`,
+        `Hồ sơ render: ${requestedProfile === "full" ? "Full Target Mode" : "Safe Mode"}`,
+        `Kịch bản thực tế: ${effectiveScriptMode === "generate" ? "AI tự viết" : "Fixed scenes ổn định"}`,
+        requestedScriptMode === "generate" && effectiveScriptMode !== "generate" ? "Gemini chưa sẵn sàng nên đã tự chuyển sang Fixed scenes" : "AI scene sẵn sàng theo cấu hình hiện tại",
+        `Template: ${payload.frame_template}`,
+        `Workflow visual: ${payload.media_workflow || "Không dùng"}`,
+        `Workflow voice: ${payload.tts_workflow || "TTS local / auto"}`,
+        usedFallback ? "Fallback static template đã được áp dụng" : "Pixelle dùng template visual đầy đủ",
+        taskId ? `Task ID: ${taskId}` : "Render đồng bộ đã hoàn tất"
+      ],
+      videoUrl,
+      downloadUrl: videoUrl
+    }
+  };
+}
+
 function getContentCreatorDashboard(options = {}) {
   const prompt = normalizeText(options.prompt) || "Tạo bộ nội dung quảng bá cho sản phẩm nội thất cao cấp";
   const assetType = normalizeText(options.assetType) || "both";
@@ -680,7 +1107,7 @@ function getContentCreatorDashboard(options = {}) {
   const duration = normalizeText(options.duration) || "30-45 giây";
   const inputMode = normalizeText(options.inputMode || "hybrid").toLowerCase();
   const imageProvider = normalizeText(options.imageProvider || "gpt-image-1").toLowerCase();
-  const videoProvider = normalizeText(options.videoProvider || "kling").toLowerCase();
+  const videoProvider = normalizeText(options.videoProvider || "pixelle").toLowerCase();
   const uploadedImages = Array.isArray(options.uploadedImages)
     ? options.uploadedImages
         .map((item, index) => ({
@@ -763,7 +1190,14 @@ function getContentCreatorDashboard(options = {}) {
       inputMode,
       imageProvider,
       videoProvider,
-      channels
+      channels,
+      pixelleMode: normalizeText(options.pixelleMode || "full").toLowerCase(),
+      scriptMode: resolvePixelleScriptMode(options.scriptMode || "fixed"),
+      aspectRatio: normalizeText(options.aspectRatio || "portrait").toLowerCase(),
+      frameTemplate: normalizeText(options.frameTemplate || options.template || "auto"),
+      mediaWorkflow: normalizeText(options.mediaWorkflow || "auto"),
+      ttsWorkflow: normalizeText(options.ttsWorkflow || "auto"),
+      allowFallback: parseBooleanSetting(options.allowFallback, true)
     },
     kpis: {
       requestedAssets: assets.length,
@@ -844,7 +1278,7 @@ function getContentCreatorDashboard(options = {}) {
             posterUrl: buildPollinationsImageUrl(posterPrompt, 1280, 720, heroSeed + 33),
             duration,
             note: hasProviderAccess(videoProviderMeta)
-              ? `${videoProviderMeta.label} đã sẵn sàng để nối video thật bằng API key hiện có.`
+              ? `${videoProviderMeta.label} đã sẵn sàng để render video thật từ dịch vụ hiện có.`
               : `Hiện đang hiển thị storyboard video. Thêm ${videoProviderMeta.env} để xuất video thật tự động.`,
             scenes: [
               "Hook mạnh trong 3 giây đầu",
@@ -1045,17 +1479,70 @@ app.post("/api/content-creator/plan", (req, res) => {
   }
 });
 
-app.post("/api/content-creator/render", (req, res) => {
+app.post("/api/content-creator/render", async (req, res) => {
   try {
-    const data = getContentCreatorDashboard(req.body || {});
+    const requestData = req.body || {};
+    const data = getContentCreatorDashboard(requestData);
+    const wantsVideo = ["video", "both"].includes(normalizeText(requestData.assetType || data.summary.assetType).toLowerCase());
+    const videoProvider = normalizeText(requestData.videoProvider || data.summary.videoProvider || "pixelle").toLowerCase();
+
+    if (wantsVideo && videoProvider === "pixelle") {
+      const pixelleResult = await renderVideoWithPixelle(requestData);
+      data.previews.video = pixelleResult.previewVideo;
+      data.renderJob = pixelleResult.renderJob;
+    }
+
     res.json({
       ok: true,
       summary: data.summary,
       previews: data.previews,
+      prompts: data.prompts,
+      videoBuilder: data.videoBuilder,
       renderJob: data.renderJob
     });
   } catch (error) {
-    res.status(400).json({ error: error.message });
+    const requestData = req.body || {};
+    const fallbackData = getContentCreatorDashboard(requestData);
+    const message = formatPixelleError(error);
+    console.error("Content creator render failed:", message);
+
+    fallbackData.renderJob = {
+      status: "review",
+      statusText: "Pixelle chưa render xong video thật, đang trả về storyboard an toàn",
+      outputNote: message,
+      posterUrl: fallbackData.previews?.video?.posterUrl || "",
+      steps: [
+        {
+          name: "Brief to storyboard",
+          status: "done",
+          note: "Đã dựng storyboard và nội dung preview."
+        },
+        {
+          name: "Pixelle render",
+          status: "review",
+          note: message
+        },
+        {
+          name: "Safe recovery",
+          status: "done",
+          note: "Ứng dụng đã chuyển về chế độ an toàn thay vì trả lỗi 500."
+        }
+      ]
+    };
+
+    if (fallbackData.previews?.video) {
+      fallbackData.previews.video.note = `Pixelle tạm lỗi nên đang hiển thị storyboard preview. Chi tiết: ${message}`;
+    }
+
+    res.json({
+      ok: false,
+      error: message,
+      summary: fallbackData.summary,
+      previews: fallbackData.previews,
+      prompts: fallbackData.prompts,
+      videoBuilder: fallbackData.videoBuilder,
+      renderJob: fallbackData.renderJob
+    });
   }
 });
 

@@ -257,7 +257,7 @@
             <div class="panel">
               <h3>Content Creator Team</h3>
               <div class="detail">
-                <p class="muted">Nhập brief bạn muốn và chọn loại đầu ra. Đội này sẽ chuẩn bị hướng tạo ảnh, video và voiceover cho bạn.</p>
+                <p class="muted">Nhập brief bạn muốn và chọn loại đầu ra. Bạn có thể chạy Safe mode để ưu tiên ổn định hoặc Full target mode để thử workflow visual chất lượng cao hơn.</p>
                 <div class="planner-grid">
                   <div style="grid-column: 1 / -1;">
                     <label for="creatorPrompt">Bạn muốn tạo gì?</label>
@@ -289,11 +289,66 @@
                     </select>
                   </div>
                   <div>
-                    <label for="creatorVideoProvider">Video creator</label>
+                    <label for="creatorVideoProvider">Video engine</label>
                     <select id="creatorVideoProvider">
-                      <option value="kling" selected>Kling</option>
-                      <option value="runway">Runway</option>
-                      <option value="veo">Google Veo</option>
+                      <option value="pixelle" selected>Pixelle Video</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorPixelleMode">Chế độ render</label>
+                    <select id="creatorPixelleMode">
+                      <option value="full" selected>Full target mode</option>
+                      <option value="safe">Safe mode</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorScriptMode">Kịch bản Pixelle</label>
+                    <select id="creatorScriptMode">
+                      <option value="fixed" selected>Fixed scenes ổn định</option>
+                      <option value="generate">AI tự viết scene</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorAspectRatio">Tỷ lệ khung hình</label>
+                    <select id="creatorAspectRatio">
+                      <option value="portrait" selected>9:16 dọc</option>
+                      <option value="landscape">16:9 ngang</option>
+                      <option value="square">1:1 vuông</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorTemplate">Template Pixelle</label>
+                    <select id="creatorTemplate">
+                      <option value="auto" selected>Tự chọn tốt nhất</option>
+                      <option value="1080x1920/image_default.html">Portrait image_default</option>
+                      <option value="1080x1920/video_default.html">Portrait video_default</option>
+                      <option value="1080x1920/static_default.html">Portrait static_default</option>
+                      <option value="1920x1080/image_full.html">Landscape image_full</option>
+                      <option value="1080x1080/image_minimal_framed.html">Square image_minimal_framed</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorMediaWorkflow">Workflow visual</label>
+                    <select id="creatorMediaWorkflow">
+                      <option value="auto" selected>Tự chọn tốt nhất</option>
+                      <option value="selfhost/image_flux.json">Selfhost image_flux</option>
+                      <option value="selfhost/video_wan2.1_fusionx.json">Selfhost video_wan2.1_fusionx</option>
+                      <option value="none">Không dùng workflow visual</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorTtsWorkflow">Workflow voice</label>
+                    <select id="creatorTtsWorkflow">
+                      <option value="auto" selected>TTS local / auto</option>
+                      <option value="selfhost/tts_edge.json">Selfhost tts_edge</option>
+                      <option value="none">Không dùng workflow voice</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorAllowFallback">Fallback an toàn</label>
+                    <select id="creatorAllowFallback">
+                      <option value="true" selected>Cho phép fallback</option>
+                      <option value="false">Chỉ chạy full-target</option>
                     </select>
                   </div>
                   <div>
@@ -347,7 +402,7 @@
                   </li>
                   <li>
                     <strong>Video Agent</strong>
-                    <span>Dùng Kling để dựng clip quảng bá ngắn, hook nhanh và có CTA.</span>
+                    <span>Dùng Pixelle để dựng clip quảng bá ngắn, render video thật và xuất MP4 hoàn chỉnh.</span>
                   </li>
                   <li>
                     <strong>Voice and Editor</strong>
@@ -642,6 +697,13 @@
       const creatorStyle = document.getElementById("creatorStyle");
       const creatorDuration = document.getElementById("creatorDuration");
       const creatorChannels = document.getElementById("creatorChannels");
+      const creatorPixelleMode = document.getElementById("creatorPixelleMode");
+      const creatorScriptMode = document.getElementById("creatorScriptMode");
+      const creatorAspectRatio = document.getElementById("creatorAspectRatio");
+      const creatorTemplate = document.getElementById("creatorTemplate");
+      const creatorMediaWorkflow = document.getElementById("creatorMediaWorkflow");
+      const creatorTtsWorkflow = document.getElementById("creatorTtsWorkflow");
+      const creatorAllowFallback = document.getElementById("creatorAllowFallback");
       const creatorUploadInput = document.getElementById("creatorUploadInput");
       const creatorUploadPreview = document.getElementById("creatorUploadPreview");
       const creatorRenderStatus = document.getElementById("creatorRenderStatus");
@@ -1029,9 +1091,23 @@
           flux: "Flux Pro"
         };
         const videoProviderMap = {
+          pixelle: "Pixelle Video",
           kling: "Kling",
           runway: "Runway",
           veo: "Google Veo"
+        };
+        const renderModeMap = {
+          full: "Full target mode",
+          safe: "Safe mode"
+        };
+        const scriptModeMap = {
+          fixed: "Fixed scenes ổn định",
+          generate: "AI tự viết scene"
+        };
+        const aspectRatioMap = {
+          portrait: "9:16 dọc",
+          landscape: "16:9 ngang",
+          square: "1:1 vuông"
         };
 
         creatorSummary.innerHTML = `
@@ -1041,7 +1117,9 @@
           <span><b>Nguồn ảnh:</b> ${escapeHtml(modeMap[summary.inputMode] || summary.inputMode || "-")}</span>
           <span><b>Bộ tạo ảnh:</b> ${escapeHtml(imageProviderMap[summary.imageProvider] || summary.imageProvider || "-")} · <b>Video creator:</b> ${escapeHtml(videoProviderMap[summary.videoProvider] || summary.videoProvider || "-")}</span>
           <span><b>Phong cách:</b> ${escapeHtml(summary.visualStyle || "-")} · <b>Thời lượng:</b> ${escapeHtml(summary.duration || "-")}</span>
-          <span><b>Kênh:</b> ${escapeHtml((summary.channels || []).join(", ") || "-")}</span>
+          <span><b>Profile:</b> ${escapeHtml(renderModeMap[summary.pixelleMode] || summary.pixelleMode || "-")} · <b>Kịch bản:</b> ${escapeHtml(scriptModeMap[summary.scriptMode] || summary.scriptMode || "-")} · <b>Khung hình:</b> ${escapeHtml(aspectRatioMap[summary.aspectRatio] || summary.aspectRatio || "-")}</span>
+          <span><b>Template:</b> ${escapeHtml(summary.frameTemplate || "auto")} · <b>Workflow visual:</b> ${escapeHtml(summary.mediaWorkflow || "auto")} · <b>Voice:</b> ${escapeHtml(summary.ttsWorkflow || "auto")}</span>
+          <span><b>Fallback:</b> ${escapeHtml(summary.allowFallback ? "Cho phép" : "Tắt")} · <b>Kênh:</b> ${escapeHtml((summary.channels || []).join(", ") || "-")}</span>
         `;
       }
 
@@ -1134,19 +1212,27 @@
         }
 
         if (video) {
+          const realVideoUrl = video.videoUrl || video.downloadUrl || "";
           creatorVideoPreview.innerHTML = `
             <div class="video-mock-card">
-              <div class="video-screen" style="background-image: linear-gradient(rgba(10,55,96,.45), rgba(10,55,96,.25)), url('${escapeHtml(video.posterUrl || "")}'); background-size: cover; background-position: center;">
-                <div class="video-play">▶</div>
-                <div class="video-badge">${escapeHtml(video.duration || summary.duration || "30-45 giây")}</div>
-                <div class="video-overlay-text">
-                  <strong>${escapeHtml(prompt)}</strong>
-                  <span>${escapeHtml(style)}</span>
+              ${realVideoUrl ? `
+                <video class="rendered-video-player" controls preload="metadata" poster="${escapeHtml(video.posterUrl || "")}">
+                  <source src="${escapeHtml(realVideoUrl)}" type="video/mp4" />
+                </video>
+              ` : `
+                <div class="video-screen" style="background-image: linear-gradient(rgba(10,55,96,.45), rgba(10,55,96,.25)), url('${escapeHtml(video.posterUrl || "")}'); background-size: cover; background-position: center;">
+                  <div class="video-play">▶</div>
+                  <div class="video-badge">${escapeHtml(video.duration || summary.duration || "30-45 giây")}</div>
+                  <div class="video-overlay-text">
+                    <strong>${escapeHtml(prompt)}</strong>
+                    <span>${escapeHtml(style)}</span>
+                  </div>
                 </div>
-              </div>
+              `}
               <div class="video-scenes">
                 ${(video.scenes || []).map((scene, index) => `<div><b>Cảnh ${index + 1}:</b> ${escapeHtml(scene)}</div>`).join("")}
                 <div><b>Trạng thái:</b> ${escapeHtml(video.note || "Preview video đã sẵn sàng")}</div>
+                ${realVideoUrl ? `<div><a class="preview-link" href="${escapeHtml(realVideoUrl)}" target="_blank" rel="noopener noreferrer">Mở video đã render</a></div>` : ""}
               </div>
             </div>
           `;
@@ -1218,6 +1304,13 @@
           visualStyle: creatorStyle.value,
           duration: creatorDuration.value,
           channels: creatorChannels.value.trim(),
+          pixelleMode: creatorPixelleMode.value,
+          scriptMode: creatorScriptMode.value,
+          aspectRatio: creatorAspectRatio.value,
+          frameTemplate: creatorTemplate.value,
+          mediaWorkflow: creatorMediaWorkflow.value,
+          ttsWorkflow: creatorTtsWorkflow.value,
+          allowFallback: creatorAllowFallback.value,
           uploadedImages: creatorUploadedAssets.map((item) => ({ name: item.name }))
         };
       }
@@ -1512,7 +1605,7 @@
 
       async function startCreatorRender() {
         startCreatorRenderBtn.disabled = true;
-        creatorRunStatus.textContent = "Đang chuyển scene và asset sang video creator...";
+        creatorRunStatus.textContent = "Đang gửi brief và storyboard sang Pixelle để render video thật...";
 
         try {
           const res = await fetch("/api/content-creator/render", {
@@ -1529,7 +1622,7 @@
           if (data.previews) {
             renderCreatorOutcome(data);
           }
-          creatorRunStatus.textContent = data.renderJob?.statusText || "Đã gửi pipeline sang video creator.";
+          creatorRunStatus.textContent = data.renderJob?.statusText || "Đã gửi pipeline sang Pixelle.";
           creatorVideoPreview.scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (error) {
           creatorRunStatus.textContent = `Không thể tạo video: ${error.message}`;
