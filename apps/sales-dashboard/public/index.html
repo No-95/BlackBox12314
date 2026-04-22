@@ -18,6 +18,41 @@
       </div>
     </div>
 
+    <div class="preview-modal" id="videoStructureModal" style="display:none;">
+      <div class="preview-modal-backdrop" id="videoStructureBackdrop"></div>
+      <div class="preview-modal-card">
+        <div class="preview-modal-topbar">
+          <strong>Cấu trúc video đã được tạo</strong>
+          <button class="secondary" id="closeVideoStructureModal">Đóng</button>
+        </div>
+        <div class="modal-content" style="overflow-y: auto; max-height: 70vh; padding: 20px;">
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Cảnh</th>
+                  <th>Mục tiêu</th>
+                  <th>Hướng dẫn hình ảnh</th>
+                  <th>Nguồn ảnh</th>
+                  <th>Asset được chọn</th>
+                  <th>Thời lượng</th>
+                </tr>
+              </thead>
+              <tbody id="modalVideoStructureRows">
+                <tr>
+                  <td colspan="6" class="muted">Đang tải...</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+          <div style="margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end;">
+            <button class="secondary" id="editVideoStructureBtn">Chỉnh sửa kế hoạch</button>
+            <button id="continueWithStructureBtn">Tiếp tục với cấu trúc này</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <div class="wrap">
       <header class="topbar">
         <div>
@@ -424,6 +459,7 @@
                   <tr>
                     <th>Cảnh</th>
                     <th>Mục tiêu</th>
+                    <th>Hướng dẫn hình ảnh</th>
                     <th>Nguồn ảnh</th>
                     <th>Asset được chọn</th>
                     <th>Thời lượng</th>
@@ -431,7 +467,7 @@
                 </thead>
                 <tbody id="videoStructureRows">
                   <tr>
-                    <td colspan="5" class="muted">Tạo brief để xem cấu trúc video tự động.</td>
+                    <td colspan="6" class="muted">Tạo brief để xem cấu trúc video tự động.</td>
                   </tr>
                 </tbody>
               </table>
@@ -709,6 +745,12 @@
       const creatorRenderStatus = document.getElementById("creatorRenderStatus");
       const creatorRenderSteps = document.getElementById("creatorRenderSteps");
       const startCreatorRenderBtn = document.getElementById("startCreatorRenderBtn");
+      const videoStructureModal = document.getElementById("videoStructureModal");
+      const videoStructureBackdrop = document.getElementById("videoStructureBackdrop");
+      const closeVideoStructureModal = document.getElementById("closeVideoStructureModal");
+      const editVideoStructureBtn = document.getElementById("editVideoStructureBtn");
+      const continueWithStructureBtn = document.getElementById("continueWithStructureBtn");
+      const modalVideoStructureRows = document.getElementById("modalVideoStructureRows");
 
       let creatorUploadedAssets = [];
 
@@ -1096,9 +1138,8 @@
           runway: "Runway",
           veo: "Google Veo"
         };
-        const renderModeMap = {
+        const pixelleModeMap = {
           full: "Full target mode",
-          safe: "Safe mode"
         };
         const scriptModeMap = {
           fixed: "Fixed scenes ổn định",
@@ -1117,7 +1158,7 @@
           <span><b>Nguồn ảnh:</b> ${escapeHtml(modeMap[summary.inputMode] || summary.inputMode || "-")}</span>
           <span><b>Bộ tạo ảnh:</b> ${escapeHtml(imageProviderMap[summary.imageProvider] || summary.imageProvider || "-")} · <b>Video creator:</b> ${escapeHtml(videoProviderMap[summary.videoProvider] || summary.videoProvider || "-")}</span>
           <span><b>Phong cách:</b> ${escapeHtml(summary.visualStyle || "-")} · <b>Thời lượng:</b> ${escapeHtml(summary.duration || "-")}</span>
-          <span><b>Profile:</b> ${escapeHtml(renderModeMap[summary.pixelleMode] || summary.pixelleMode || "-")} · <b>Kịch bản:</b> ${escapeHtml(scriptModeMap[summary.scriptMode] || summary.scriptMode || "-")} · <b>Khung hình:</b> ${escapeHtml(aspectRatioMap[summary.aspectRatio] || summary.aspectRatio || "-")}</span>
+          <span><b>Profile:</b> ${escapeHtml(pixelleModeMap[summary.pixelleMode] || summary.pixelleMode || "-")} · <b>Render:</b> Visual render · <b>Kịch bản:</b> ${escapeHtml(scriptModeMap[summary.scriptMode] || summary.scriptMode || "-")} · <b>Khung hình:</b> ${escapeHtml(aspectRatioMap[summary.aspectRatio] || summary.aspectRatio || "-")}</span>
           <span><b>Template:</b> ${escapeHtml(summary.frameTemplate || "auto")} · <b>Workflow visual:</b> ${escapeHtml(summary.mediaWorkflow || "auto")} · <b>Voice:</b> ${escapeHtml(summary.ttsWorkflow || "auto")}</span>
           <span><b>Fallback:</b> ${escapeHtml(summary.allowFallback ? "Cho phép" : "Tắt")} · <b>Kênh:</b> ${escapeHtml((summary.channels || []).join(", ") || "-")}</span>
         `;
@@ -1139,10 +1180,35 @@
           .join("");
       }
 
+      function closeVideoStructureModalFunc() {
+        videoStructureModal.style.display = "none";
+      }
+
+      function showVideoStructureModal(builder = {}) {
+        const scenes = builder.scenes || [];
+        if (!scenes.length) {
+          modalVideoStructureRows.innerHTML = `<tr><td colspan="6" class="muted">Chưa có cấu trúc video.</td></tr>`;
+        } else {
+          modalVideoStructureRows.innerHTML = scenes
+            .map((scene) => `
+              <tr>
+                <td>${escapeHtml(scene.title || `Cảnh ${scene.scene || "-"}`)}</td>
+                <td>${escapeHtml(scene.objective || "-")}</td>
+                <td style="font-style:italic;color:#5d708a;">${escapeHtml(scene.visualDirection || scene.visualNeed || "-")}</td>
+                <td>${escapeHtml(scene.sourceType || "-")}</td>
+                <td>${escapeHtml(scene.assetSuggestion || "-")}</td>
+                <td>${escapeHtml(scene.duration || "-")}</td>
+              </tr>
+            `)
+            .join("");
+        }
+        videoStructureModal.style.display = "grid";
+      }
+
       function renderVideoStructure(builder = {}) {
         const scenes = builder.scenes || [];
         if (!scenes.length) {
-          videoStructureRows.innerHTML = `<tr><td colspan="5" class="muted">Chưa có cấu trúc video.</td></tr>`;
+          videoStructureRows.innerHTML = `<tr><td colspan="6" class="muted">Chưa có cấu trúc video.</td></tr>`;
           return;
         }
 
@@ -1151,6 +1217,7 @@
             <tr>
               <td>${escapeHtml(scene.title || `Cảnh ${scene.scene || "-"}`)}</td>
               <td>${escapeHtml(scene.objective || "-")}</td>
+              <td style="font-style:italic;color:#5d708a;">${escapeHtml(scene.visualDirection || scene.visualNeed || "-")}</td>
               <td>${escapeHtml(scene.sourceType || "-")}</td>
               <td>${escapeHtml(scene.assetSuggestion || "-")}</td>
               <td>${escapeHtml(scene.duration || "-")}</td>
@@ -1279,6 +1346,7 @@
         creatorRenderStatus.innerHTML = `
           <strong>${escapeHtml(job.statusText || "Đã cập nhật pipeline")}</strong>
           <span>${escapeHtml(job.outputNote || "")}</span>
+          ${job.canRetry ? `<button style="margin-top:10px;" onclick="startCreatorRender()">Thử lại</button>` : ""}
         `;
 
         creatorRenderSteps.innerHTML = (job.steps || [])
@@ -1336,10 +1404,16 @@
 
           renderCreatorMetrics(data.kpis || {});
           renderCreatorTools(data.tools || []);
-          renderCreatorAssets(data.assets || []);
+          renderCreatorAssets(data.assets || {});
           renderCreatorSummary(data.summary || {});
           renderCreatorPrompts(data.prompts || {});
           renderVideoStructure(data.videoBuilder || {});
+          
+          // Show video structure modal if user created a custom plan
+          if (useCustom) {
+            showVideoStructureModal(data.videoBuilder || {});
+          }
+          
           renderCreatorOutcome(data);
           renderCreatorRenderJob(data.renderJob || {});
           creatorRunStatus.textContent = `Đã tạo ${data.previews?.images?.length || 0} ảnh xem trước, ${data.videoBuilder?.scenes?.length || 0} cảnh video và ${data.previews?.video ? "1 storyboard video" : "0 video"}.`;
@@ -1703,6 +1777,24 @@
 
       document.getElementById("previewBackdrop").addEventListener("click", () => {
         document.getElementById("previewModal").style.display = "none";
+      });
+
+      closeVideoStructureModal.addEventListener("click", () => {
+        closeVideoStructureModalFunc();
+      });
+
+      videoStructureBackdrop.addEventListener("click", () => {
+        closeVideoStructureModalFunc();
+      });
+
+      editVideoStructureBtn.addEventListener("click", () => {
+        closeVideoStructureModalFunc();
+        creatorPrompt.focus();
+      });
+
+      continueWithStructureBtn.addEventListener("click", () => {
+        closeVideoStructureModalFunc();
+        startCreatorRender();
       });
 
       renderSheetStats({});

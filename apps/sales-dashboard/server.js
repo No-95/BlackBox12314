@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: require("path").resolve(__dirname, "../../.env") });
 
 const express = require("express");
 const fs = require("fs");
@@ -607,6 +607,8 @@ function formatPixelleError(error) {
   return message;
 }
 
+let geminiQuotaExhausted = false;
+
 function hasCompatibleGeminiApiKey() {
   const geminiKey = normalizeText(process.env.GEMINI_API_KEY || "");
   return /^AIza[0-9A-Za-z_-]{20,}$/.test(geminiKey);
@@ -694,6 +696,7 @@ function buildPixellePayload(options = {}) {
   const frameTemplate = resolvePixelleTemplate(options, channels);
   const mediaWorkflow = resolvePixelleMediaWorkflow({ ...options, frameTemplate }, requestedProfile);
   const ttsWorkflow = resolvePixelleTtsWorkflow(options, requestedProfile);
+  const renderMode = requestedProfile === "safe" ? "safe" : "visual";
   const bgmPath = normalizeText(options.bgmPath || process.env.PIXELLE_BGM_PATH);
   const bgmVolume = Number(options.bgmVolume || process.env.PIXELLE_BGM_VOLUME || 0.3);
 
@@ -703,6 +706,7 @@ function buildPixellePayload(options = {}) {
     n_scenes: inferSceneCount(options.duration),
     title: prompt.slice(0, 80),
     frame_template: frameTemplate,
+    render_mode: renderMode,
     prompt_prefix: normalizeText(options.promptPrefix || process.env.PIXELLE_PROMPT_PREFIX || options.visualStyle) || undefined,
     template_params: {
       accent_color: "#0f4c81",
@@ -765,7 +769,9 @@ async function callPixelleJson(endpoint, options = {}) {
       throw new Error("Pixelle request timed out. Increase PIXELLE_RENDER_TIMEOUT_MS or switch to async mode.");
     }
     if (/fetch failed|ECONNREFUSED|ENOTFOUND/i.test(String(error?.message || error))) {
-      throw new Error(`Cannot reach Pixelle at ${baseUrl}. Start the Pixelle API server and try again.`);
+      const connErr = new Error(`Cannot reach Pixelle at ${baseUrl}. Start the Pixelle API server and try again.`);
+      connErr.pixelleDown = true;
+      throw connErr;
     }
     throw error;
   } finally {
@@ -840,13 +846,13 @@ function buildRenderJob({ wantsVideo, wantsImage, imageProviderMeta, videoProvid
 
   const videoReady = hasProviderAccess(videoProviderMeta);
   return {
-    status: videoReady ? "queued" : "preview-ready",
+    status: "queued",
     statusText: videoReady
       ? `Đã chuyển storyboard sang ${videoProviderMeta.label}`
-      : `Đã chuẩn bị pipeline video, đang chờ API key của ${videoProviderMeta.label}`,
+      : `Đã chuẩn bị pipeline video, đang chờ cấu hình của ${videoProviderMeta.label}`,
     outputNote: videoReady
       ? `Hệ thống đang dựng video bằng ${videoProviderMeta.label}.`
-      : `Hiện mới chạy ở chế độ preview. Thêm ${videoProviderMeta.env} để xuất video thật tự động.`,
+      : `Hiện đang chờ cấu hình ${videoProviderMeta.env} để xuất video thật.`,
     posterUrl,
     steps: [
       {
@@ -874,34 +880,42 @@ function buildRenderJob({ wantsVideo, wantsImage, imageProviderMeta, videoProvid
 }
 
 function buildVideoStructure({ prompt, duration, channels, visualStyle, inputMode, uploadedImages, wantsImage, wantsVideo }) {
+  const shortPrompt = normalizeText(prompt).slice(0, 120) || "sản phẩm";
+  const style = normalizeText(visualStyle) || "Hiện đại, cao cấp, tối giản";
+  const channelList = (Array.isArray(channels) ? channels : String(channels || "").split(/[;,]/).map(normalizeText).filter(Boolean)).join(", ") || "social media";
+
   const baseScenes = [
     {
       scene: 1,
-      title: "Hook mở đầu",
-      objective: "Thu hút sự chú ý trong 3 giây đầu",
+      title: "Hook mở đầu — Điểm chạm đầu tiên",
+      objective: `Gây ấn tượng ngay 3 giây đầu với hình ảnh mạnh về: ${shortPrompt}`,
       duration: "0-5s",
-      visualNeed: "Khung hình hero nổi bật"
+      visualNeed: `Khung hình hero toàn cảnh, ánh sáng ${style.toLowerCase()}, góc rộng hoặc macro nổi bật sản phẩm`,
+      visualDirection: `Cảnh mở — ánh sáng cinematic ${style.toLowerCase()}, tiêu điểm sắc nét vào chi tiết đặc trưng nhất của ${shortPrompt}. Không có text, chỉ hình ảnh kéo mắt.`
     },
     {
       scene: 2,
-      title: "Nêu vấn đề",
-      objective: "Cho người xem thấy nỗi đau hoặc bối cảnh",
+      title: "Nêu bối cảnh — Câu chuyện sản phẩm",
+      objective: `Cho người xem thấy ${shortPrompt} trong không gian thực tế sử dụng`,
       duration: "5-12s",
-      visualNeed: "Ảnh hoặc cảnh minh họa vấn đề"
+      visualNeed: `Ảnh lifestyle hoặc không gian sử dụng, phong cách ${style.toLowerCase()}`,
+      visualDirection: `Góc quay lifestyle — người hoặc không gian thực tế liên quan đến ${shortPrompt}, ánh sáng tự nhiên hoặc studio ấm, camera chuyển động nhẹ để tạo chiều sâu.`
     },
     {
       scene: 3,
-      title: "Giải pháp và lợi ích",
-      objective: "Giới thiệu sản phẩm hoặc giá trị chính",
+      title: "Giải pháp & điểm bán — Giá trị cốt lõi",
+      objective: `Nhấn mạnh lợi ích và sự khác biệt của ${shortPrompt}`,
       duration: "12-22s",
-      visualNeed: "Ảnh sản phẩm, visual giải pháp, motion text"
+      visualNeed: `Close-up sản phẩm và motion text nổi bật, overlay thông tin ngắn gọn`,
+      visualDirection: `Chuỗi close-up chi tiết chất lượng của ${shortPrompt} theo phong cách ${style.toLowerCase()} — focus vào texture, material, hoặc kết quả sử dụng. Text overlay ngắn xuất hiện mượt mà.`
     },
     {
       scene: 4,
-      title: "CTA kết thúc",
-      objective: "Kêu gọi người xem hành động",
+      title: "CTA kết thúc — Kêu gọi hành động",
+      objective: `Chốt thương hiệu và thúc đẩy ${channelList} hành động ngay`,
       duration: duration || "22-30s",
-      visualNeed: "Cảnh chốt thương hiệu và CTA"
+      visualNeed: `Logo thương hiệu, CTA rõ ràng, nền ${style.toLowerCase()} nhất quán`,
+      visualDirection: `Frame cuối — logo và tagline nổi bật trên nền ${style.toLowerCase()}, CTA button hoặc text lớn, màu brand chủ đạo, kết thúc với hiệu ứng fade hoặc cut sạch.`
     }
   ];
 
@@ -925,8 +939,8 @@ function buildVideoStructure({ prompt, duration, channels, visualStyle, inputMod
       sourceType,
       assetSuggestion: uploaded
         ? uploaded.name
-        : `${item.title} · ${visualStyle}`,
-      direction: `${prompt}. Cảnh ${item.scene} theo phong cách ${visualStyle}, phù hợp cho ${channels.join(", ") || "social media"}.`
+        : `${item.title} · ${style}`,
+      direction: `${shortPrompt}. Cảnh ${item.scene} theo phong cách ${style}, phù hợp cho ${channelList}.`
     };
   });
 
@@ -950,7 +964,9 @@ function buildVideoStructure({ prompt, duration, channels, visualStyle, inputMod
 async function renderVideoWithPixelle(options = {}) {
   const baseUrl = getPixelleBaseUrl();
   if (!baseUrl) {
-    throw new Error("PIXELLE_BASE_URL is not configured. Start Pixelle locally and keep it listening on port 8000.");
+    const err = new Error("PIXELLE_BASE_URL is not configured. Start Pixelle locally and keep it listening on port 8000.");
+    err.pixelleDown = true;
+    throw err;
   }
 
   const requestedScriptMode = normalizeText(options.scriptMode || "fixed").toLowerCase();
@@ -999,10 +1015,16 @@ async function renderVideoWithPixelle(options = {}) {
     renderResult = result.renderResult;
   } catch (error) {
     const errorMessage = formatPixelleError(error);
+
+    // Mark Gemini quota exhausted so future requests skip generate mode
+    if (/quota exceeded|resource_exhausted|429/i.test(String(error?.message || error))) {
+      geminiQuotaExhausted = true;
+    }
+
     const shouldRetryStatic = allowFallback && (
       Boolean(payload.media_workflow) ||
       payload.mode === "generate" ||
-      /workflow|comfyui|refused|connect|timeout|internal server error|status 5\d\d|status 500|browsertype\.launch|multiple authentication credentials|authentication|api key|model|gemini|unauthenticated/i.test(String(error?.message || error))
+      /workflow|comfyui|refused|connect|timeout|internal server error|status 5\d\d|status 500|browsertype\.launch|multiple authentication credentials|authentication|api key|model|gemini|unauthenticated|speech|tts|text.to.speech|bing/i.test(String(error?.message || error))
     );
 
     if (!shouldRetryStatic) {
@@ -1017,21 +1039,28 @@ async function renderVideoWithPixelle(options = {}) {
         options.duration
       ),
       mode: "fixed",
-      frame_template: "1080x1920/static_default.html"
+      frame_template: "1080x1920/image_default.html",
+      render_mode: "visual",
+      tts_workflow: "none"
     };
-    delete fallbackPayload.media_workflow;
-    delete fallbackPayload.tts_workflow;
+    if (!fallbackPayload.media_workflow) {
+      fallbackPayload.media_workflow = normalizeText(process.env.PIXELLE_DEFAULT_MEDIA_WORKFLOW || "selfhost/image_flux.json");
+    }
 
     try {
       const result = await submitPixelleRender(fallbackPayload);
       taskId = result.taskId;
       renderResult = result.renderResult;
       payload.frame_template = fallbackPayload.frame_template;
-      delete payload.media_workflow;
-      delete payload.tts_workflow;
+      payload.render_mode = fallbackPayload.render_mode;
+      payload.tts_workflow = fallbackPayload.tts_workflow;
       usedFallback = true;
     } catch (fallbackError) {
-      throw new Error(`Pixelle full-target failed, and safe fallback also failed: ${String(fallbackError?.message || fallbackError)} | original error: ${errorMessage}`);
+      const combinedErr = new Error(`Pixelle full-target failed, and safe fallback also failed: ${String(fallbackError?.message || fallbackError)} | original error: ${errorMessage}`);
+      if (fallbackError?.pixelleDown || error?.pixelleDown) {
+        combinedErr.pixelleDown = true;
+      }
+      throw combinedErr;
     }
   }
 
@@ -1047,16 +1076,16 @@ async function renderVideoWithPixelle(options = {}) {
       status: "completed",
       statusText: usedFallback
         ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
-          ? "Pixelle đã hoàn tất bằng Safe Mode fallback và tự chuyển sang Fixed scenes"
-          : "Pixelle đã hoàn tất bằng Safe Mode fallback"
+          ? "Pixelle đã hoàn tất bằng visual fallback và tự chuyển sang Fixed scenes"
+          : "Pixelle đã hoàn tất bằng visual fallback"
         : requestedProfile === "full"
           ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
             ? "Pixelle đã tạo xong video và tự chuyển sang Fixed scenes"
-            : "Pixelle đã tạo xong video ở Full Target Mode"
+            : "Pixelle đã tạo xong video ở visual mode"
           : "Pixelle đã tạo xong video",
       outputNote: videoUrl
         ? usedFallback
-          ? "Video MP4 thật đã sẵn sàng. Hệ thống đã tự chuyển sang template tĩnh khi workflow visual chưa sẵn sàng."
+          ? "Video MP4 thật đã sẵn sàng. Hệ thống đã tự chuyển sang visual fallback khi workflow chưa sẵn sàng."
           : `Video MP4 thật đã sẵn sàng để xem và tải xuống. Template: ${payload.frame_template}${payload.media_workflow ? ` · Workflow: ${payload.media_workflow}` : ""}`
         : "Pixelle đã hoàn thành job.",
       posterUrl,
@@ -1085,7 +1114,7 @@ async function renderVideoWithPixelle(options = {}) {
       note: `Pixelle render hoàn tất. Kích thước file: ${sizeLabel}.`,
       scenes: [
         `Số phân cảnh: ${payload.n_scenes}`,
-        `Hồ sơ render: ${requestedProfile === "full" ? "Full Target Mode" : "Safe Mode"}`,
+        `Hồ sơ render: ${requestedProfile === "full" ? "Visual render" : "Visual render"}`,
         `Kịch bản thực tế: ${effectiveScriptMode === "generate" ? "AI tự viết" : "Fixed scenes ổn định"}`,
         requestedScriptMode === "generate" && effectiveScriptMode !== "generate" ? "Gemini chưa sẵn sàng nên đã tự chuyển sang Fixed scenes" : "AI scene sẵn sàng theo cấu hình hiện tại",
         `Template: ${payload.frame_template}`,
@@ -1193,6 +1222,7 @@ function getContentCreatorDashboard(options = {}) {
       channels,
       pixelleMode: normalizeText(options.pixelleMode || "full").toLowerCase(),
       scriptMode: resolvePixelleScriptMode(options.scriptMode || "fixed"),
+      renderMode: requestedProfile === "safe" ? "safe" : mediaWorkflow ? "visual" : "storyboard",
       aspectRatio: normalizeText(options.aspectRatio || "portrait").toLowerCase(),
       frameTemplate: normalizeText(options.frameTemplate || options.template || "auto"),
       mediaWorkflow: normalizeText(options.mediaWorkflow || "auto"),
@@ -1506,10 +1536,21 @@ app.post("/api/content-creator/render", async (req, res) => {
     const message = formatPixelleError(error);
     console.error("Content creator render failed:", message);
 
+    const isPixelleDown = /ECONNREFUSED|ENOTFOUND|connect ETIMEDOUT|Cannot reach Pixelle|chưa được khởi chạy/i.test(message) || error?.pixelleDown === true;
+    const isTtsError = /speech\.platform\.bing|Cannot connect to host speech|tts|text.to.speech/i.test(message);
     fallbackData.renderJob = {
       status: "review",
-      statusText: "Pixelle chưa render xong video thật, đang trả về storyboard an toàn",
-      outputNote: message,
+      canRetry: isPixelleDown || isTtsError,
+      statusText: isPixelleDown
+        ? "Pixelle chưa được khởi chạy. Bấm Thử lại sau khi đã chạy Pixelle tại localhost:8000."
+        : isTtsError
+          ? "Dịch vụ TTS (giọng đọc) không khả dụng. Bấm Thử lại — hệ thống sẽ bỏ qua TTS."
+          : "Pixelle chưa render xong video thật, đang trả về storyboard an toàn",
+      outputNote: isPixelleDown
+        ? `Dịch vụ Pixelle không phản hồi tại ${process.env.PIXELLE_BASE_URL || "http://127.0.0.1:8000"}. Hãy chạy lại Pixelle rồi bấm Thử lại.`
+        : isTtsError
+          ? "Pixelle không thể kết nối tới dịch vụ giọng đọc (Bing TTS). Video sẽ được render lại mà không có voiceover."
+          : message,
       posterUrl: fallbackData.previews?.video?.posterUrl || "",
       steps: [
         {
@@ -1519,19 +1560,19 @@ app.post("/api/content-creator/render", async (req, res) => {
         },
         {
           name: "Pixelle render",
-          status: "review",
-          note: message
+          status: isPixelleDown ? "queued" : "review",
+          note: isPixelleDown ? "Đang chờ Pixelle khởi chạy lại tại localhost:8000." : isTtsError ? "TTS không khả dụng — Bấm Thử lại để render không có voiceover." : message
         },
         {
-          name: "Safe recovery",
-          status: "done",
-          note: "Ứng dụng đã chuyển về chế độ an toàn thay vì trả lỗi 500."
+          name: isPixelleDown ? "Chờ Pixelle" : isTtsError ? "Retry không TTS" : "Safe recovery",
+          status: isPixelleDown ? "queued" : isTtsError ? "queued" : "done",
+          note: isPixelleDown ? "Bấm Thử lại để tiếp tục render sau khi Pixelle sẵn sàng." : isTtsError ? "Bấm Thử lại — video sẽ render thành công mà không cần giọng đọc." : "Ứng dụng đã chuyển về chế độ an toàn thay vì trả lỗi 500."
         }
       ]
     };
 
     if (fallbackData.previews?.video) {
-      fallbackData.previews.video.note = `Pixelle tạm lỗi nên đang hiển thị storyboard preview. Chi tiết: ${message}`;
+      fallbackData.previews.video.note = `Pixelle tạm lỗi nên đang hiển thị visual preview. Chi tiết: ${message}`;
     }
 
     res.json({
