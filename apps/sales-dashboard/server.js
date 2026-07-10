@@ -2,16 +2,135 @@ require("dotenv").config({ path: require("path").resolve(__dirname, "../../.env"
 
 const express = require("express");
 const fs = require("fs");
+const http = require("http");
+const https = require("https");
 const path = require("path");
 const { google } = require("googleapis");
 const { Resend } = require("resend");
 const { ConvexHttpClient } = require("convex/browser");
 const { buildHandshakeEmailHtml } = require("../../scripts/outreach/templates/HandshakeEmail");
+const { registerVisionistRoutes } = require("./visionist");
+const { registerLawyerRoutes } = require("./lawyer");
 
 const CHUNK_SIZE = 100;
 const QUEUE_LIMIT = 5;
 
 const app = express();
+
+const mirofishBaseUrl = process.env.MIROFISH_BASE_URL || "http://127.0.0.1:5001";
+const mirofishApiPrefixes = ["/api/graph", "/api/simulation", "/api/report"];
+const blackboxApiToken = String(process.env.BLACKBOX_API_TOKEN || "").trim();
+const listenHost = String(process.env.SALES_DASHBOARD_HOST || "0.0.0.0").trim() || "0.0.0.0";
+const corsOrigins = String(process.env.BLACKBOX_CORS_ORIGINS || "*")
+  .split(",")
+  .map((value) => value.trim())
+  .filter(Boolean);
+
+function applyCors(req, res) {
+  const requestOrigin = req.headers.origin;
+  let allowOrigin = "*";
+
+  if (corsOrigins.includes("*")) {
+    allowOrigin = requestOrigin || "*";
+  } else if (requestOrigin && corsOrigins.includes(requestOrigin)) {
+    allowOrigin = requestOrigin;
+  } else if (!requestOrigin) {
+    allowOrigin = corsOrigins[0] || "*";
+  } else {
+    allowOrigin = corsOrigins[0] || "*";
+  }
+
+  res.setHeader("Access-Control-Allow-Origin", allowOrigin);
+  if (allowOrigin !== "*") {
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+  }
+  res.setHeader("Access-Control-Allow-Headers", "Authorization, Content-Type, X-Requested-With");
+  res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,PATCH,DELETE,OPTIONS");
+  res.setHeader("Vary", "Origin");
+}
+
+app.use((req, res, next) => {
+  applyCors(req, res);
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
+  return next();
+});
+
+app.use((req, res, next) => {
+  if (!req.path.startsWith("/api/")) {
+    return next();
+  }
+
+  // MiroFish proxy stays open for the Visionist iframe loaded from this host.
+  if (mirofishApiPrefixes.some((prefix) => req.path.startsWith(prefix))) {
+    return next();
+  }
+
+  if (!blackboxApiToken) {
+    return next();
+  }
+
+  const header = String(req.headers.authorization || "");
+  const bearer = header.toLowerCase().startsWith("bearer ")
+    ? header.slice(7).trim()
+    : "";
+  const queryToken = typeof req.query.access_token === "string" ? req.query.access_token.trim() : "";
+
+  if (bearer === blackboxApiToken || queryToken === blackboxApiToken) {
+    return next();
+  }
+
+  return res.status(401).json({
+    error: "Unauthorized. Provide Authorization: Bearer <BLACKBOX_API_TOKEN>."
+  });
+});
+
+app.use((req, res, next) => {
+  if (!mirofishApiPrefixes.some((prefix) => req.path.startsWith(prefix))) {
+    return next();
+  }
+
+  let target;
+  try {
+    target = new URL(mirofishBaseUrl);
+  } catch {
+    return res.status(500).json({
+      success: false,
+      error: "Invalid MIROFISH_BASE_URL"
+    });
+  }
+
+  const client = target.protocol === "https:" ? https : http;
+  const proxyReq = client.request(
+    {
+      hostname: target.hostname,
+      port: target.port || (target.protocol === "https:" ? 443 : 80),
+      method: req.method,
+      path: req.originalUrl,
+      headers: {
+        ...req.headers,
+        host: target.host
+      }
+    },
+    (proxyRes) => {
+      res.writeHead(proxyRes.statusCode, proxyRes.headers);
+      proxyRes.pipe(res);
+    }
+  );
+
+  proxyReq.on("error", (error) => {
+    if (!res.headersSent) {
+      res.status(502).json({
+        success: false,
+        error: `MiroFish backend unreachable at ${mirofishBaseUrl}: ${error.message}`
+      });
+    }
+  });
+
+  req.pipe(proxyReq);
+});
+
 app.use(express.json({ limit: "2mb" }));
 
 const convexUrl = process.env.CONVEX_URL;
@@ -20,6 +139,7 @@ const port = Number(process.env.SALES_DASHBOARD_PORT || 5177);
 const convex = convexUrl ? new ConvexHttpClient(convexUrl) : null;
 const pixelleRenderTimeoutMs = Number(process.env.PIXELLE_RENDER_TIMEOUT_MS || 900000);
 const pixellePollIntervalMs = Number(process.env.PIXELLE_POLL_INTERVAL_MS || 5000);
+const strictRealProviders = !["false", "0", "off", "no"].includes(String(process.env.STRICT_REAL_PROVIDERS || "true").trim().toLowerCase());
 
 function ensureConvex(res) {
   if (!convex) {
@@ -47,13 +167,33 @@ function getServiceAccount() {
 
 function normalizeHeader(header) {
   return String(header || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
     .trim()
     .toLowerCase()
-    .replace(/\s+/g, "_");
+    .replace(/\s+/g, "_")
+    .replace(/[^a-z0-9_]/g, "");
 }
 
 function normalizeText(value) {
   return String(value || "").trim();
+}
+
+function clamp01(value, fallback = 0.5) {
+  const num = Number(value);
+  if (!Number.isFinite(num)) {
+    return fallback;
+  }
+  if (num < 0) return 0;
+  if (num > 1) return 1;
+  return num;
+}
+
+function createProviderError(category, message, details = {}) {
+  const err = new Error(message);
+  err.category = category;
+  err.details = details;
+  return err;
 }
 
 function normalizeEmail(value) {
@@ -66,6 +206,44 @@ function normalizeEmail(value) {
   return valid || "";
 }
 
+const DEMO_EMAIL_PATTERN = /@(test|example)\.com$|@(mailinator|yopmail|tempmail)\./i;
+const DEMO_COMPANY_PATTERN = /^(alpha co|beta co|test company|demo company|sample company|fake company|mock company)$/i;
+
+function isDemoLead(row) {
+  const email = normalizeEmail(row?.email);
+  const companyName = normalizeText(row?.companyName);
+
+  if (!email && !companyName) {
+    return false;
+  }
+
+  if (email && DEMO_EMAIL_PATTERN.test(email)) {
+    return true;
+  }
+
+  if (companyName && DEMO_COMPANY_PATTERN.test(companyName)) {
+    return true;
+  }
+
+  return false;
+}
+
+function assertRealLeadRows(rows, sourceLabel = "dữ liệu") {
+  const demoRows = rows.filter((row) => isDemoLead(row));
+  if (!demoRows.length) {
+    return;
+  }
+
+  const sample = demoRows
+    .slice(0, 3)
+    .map((row) => row.companyName || row.email || "unknown")
+    .join(", ");
+
+  throw new Error(
+    `${sourceLabel} chứa dữ liệu mẫu/test không được phép (${sample}). Hãy chỉ nhập lead thật từ CSV hoặc Google Sheet.`
+  );
+}
+
 function mapRow(headers, row) {
   const item = {};
   headers.forEach((header, index) => {
@@ -74,16 +252,104 @@ function mapRow(headers, row) {
 
   return {
     stt: normalizeText(item.stt) || undefined,
-    companyName: normalizeText(item.company_name || item.company),
-    address: normalizeText(item.address) || undefined,
-    phone: normalizeText(item.phone) || undefined,
+    companyName: normalizeText(
+      item.company_name || item.company || item.cong_ty || item.ten_cong_ty || item.ten_doanh_nghiep
+    ),
+    address: normalizeText(item.address || item.dia_chi) || undefined,
+    phone: normalizeText(item.phone || item.sdt) || undefined,
     hotline: normalizeText(item.hotline) || undefined,
     sdtHotline: normalizeText(item.sdt_hotline) || undefined,
-    email: normalizeEmail(item.email) || undefined,
-    mainProduct: normalizeText(item.main_product || item.field) || undefined,
-    website: normalizeText(item.website) || undefined,
-    contactPerson: normalizeText(item.contact_person) || undefined
+    email: normalizeEmail(item.email || item.e_mail) || undefined,
+    mainProduct: normalizeText(item.main_product || item.field || item.san_pham || item.linh_vuc) || undefined,
+    website: normalizeText(item.website || item.web) || undefined,
+    contactPerson: normalizeText(item.contact_person || item.nguoi_lien_he) || undefined
   };
+}
+
+function parseCsv(text) {
+  const rows = [];
+  let row = [];
+  let cell = "";
+  let inQuotes = false;
+  const content = String(text || "").replace(/^\uFEFF/, "");
+
+  for (let index = 0; index < content.length; index += 1) {
+    const char = content[index];
+    const next = content[index + 1];
+
+    if (inQuotes) {
+      if (char === '"' && next === '"') {
+        cell += '"';
+        index += 1;
+      } else if (char === '"') {
+        inQuotes = false;
+      } else {
+        cell += char;
+      }
+      continue;
+    }
+
+    if (char === '"') {
+      inQuotes = true;
+    } else if (char === ",") {
+      row.push(cell);
+      cell = "";
+    } else if (char === "\n" || (char === "\r" && next === "\n")) {
+      row.push(cell);
+      if (row.some((value) => String(value).trim())) {
+        rows.push(row);
+      }
+      row = [];
+      cell = "";
+      if (char === "\r") index += 1;
+    } else if (char !== "\r") {
+      cell += char;
+    }
+  }
+
+  if (cell.length || row.length) {
+    row.push(cell);
+    if (row.some((value) => String(value).trim())) {
+      rows.push(row);
+    }
+  }
+
+  return rows;
+}
+
+function previewRowsFromValues(values, sourceTitle = "CSV upload") {
+  if (values.length < 2) {
+    return {
+      sheetId: null,
+      sheetTitle: sourceTitle,
+      totalRows: 0,
+      validEmails: 0,
+      rows: []
+    };
+  }
+
+  const headers = values[0].map(normalizeHeader);
+  const rows = values.slice(1)
+    .map((row) => mapRow(headers, row))
+    .filter((row) => row.stt || row.companyName || row.email)
+    .sort((a, b) => parseStt(a.stt) - parseStt(b.stt));
+
+  return {
+    sheetId: null,
+    sheetTitle: sourceTitle,
+    totalRows: rows.length,
+    validEmails: rows.filter((row) => Boolean(row.email)).length,
+    rows
+  };
+}
+
+function previewCsv(csvText, fileName = "CSV upload") {
+  const safeName = String(fileName || "CSV upload").replace(/\.csv$/i, "") || "CSV upload";
+  const values = parseCsv(csvText);
+  if (!values.length) {
+    throw new Error("CSV file is empty or could not be parsed.");
+  }
+  return previewRowsFromValues(values, safeName);
 }
 
 function parseStt(value) {
@@ -116,16 +382,9 @@ function fallbackDraft({ companyName, mainProduct }) {
   };
 }
 
-async function generateProposal({ companyName, mainProduct, website }) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) {
-    return fallbackDraft({ companyName, mainProduct });
-  }
-
-  const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+function buildSalesDraftPrompt({ companyName, mainProduct, website }) {
   const field = mainProduct || "giải pháp nội thất và thương mại B2B";
-
-  const prompt = [
+  return [
     "Bạn là chuyên gia chiến lược bán hàng B2B cho HDPHoldings.",
     `Hãy nghiên cứu lĩnh vực hoạt động của công ty này: ${field}.`,
     `Tên công ty: ${companyName}.`,
@@ -135,40 +394,64 @@ async function generateProposal({ companyName, mainProduct, website }) {
     "Giọng văn: chuyên nghiệp, súc tích, thuyết phục. Phần nội dung tối đa 3 câu.",
     'Chỉ trả về JSON hợp lệ với 2 khóa: "email_subject" và "email_body". Giá trị phải là tiếng Việt tự nhiên.'
   ].filter(Boolean).join("\n");
+}
+
+function getOpenAiCompatConfig() {
+  const apiKey = normalizeText(process.env.OPENAI_API_KEY || process.env.CHATANYWHERE_API_KEY || "");
+  const baseUrl = normalizeText(process.env.OPENAI_BASE_URL || "https://api.chatanywhere.tech/v1").replace(/\/+$/, "");
+  const model = normalizeText(process.env.AI_DRAFT_MODEL || process.env.OPENAI_DRAFT_MODEL || "gpt-4o-mini");
+  return { apiKey, baseUrl, model };
+}
+
+function parseDraftJson(rawText, companyName, mainProduct) {
+  let parsed = {};
+  try {
+    parsed = JSON.parse(rawText);
+  } catch {
+    parsed = {};
+  }
+
+  return {
+    emailSubject: (parsed.email_subject || `Đề xuất hợp tác cho ${companyName}`).trim(),
+    emailBody: (parsed.email_body || "").trim() || fallbackDraft({ companyName, mainProduct }).emailBody
+  };
+}
+
+async function generateProposalViaOpenAiCompat(config, { companyName, mainProduct, website }) {
+  const prompt = buildSalesDraftPrompt({ companyName, mainProduct, website });
+  const response = await fetch(`${config.baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${config.apiKey}`
+    },
+    body: JSON.stringify({
+      model: config.model,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  });
+
+  if (!response.ok) {
+    const errorText = await response.text();
+    throw new Error(`AI draft error ${response.status}: ${errorText.slice(0, 200)}`);
+  }
+
+  const data = await response.json();
+  const rawText = data?.choices?.[0]?.message?.content || "{}";
+  return parseDraftJson(rawText, companyName, mainProduct);
+}
+
+async function generateProposal({ companyName, mainProduct, website }) {
+  const openAi = getOpenAiCompatConfig();
+  if (!openAi.apiKey) {
+    throw new Error("Chưa cấu hình OPENAI_API_KEY (ChatAnywhere) cho soạn email.");
+  }
 
   try {
-    const response = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contents: [{ role: "user", parts: [{ text: prompt }] }],
-          generationConfig: { responseMimeType: "application/json" }
-        })
-      }
-    );
-
-    if (!response.ok) {
-      throw new Error(`Gemini error ${response.status}`);
-    }
-
-    const data = await response.json();
-    const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
-
-    let parsed = {};
-    try {
-      parsed = JSON.parse(rawText);
-    } catch {
-      parsed = {};
-    }
-
-    return {
-      emailSubject: (parsed.email_subject || `Business opportunity for ${companyName}`).trim(),
-      emailBody: (parsed.email_body || rawText || fallbackDraft({ companyName, mainProduct }).emailBody).trim()
-    };
-  } catch {
-    return fallbackDraft({ companyName, mainProduct });
+    return await generateProposalViaOpenAiCompat(openAi, { companyName, mainProduct, website });
+  } catch (error) {
+    throw new Error(`Không thể tạo email AI cho ${companyName}. ${error.message}`);
   }
 }
 
@@ -203,29 +486,7 @@ async function previewGoogleSheet(sheetUrl) {
   });
 
   const values = result.data.values || [];
-  if (values.length < 2) {
-    return {
-      sheetId: spreadsheetId,
-      sheetTitle,
-      totalRows: 0,
-      validEmails: 0,
-      rows: []
-    };
-  }
-
-  const headers = values[0].map(normalizeHeader);
-  const rows = values.slice(1)
-    .map((row) => mapRow(headers, row))
-    .filter((row) => row.stt || row.companyName || row.email)
-    .sort((a, b) => parseStt(a.stt) - parseStt(b.stt));
-
-  return {
-    sheetId: spreadsheetId,
-    sheetTitle,
-    totalRows: rows.length,
-    validEmails: rows.filter((row) => Boolean(row.email)).length,
-    rows
-  };
+  return previewRowsFromValues(values, sheetTitle);
 }
 
 async function importRowsToConvex(rows) {
@@ -299,8 +560,8 @@ async function prepareRecordDraft(queueId, options = {}) {
   };
 }
 
-async function queueNextFiveCompanies(sheetUrl) {
-  const preview = await previewGoogleSheet(sheetUrl);
+async function queueNextFiveFromPreview(preview, options = {}) {
+  const limit = Number.isFinite(options.limit) ? options.limit : QUEUE_LIMIT;
   const existing = await convex.query("outreach:listOutreachRecords", {
     tenantId,
     limit: 500
@@ -313,10 +574,12 @@ async function queueNextFiveCompanies(sheetUrl) {
       .filter(Boolean)
   );
 
-  const nextRows = preview.rows
+  const eligibleRows = preview.rows
     .filter((row) => row.companyName && row.email)
     .filter((row) => !activeKeys.has(normalizeEmail(row.email)))
-    .slice(0, QUEUE_LIMIT);
+    .filter((row) => !isDemoLead(row));
+
+  const nextRows = eligibleRows.slice(0, limit);
 
   if (!nextRows.length) {
     return {
@@ -324,6 +587,7 @@ async function queueNextFiveCompanies(sheetUrl) {
       sheetTitle: preview.sheetTitle,
       totalRows: preview.totalRows,
       validEmails: preview.validEmails,
+      eligible: eligibleRows.length,
       queued: 0,
       prepared: 0,
       companies: []
@@ -356,6 +620,7 @@ async function queueNextFiveCompanies(sheetUrl) {
     sheetTitle: preview.sheetTitle,
     totalRows: preview.totalRows,
     validEmails: preview.validEmails,
+    eligible: eligibleRows.length,
     queued: nextRows.length,
     prepared,
     companies: nextRows.map((row) => ({
@@ -364,6 +629,11 @@ async function queueNextFiveCompanies(sheetUrl) {
       email: row.email
     }))
   };
+}
+
+async function queueNextFiveCompanies(sheetUrl) {
+  const preview = await previewGoogleSheet(sheetUrl);
+  return queueNextFiveFromPreview(preview);
 }
 
 function addDays(baseDate, days) {
@@ -528,6 +798,208 @@ function buildPollinationsImageUrl(prompt, width = 1280, height = 900, seed = Da
   return `https://image.pollinations.ai/prompt/${safePrompt}?model=flux&width=${width}&height=${height}&seed=${seed}&nologo=true&enhance=true&safe=true`;
 }
 
+async function callGptImageApi(prompt, { size = "1024x1024", n = 1 } = {}) {
+  const apiKey = process.env.OPENAI_API_KEY;
+  if (!apiKey) throw new Error("Missing OPENAI_API_KEY");
+  const response = await fetch("https://api.openai.com/v1/images/generations", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({ model: "gpt-image-1", prompt, n, size })
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw new Error(`GPT Image API error ${response.status}: ${errText}`);
+  }
+  const data = await response.json();
+  return (data.data || [])
+    .map((item) => (item.url ? item.url : item.b64_json ? `data:image/png;base64,${item.b64_json}` : null))
+    .filter(Boolean);
+}
+
+async function generateElevenLabsVoiceover(text, options = {}) {
+  const scriptText = normalizeText(text);
+  if (!scriptText) {
+    throw createProviderError("provider_rejected", "Audio script is required to generate voiceover.", { provider: "ElevenLabs" });
+  }
+
+  const apiKey = process.env.ELEVENLABS_API_KEY;
+  if (!apiKey) {
+    throw createProviderError("provider_not_configured", "Missing ELEVENLABS_API_KEY", { provider: "ElevenLabs" });
+  }
+
+  const selectedVoiceId = normalizeText(options.customVoiceId)
+    || (normalizeText(options.voiceId).toLowerCase() !== "auto" ? normalizeText(options.voiceId) : "")
+    || normalizeText(process.env.ELEVENLABS_VOICE_ID)
+    || "EXAVITQu4vr4xnSDxMaL";
+
+  const modelId = normalizeText(options.modelId) || "eleven_multilingual_v2";
+  const stability = clamp01(options.stability, 0.5);
+  const similarityBoost = clamp01(options.similarityBoost, 0.75);
+
+  const response = await fetch(`https://api.elevenlabs.io/v1/text-to-speech/${selectedVoiceId}`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "xi-api-key": apiKey
+    },
+    body: JSON.stringify({
+      text: scriptText,
+      model_id: modelId,
+      voice_settings: { stability, similarity_boost: similarityBoost }
+    })
+  });
+  if (!response.ok) {
+    const errText = await response.text();
+    throw createProviderError("provider_rejected", `ElevenLabs API error ${response.status}: ${errText}`, {
+      provider: "ElevenLabs",
+      status: response.status,
+      voiceId: selectedVoiceId
+    });
+  }
+  const buffer = await response.arrayBuffer();
+  const base64 = Buffer.from(buffer).toString("base64");
+  return {
+    audioUrl: `data:audio/mpeg;base64,${base64}`,
+    source: "ElevenLabs",
+    provider: "ElevenLabs",
+    voiceId: selectedVoiceId,
+    modelId,
+    requestId: response.headers.get("x-request-id") || ""
+  };
+}
+
+// ─── ComfyUI local image caller ──────────────────────────────────────────────
+
+function getComfyUIBaseUrl() {
+  return normalizeText(process.env.COMFYUI_BASE_URL || "").replace(/\/+$/, "") || "http://127.0.0.1:8188";
+}
+
+async function callLocalJson(url, options = {}, timeoutMs = 120000) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), timeoutMs);
+  try {
+    const response = await fetch(url, { ...options, signal: ctrl.signal });
+    if (!response.ok) {
+      const txt = await response.text().catch(() => "");
+      throw new Error(`HTTP ${response.status}: ${txt.slice(0, 200)}`);
+    }
+    return await response.json();
+  } catch (err) {
+    if (err.name === "AbortError") throw new Error(`Request to ${url} timed out after ${timeoutMs}ms`);
+    throw err;
+  } finally {
+    clearTimeout(timer);
+  }
+}
+
+async function generateImageWithComfyUI(prompt, { width = 1280, height = 720, workflowJson = null } = {}) {
+  const base = getComfyUIBaseUrl();
+  const workflow = workflowJson || {
+    "6": { class_type: "CLIPTextEncode", inputs: { text: prompt, clip: ["4", 1] } },
+    "7": { class_type: "CLIPTextEncode", inputs: { text: "blurry, low quality", clip: ["4", 1] } },
+    "4": { class_type: "CheckpointLoaderSimple", inputs: { ckpt_name: process.env.COMFYUI_MODEL || "v1-5-pruned-emaonly.ckpt" } },
+    "5": { class_type: "EmptyLatentImage", inputs: { width, height, batch_size: 1 } },
+    "3": { class_type: "KSampler", inputs: { seed: Math.floor(Math.random() * 999999), steps: 20, cfg: 7, sampler_name: "euler", scheduler: "normal", denoise: 1, model: ["4", 0], positive: ["6", 0], negative: ["7", 0], latent_image: ["5", 0] } },
+    "8": { class_type: "VAEDecode", inputs: { samples: ["3", 0], vae: ["4", 2] } },
+    "9": { class_type: "SaveImage", inputs: { filename_prefix: "copilot_cc", images: ["8", 0] } }
+  };
+  const queued = await callLocalJson(`${base}/prompt`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ prompt: workflow })
+  }, 30000);
+  const promptId = queued?.prompt_id;
+  if (!promptId) throw new Error("ComfyUI did not return a prompt_id");
+
+  const start = Date.now();
+  while (Date.now() - start < 300000) {
+    await sleep(3000);
+    const history = await callLocalJson(`${base}/history/${promptId}`, { method: "GET" }, 10000);
+    const entry = history?.[promptId];
+    if (!entry) continue;
+    const outputs = entry?.outputs?.["9"]?.images || [];
+    if (outputs.length) {
+      const img = outputs[0];
+      return `${base}/view?filename=${encodeURIComponent(img.filename)}&subfolder=${encodeURIComponent(img.subfolder || "")}&type=${img.type || "output"}`;
+    }
+    if (entry?.status?.completed === false && entry?.status?.messages?.some((m) => m[0] === "execution_error")) {
+      throw new Error("ComfyUI execution error");
+    }
+  }
+  throw new Error("ComfyUI did not complete within timeout");
+}
+
+// ─── Convex content-creator job persistence ──────────────────────────────────
+
+async function persistRenderJob(payload, status = "queued") {
+  if (!convex) return null;
+  try {
+    const jobId = await convex.mutation("agentJobs:createJob", {
+      tenantId,
+      workflowName: "content-creator-render",
+      payload
+    });
+    return jobId;
+  } catch (err) {
+    console.warn("Could not persist render job to Convex:", err.message);
+    return null;
+  }
+}
+
+async function updatePersistedJob(jobId, status, result, errorMessage) {
+  if (!convex || !jobId) return;
+  try {
+    await convex.mutation("agentJobs:updateJobStatus", {
+      jobId,
+      status,
+      result: result || undefined,
+      errorMessage: errorMessage || undefined
+    });
+  } catch (err) {
+    console.warn("Could not update render job in Convex:", err.message);
+  }
+}
+
+// ─── Agent feedback helpers ───────────────────────────────────────────────────
+
+async function getAgentFeedback(brief, renderSummary) {
+  const apiKey = process.env.GEMINI_API_KEY;
+  if (!apiKey) return null;
+  const model = process.env.GEMINI_MODEL || "gemini-2.0-flash";
+  const systemPrompt = [
+    "Bạn là Content Strategy Agent của HDP Holdings.",
+    "Nhiệm vụ: Đánh giá nội dung vừa tạo ra và đưa ra 3 gợi ý cụ thể để cải thiện.",
+    "Trả lời bằng tiếng Việt, súc tích, dưới 100 từ mỗi gợi ý.",
+    'JSON hợp lệ với key "feedback": mảng 3 object, mỗi object có "title" (string) và "suggestion" (string).'
+  ].join("\n");
+  const userMsg = `Brief: ${brief}\n\nKết quả render: ${JSON.stringify(renderSummary)}`;
+  try {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contents: [
+            { role: "user", parts: [{ text: `${systemPrompt}\n\n${userMsg}` }] }
+          ],
+          generationConfig: { responseMimeType: "application/json" }
+        })
+      }
+    );
+    if (!response.ok) return null;
+    const raw = await response.json();
+    const text = raw?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+    const parsed = JSON.parse(text);
+    return Array.isArray(parsed?.feedback) ? parsed.feedback : null;
+  } catch {
+    return null;
+  }
+}
+
 function sleep(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
@@ -562,16 +1034,50 @@ function inferSceneCount(duration) {
   return 4;
 }
 
-function buildFixedPixelleScript(prompt, visualStyle, duration) {
-  const beats = [
-    `${prompt}. Mở đầu bằng một điểm chạm mạnh và hình ảnh thương hiệu rõ ràng.`,
-    `Nhấn mạnh lợi ích chính của sản phẩm theo phong cách ${visualStyle}.`,
-    "Tập trung vào cảm giác cao cấp, độ hoàn thiện và trải nghiệm thực tế của khách hàng.",
-    "Kết thúc bằng lời kêu gọi hành động rõ ràng để khách hàng liên hệ ngay hôm nay."
-  ];
+function normalizeVideoOutputType(value) {
+  const normalized = normalizeText(value).toLowerCase();
+  if (["podcast", "smooth-scene-changing", "animation"].includes(normalized)) {
+    return normalized;
+  }
+  return "smooth-scene-changing";
+}
+
+function getVideoOutputTypeLabel(value) {
+  const type = normalizeVideoOutputType(value);
+  if (type === "podcast") return "podcast";
+  if (type === "animation") return "animation";
+  return "smooth scene changing";
+}
+
+function buildFixedPixelleScript(prompt, visualStyle, duration, videoOutputType) {
+  const type = normalizeVideoOutputType(videoOutputType);
+  let beats = [];
+
+  if (type === "podcast") {
+    beats = [
+      `${prompt}. Mở đầu bằng host giới thiệu chủ đề ngắn gọn và rõ trọng tâm.`,
+      `Triển khai các ý chính theo phong cách podcast chuyên nghiệp, giọng điệu ${visualStyle}.`,
+      "Chèn đoạn nhấn mạnh insight hoặc case ngắn để tăng độ tin cậy.",
+      "Kết lại bằng CTA rõ ràng: mời liên hệ hoặc đặt lịch trao đổi."
+    ];
+  } else if (type === "animation") {
+    beats = [
+      `${prompt}. Mở đầu bằng chuyển động animation nổi bật và nhận diện thương hiệu.`,
+      `Dùng cảnh chuyển động để mô tả lợi ích chính theo phong cách ${visualStyle}.`,
+      "Thêm một đoạn mô phỏng trực quan để giải thích giá trị sản phẩm/dịch vụ.",
+      "Kết bằng frame animation chứa CTA rõ ràng và dễ nhớ."
+    ];
+  } else {
+    beats = [
+      `${prompt}. Mở đầu bằng một điểm chạm mạnh và hình ảnh thương hiệu rõ ràng.`,
+      `Nhấn mạnh lợi ích chính của sản phẩm theo phong cách ${visualStyle}.`,
+      "Tập trung vào cảm giác cao cấp, độ hoàn thiện và trải nghiệm thực tế của khách hàng.",
+      "Kết thúc bằng lời kêu gọi hành động rõ ràng để khách hàng liên hệ ngay hôm nay."
+    ];
+  }
 
   if (String(duration || "").includes("45") || String(duration || "").includes("60")) {
-    beats.splice(2, 0, "Thêm một cảnh chuyển nhịp đẹp để nhấn mạnh chất liệu, không gian và độ tin cậy của thương hiệu.");
+    beats.splice(2, 0, "Thêm một cảnh chuyển nhịp để giữ mạch nội dung tự nhiên và không bị gấp.");
   }
 
   return beats.join("\n\n");
@@ -693,6 +1199,7 @@ function buildPixellePayload(options = {}) {
   const requestedProfile = normalizeText(options.pixelleMode || "full").toLowerCase();
   const scriptMode = resolvePixelleScriptMode(options.scriptMode || "fixed");
   const visualStyle = normalizeText(options.visualStyle) || "Hiện đại, cao cấp, tối giản";
+  const videoOutputType = normalizeVideoOutputType(options.videoOutputType);
   const frameTemplate = resolvePixelleTemplate(options, channels);
   const mediaWorkflow = resolvePixelleMediaWorkflow({ ...options, frameTemplate }, requestedProfile);
   const ttsWorkflow = resolvePixelleTtsWorkflow(options, requestedProfile);
@@ -701,8 +1208,10 @@ function buildPixellePayload(options = {}) {
   const bgmVolume = Number(options.bgmVolume || process.env.PIXELLE_BGM_VOLUME || 0.3);
 
   const payload = {
-    text: scriptMode === "generate" ? prompt : buildFixedPixelleScript(prompt, visualStyle, options.duration),
-    mode: scriptMode === "generate" ? "generate" : "fixed",
+    text: options.customScript
+      ? normalizeText(options.customScript)
+      : (scriptMode === "generate" ? prompt : buildFixedPixelleScript(prompt, visualStyle, options.duration, videoOutputType)),
+    mode: options.customScript ? "fixed" : (scriptMode === "generate" ? "generate" : "fixed"),
     n_scenes: inferSceneCount(options.duration),
     title: prompt.slice(0, 80),
     frame_template: frameTemplate,
@@ -808,7 +1317,8 @@ function getImageProviderMeta(name) {
     "gpt-image-1": { label: "GPT Image 1", env: "OPENAI_API_KEY" },
     imagen: { label: "Google Imagen", env: "GOOGLE_IMAGEN_API_KEY" },
     recraft: { label: "Recraft", env: "RECRAFT_API_KEY" },
-    flux: { label: "Flux Pro", env: "FLUX_API_KEY" }
+    flux: { label: "Flux Pro", env: "FLUX_API_KEY" },
+    comfyui: { label: "ComfyUI (local)", env: "COMFYUI_BASE_URL", local: true }
   };
   return catalog[provider] || catalog["gpt-image-1"];
 }
@@ -825,7 +1335,9 @@ function getVideoProviderMeta(name) {
 }
 
 function hasProviderAccess(meta, allowFallback = false) {
-  if (allowFallback) {
+  if (allowFallback) return true;
+  if (meta?.local) {
+    // local providers are considered available by default (user opted in via dropdown)
     return true;
   }
   if (meta?.env === "PIXELLE_BASE_URL") {
@@ -964,7 +1476,10 @@ function buildVideoStructure({ prompt, duration, channels, visualStyle, inputMod
 async function renderVideoWithPixelle(options = {}) {
   const baseUrl = getPixelleBaseUrl();
   if (!baseUrl) {
-    const err = new Error("PIXELLE_BASE_URL is not configured. Start Pixelle locally and keep it listening on port 8000.");
+    const err = createProviderError("provider_not_configured", "PIXELLE_BASE_URL is not configured. Set a real Pixelle endpoint before rendering.", {
+      provider: "Pixelle",
+      env: "PIXELLE_BASE_URL"
+    });
     err.pixelleDown = true;
     throw err;
   }
@@ -973,11 +1488,10 @@ async function renderVideoWithPixelle(options = {}) {
   const effectiveScriptMode = resolvePixelleScriptMode(requestedScriptMode);
   const payload = buildPixellePayload({ ...options, scriptMode: effectiveScriptMode });
   const renderMode = normalizeText(process.env.PIXELLE_RENDER_MODE || "sync").toLowerCase();
-  const allowFallback = parseBooleanSetting(options.allowFallback, true);
+  const allowFallback = strictRealProviders ? false : parseBooleanSetting(options.allowFallback, true);
   const requestedProfile = normalizeText(options.pixelleMode || "full").toLowerCase();
   let taskId = null;
   let renderResult = null;
-  let usedFallback = false;
 
   async function submitPixelleRender(activePayload) {
     if (renderMode === "async") {
@@ -1014,57 +1528,33 @@ async function renderVideoWithPixelle(options = {}) {
     taskId = result.taskId;
     renderResult = result.renderResult;
   } catch (error) {
-    const errorMessage = formatPixelleError(error);
-
-    // Mark Gemini quota exhausted so future requests skip generate mode
-    if (/quota exceeded|resource_exhausted|429/i.test(String(error?.message || error))) {
-      geminiQuotaExhausted = true;
+    const wrapped = createProviderError("provider_unreachable", formatPixelleError(error), {
+      provider: "Pixelle",
+      endpoint: baseUrl,
+      stage: "render"
+    });
+    if (error?.pixelleDown) {
+      wrapped.pixelleDown = true;
     }
+    throw wrapped;
+  }
 
-    const shouldRetryStatic = allowFallback && (
-      Boolean(payload.media_workflow) ||
-      payload.mode === "generate" ||
-      /workflow|comfyui|refused|connect|timeout|internal server error|status 5\d\d|status 500|browsertype\.launch|multiple authentication credentials|authentication|api key|model|gemini|unauthenticated|speech|tts|text.to.speech|bing/i.test(String(error?.message || error))
-    );
-
-    if (!shouldRetryStatic) {
-      throw error;
-    }
-
-    const fallbackPayload = {
-      ...payload,
-      text: buildFixedPixelleScript(
-        normalizeText(options.prompt) || payload.title || "AI video concept",
-        normalizeText(options.visualStyle) || "Hiện đại, cao cấp, tối giản",
-        options.duration
-      ),
-      mode: "fixed",
-      frame_template: "1080x1920/image_default.html",
-      render_mode: "visual",
-      tts_workflow: "none"
-    };
-    if (!fallbackPayload.media_workflow) {
-      fallbackPayload.media_workflow = normalizeText(process.env.PIXELLE_DEFAULT_MEDIA_WORKFLOW || "selfhost/image_flux.json");
-    }
-
-    try {
-      const result = await submitPixelleRender(fallbackPayload);
-      taskId = result.taskId;
-      renderResult = result.renderResult;
-      payload.frame_template = fallbackPayload.frame_template;
-      payload.render_mode = fallbackPayload.render_mode;
-      payload.tts_workflow = fallbackPayload.tts_workflow;
-      usedFallback = true;
-    } catch (fallbackError) {
-      const combinedErr = new Error(`Pixelle full-target failed, and safe fallback also failed: ${String(fallbackError?.message || fallbackError)} | original error: ${errorMessage}`);
-      if (fallbackError?.pixelleDown || error?.pixelleDown) {
-        combinedErr.pixelleDown = true;
-      }
-      throw combinedErr;
-    }
+  const isMockRender = Boolean(renderResult?.mock || renderResult?.result?.mock || /pixelle mock/i.test(String(renderResult?.message || renderResult?.result?.message || "")));
+  if (strictRealProviders && isMockRender) {
+    throw createProviderError("mock_rejected", "Pixelle returned mock/test output. Connect a real Pixelle service for production rendering.", {
+      provider: "Pixelle",
+      endpoint: baseUrl
+    });
   }
 
   const videoUrl = toAbsoluteServiceUrl(baseUrl, renderResult?.video_url || renderResult?.result?.video_url);
+  if (!videoUrl) {
+    throw createProviderError("provider_rejected", "Pixelle did not return a usable video_url.", {
+      provider: "Pixelle",
+      endpoint: baseUrl
+    });
+  }
+
   const duration = renderResult?.duration || renderResult?.result?.duration || options.duration || "N/A";
   const fileSize = Number(renderResult?.file_size || renderResult?.result?.file_size || 0);
   const sizeLabel = fileSize > 0 ? `${(fileSize / (1024 * 1024)).toFixed(2)} MB` : "đang cập nhật";
@@ -1074,18 +1564,14 @@ async function renderVideoWithPixelle(options = {}) {
     videoUrl,
     renderJob: {
       status: "completed",
-      statusText: usedFallback
+      statusText: requestedProfile === "full"
         ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
-          ? "Pixelle đã hoàn tất bằng visual fallback và tự chuyển sang Fixed scenes"
-          : "Pixelle đã hoàn tất bằng visual fallback"
-        : requestedProfile === "full"
-          ? requestedScriptMode === "generate" && effectiveScriptMode !== "generate"
-            ? "Pixelle đã tạo xong video và tự chuyển sang Fixed scenes"
-            : "Pixelle đã tạo xong video ở visual mode"
-          : "Pixelle đã tạo xong video",
+          ? "Pixelle đã tạo xong video và tự chuyển sang Fixed scenes"
+          : "Pixelle đã tạo xong video ở visual mode"
+        : "Pixelle đã tạo xong video",
       outputNote: videoUrl
-        ? usedFallback
-          ? "Video MP4 thật đã sẵn sàng. Hệ thống đã tự chuyển sang visual fallback khi workflow chưa sẵn sàng."
+        ? isMockRender
+          ? "Video đang đến từ Pixelle mock để test pipeline (không phải render AI cuối cùng)."
           : `Video MP4 thật đã sẵn sàng để xem và tải xuống. Template: ${payload.frame_template}${payload.media_workflow ? ` · Workflow: ${payload.media_workflow}` : ""}`
         : "Pixelle đã hoàn thành job.",
       posterUrl,
@@ -1109,18 +1595,22 @@ async function renderVideoWithPixelle(options = {}) {
     },
     previewVideo: {
       enabled: Boolean(videoUrl),
+      isMockRender,
       posterUrl,
       duration: String(duration),
-      note: `Pixelle render hoàn tất. Kích thước file: ${sizeLabel}.`,
+      note: isMockRender
+        ? `Pixelle mock đã phản hồi. Đây là video mẫu để test API, không phản ánh nội dung render theo brief. Kích thước file: ${sizeLabel}.`
+        : `Pixelle render hoàn tất. Kích thước file: ${sizeLabel}.`,
       scenes: [
         `Số phân cảnh: ${payload.n_scenes}`,
         `Hồ sơ render: ${requestedProfile === "full" ? "Visual render" : "Visual render"}`,
         `Kịch bản thực tế: ${effectiveScriptMode === "generate" ? "AI tự viết" : "Fixed scenes ổn định"}`,
+        `Kiểu output: ${getVideoOutputTypeLabel(options.videoOutputType)}`,
         requestedScriptMode === "generate" && effectiveScriptMode !== "generate" ? "Gemini chưa sẵn sàng nên đã tự chuyển sang Fixed scenes" : "AI scene sẵn sàng theo cấu hình hiện tại",
         `Template: ${payload.frame_template}`,
         `Workflow visual: ${payload.media_workflow || "Không dùng"}`,
         `Workflow voice: ${payload.tts_workflow || "TTS local / auto"}`,
-        usedFallback ? "Fallback static template đã được áp dụng" : "Pixelle dùng template visual đầy đủ",
+        "Pixelle dùng template visual đầy đủ",
         taskId ? `Task ID: ${taskId}` : "Render đồng bộ đã hoàn tất"
       ],
       videoUrl,
@@ -1134,6 +1624,7 @@ function getContentCreatorDashboard(options = {}) {
   const assetType = normalizeText(options.assetType) || "both";
   const visualStyle = normalizeText(options.visualStyle) || "Hiện đại, cao cấp, tối giản";
   const duration = normalizeText(options.duration) || "30-45 giây";
+  const videoOutputType = normalizeVideoOutputType(options.videoOutputType);
   const inputMode = normalizeText(options.inputMode || "hybrid").toLowerCase();
   const imageProvider = normalizeText(options.imageProvider || "gpt-image-1").toLowerCase();
   const videoProvider = normalizeText(options.videoProvider || "pixelle").toLowerCase();
@@ -1150,12 +1641,22 @@ function getContentCreatorDashboard(options = {}) {
     .filter(Boolean)
     .slice(0, 5);
 
+  const brandName = normalizeText(options.brandName) || "";
+  const brandColor = normalizeText(options.brandColor) || "";
+  const brandLogo = normalizeText(options.brandLogo) || "";
+  const brandContext = [
+    brandName ? `Thương hiệu: ${brandName}` : "",
+    brandColor ? `Màu chủ đạo: ${brandColor}` : "",
+    brandLogo ? `Có logo thương hiệu` : ""
+  ].filter(Boolean).join(". ");
+
   const wantsImage = ["image", "both"].includes(assetType);
   const wantsVideo = ["video", "both"].includes(assetType);
   const imageProviderMeta = getImageProviderMeta(imageProvider);
   const videoProviderMeta = getVideoProviderMeta(videoProvider);
-  const imagePrompt = `Tạo ảnh quảng bá theo brief: ${prompt}. Phong cách ${visualStyle}. Ánh sáng studio, bố cục premium, chi tiết sắc nét, phù hợp cho ${channels.join(", ")}.`;
-  const videoPrompt = `Tạo video ngắn ${duration} cho brief: ${prompt}. Nhịp dựng nhanh, mở đầu hút mắt trong 3 giây đầu, kết thúc bằng CTA rõ ràng. Phong cách ${visualStyle}.`;
+  const brandSuffix = brandContext ? ` ${brandContext}.` : "";
+  const imagePrompt = `Tạo ảnh quảng bá theo brief: ${prompt}.${brandSuffix} Phong cách ${visualStyle}. Ánh sáng studio, bố cục premium, chi tiết sắc nét, phù hợp cho ${channels.join(", ")}.`;
+  const videoPrompt = `Tạo video ngắn ${duration}, kiểu ${getVideoOutputTypeLabel(videoOutputType)} cho brief: ${prompt}.${brandSuffix} Nhịp dựng phù hợp với kiểu đầu ra, mở đầu hút mắt và kết thúc bằng CTA rõ ràng. Phong cách ${visualStyle}.`;
 
   const assets = [];
   if (wantsImage) {
@@ -1219,10 +1720,12 @@ function getContentCreatorDashboard(options = {}) {
       inputMode,
       imageProvider,
       videoProvider,
+      videoOutputType,
       channels,
+      brandKit: { brandName, brandColor, brandLogo },
       pixelleMode: normalizeText(options.pixelleMode || "full").toLowerCase(),
       scriptMode: resolvePixelleScriptMode(options.scriptMode || "fixed"),
-      renderMode: requestedProfile === "safe" ? "safe" : mediaWorkflow ? "visual" : "storyboard",
+      renderMode: normalizeText(options.pixelleMode || "full").toLowerCase() === "safe" ? "safe" : normalizeText(options.mediaWorkflow || "auto") === "none" ? "storyboard" : "visual",
       aspectRatio: normalizeText(options.aspectRatio || "portrait").toLowerCase(),
       frameTemplate: normalizeText(options.frameTemplate || options.template || "auto"),
       mediaWorkflow: normalizeText(options.mediaWorkflow || "auto"),
@@ -1311,9 +1814,9 @@ function getContentCreatorDashboard(options = {}) {
               ? `${videoProviderMeta.label} đã sẵn sàng để render video thật từ dịch vụ hiện có.`
               : `Hiện đang hiển thị storyboard video. Thêm ${videoProviderMeta.env} để xuất video thật tự động.`,
             scenes: [
-              "Hook mạnh trong 3 giây đầu",
-              "Nêu điểm khác biệt và lợi ích chính",
-              "Kết bằng CTA rõ ràng"
+              videoOutputType === "podcast" ? "Mở đầu bằng host + tiêu đề tập" : "Hook mạnh trong 3 giây đầu",
+              videoOutputType === "animation" ? "Giải thích lợi ích bằng chuyển động animation" : "Nêu điểm khác biệt và lợi ích chính",
+              videoOutputType === "smooth-scene-changing" ? "Chuyển cảnh mượt, nhịp đều giữa các ý" : "Kết bằng CTA rõ ràng"
             ]
           }
         : null
@@ -1337,9 +1840,22 @@ async function sendPreparedEmail(queueId, overrideTo, options = {}) {
   const bundle = await prepareRecordDraft(queueId, options);
   const record = bundle.record;
   const to = recipient || normalizeEmail(record.email);
+  const html =
+    typeof options.emailHtml === "string" && options.emailHtml.trim()
+      ? options.emailHtml
+      : record.emailHtml;
 
   if (!to) {
     throw new Error("No valid recipient email was found.");
+  }
+
+  if (typeof options.emailHtml === "string" && options.emailHtml.trim()) {
+    await convex.mutation("outreach:saveEmailHtml", {
+      queueId,
+      emailHtml: options.emailHtml,
+      emailSubject: record.emailSubject,
+      emailBody: record.emailBody
+    });
   }
 
   const resend = new Resend(resendApiKey);
@@ -1347,7 +1863,7 @@ async function sendPreparedEmail(queueId, overrideTo, options = {}) {
     from: `${fromName} <${fromEmail}>`,
     to: [to],
     subject: record.emailSubject,
-    html: record.emailHtml,
+    html,
     tags: [
       { name: "tenant", value: tenantId },
       { name: "queueId", value: String(queueId) }
@@ -1357,7 +1873,7 @@ async function sendPreparedEmail(queueId, overrideTo, options = {}) {
   await convex.mutation("outreach:markSent", {
     queueId,
     providerMessageId: sendResult.data?.id,
-    emailHtml: record.emailHtml
+    emailHtml: html
   });
 
   return {
@@ -1374,6 +1890,97 @@ app.get("/api/metrics", async (_req, res) => {
     res.json(data);
   } catch (error) {
     res.status(500).json({ error: error.message });
+  }
+});
+
+async function replaceOutreachFromPreview(preview) {
+  const rows = preview.rows.filter((row) => row.companyName);
+  assertRealLeadRows(rows, preview.sheetTitle || "Nguồn lead");
+
+  if (!rows.length) {
+    throw new Error("Không có dòng hợp lệ để nhập (cần ít nhất tên công ty).");
+  }
+
+  const replaceResult = await convex.mutation("outreach:replaceOutreachCompanies", {
+    tenantId,
+    runId: `replace-${Date.now()}`,
+    rows
+  });
+
+  return {
+    ok: true,
+    sheetTitle: preview.sheetTitle,
+    totalRows: preview.totalRows,
+    validEmails: preview.validEmails,
+    rows: preview.rows,
+    deleted: replaceResult.deleted,
+    inserted: replaceResult.inserted,
+    skipped: replaceResult.skipped
+  };
+}
+
+async function replaceOutreachFromCsv(csvText, fileName = "CSV upload") {
+  const preview = previewCsv(csvText, fileName);
+  return replaceOutreachFromPreview(preview);
+}
+
+async function replaceOutreachFromGoogleSheet(sheetUrl) {
+  const preview = await previewGoogleSheet(sheetUrl);
+  return replaceOutreachFromPreview(preview);
+}
+
+app.post("/api/sheet/replace", async (req, res) => {
+  if (!ensureConvex(res)) return;
+
+  try {
+    const result = await replaceOutreachFromGoogleSheet(req.body?.sheetUrl);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post("/api/csv/replace", async (req, res) => {
+  if (!ensureConvex(res)) return;
+
+  try {
+    const csvText = String(req.body?.csvText || "");
+    if (!csvText.trim()) {
+      throw new Error("CSV content is empty.");
+    }
+    const result = await replaceOutreachFromCsv(csvText, req.body?.fileName);
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post("/api/csv/preview", async (req, res) => {
+  try {
+    const csvText = String(req.body?.csvText || "");
+    if (!csvText.trim()) {
+      throw new Error("CSV content is empty.");
+    }
+    const data = previewCsv(csvText, req.body?.fileName);
+    res.json(data);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
+app.post("/api/csv/import", async (req, res) => {
+  if (!ensureConvex(res)) return;
+
+  try {
+    const csvText = String(req.body?.csvText || "");
+    if (!csvText.trim()) {
+      throw new Error("CSV content is empty.");
+    }
+    const preview = previewCsv(csvText, req.body?.fileName);
+    const result = await queueNextFiveFromPreview(preview, { limit: 100 });
+    res.json(result);
+  } catch (error) {
+    res.status(400).json({ error: error.message });
   }
 });
 
@@ -1446,11 +2053,40 @@ app.post("/api/records/:id/prepare", async (req, res) => {
   }
 });
 
+app.post("/api/records/:id/save-html", async (req, res) => {
+  if (!ensureConvex(res)) return;
+  try {
+    const emailHtml = typeof req.body?.emailHtml === "string" ? req.body.emailHtml.trim() : "";
+    if (!emailHtml) {
+      return res.status(400).json({ error: "emailHtml is required." });
+    }
+
+    await convex.mutation("outreach:saveEmailHtml", {
+      queueId: req.params.id,
+      emailHtml,
+      emailSubject: typeof req.body?.emailSubject === "string" ? req.body.emailSubject : undefined,
+      emailBody: typeof req.body?.emailBody === "string" ? req.body.emailBody : undefined
+    });
+
+    const data = await getRecordBundle(req.params.id);
+    res.json({
+      ...data,
+      record: {
+        ...data.record,
+        emailHtml
+      }
+    });
+  } catch (error) {
+    res.status(400).json({ error: error.message });
+  }
+});
+
 app.post("/api/records/:id/send", async (req, res) => {
   if (!ensureConvex(res)) return;
   try {
     const data = await sendPreparedEmail(req.params.id, req.body?.to, {
-      designStyle: req.body?.designStyle
+      designStyle: req.body?.designStyle,
+      emailHtml: req.body?.emailHtml
     });
     res.json(data);
   } catch (error) {
@@ -1509,90 +2145,170 @@ app.post("/api/content-creator/plan", (req, res) => {
   }
 });
 
-app.post("/api/content-creator/render", async (req, res) => {
+app.post("/api/content-creator/preview-script", (req, res) => {
   try {
-    const requestData = req.body || {};
-    const data = getContentCreatorDashboard(requestData);
-    const wantsVideo = ["video", "both"].includes(normalizeText(requestData.assetType || data.summary.assetType).toLowerCase());
-    const videoProvider = normalizeText(requestData.videoProvider || data.summary.videoProvider || "pixelle").toLowerCase();
+    const { prompt, visualStyle, duration, videoOutputType } = req.body || {};
+    const script = buildFixedPixelleScript(
+      normalizeText(prompt) || "AI video concept",
+      normalizeText(visualStyle) || "Hiện đại, cao cấp, tối giản",
+      duration,
+      videoOutputType
+    );
+    const scenes = script.split("\n\n").filter(Boolean);
+    res.json({ ok: true, scenes });
+  } catch (error) {
+    res.status(400).json({ ok: false, error: error.message });
+  }
+});
 
-    if (wantsVideo && videoProvider === "pixelle") {
-      const pixelleResult = await renderVideoWithPixelle(requestData);
-      data.previews.video = pixelleResult.previewVideo;
-      data.renderJob = pixelleResult.renderJob;
+app.post("/api/content-creator/generate-voiceover", async (req, res) => {
+  try {
+    const body = req.body || {};
+    const script = normalizeText(body.script);
+    if (!script) {
+      return res.status(400).json({
+        ok: false,
+        category: "provider_rejected",
+        error: "Vui lòng nhập audio script trước khi tạo voiceover."
+      });
     }
+
+    const voiceover = await generateElevenLabsVoiceover(script, {
+      voiceId: body.voiceId,
+      customVoiceId: body.customVoiceId,
+      stability: body.stability,
+      similarityBoost: body.similarityBoost,
+      modelId: body.modelId
+    });
 
     res.json({
       ok: true,
-      summary: data.summary,
-      previews: data.previews,
-      prompts: data.prompts,
-      videoBuilder: data.videoBuilder,
-      renderJob: data.renderJob
+      voiceover: {
+        ...voiceover,
+        scriptLength: script.length
+      }
     });
   } catch (error) {
-    const requestData = req.body || {};
-    const fallbackData = getContentCreatorDashboard(requestData);
-    const message = formatPixelleError(error);
-    console.error("Content creator render failed:", message);
-
-    const isPixelleDown = /ECONNREFUSED|ENOTFOUND|connect ETIMEDOUT|Cannot reach Pixelle|chưa được khởi chạy/i.test(message) || error?.pixelleDown === true;
-    const isTtsError = /speech\.platform\.bing|Cannot connect to host speech|tts|text.to.speech/i.test(message);
-    fallbackData.renderJob = {
-      status: "review",
-      canRetry: isPixelleDown || isTtsError,
-      statusText: isPixelleDown
-        ? "Pixelle chưa được khởi chạy. Bấm Thử lại sau khi đã chạy Pixelle tại localhost:8000."
-        : isTtsError
-          ? "Dịch vụ TTS (giọng đọc) không khả dụng. Bấm Thử lại — hệ thống sẽ bỏ qua TTS."
-          : "Pixelle chưa render xong video thật, đang trả về storyboard an toàn",
-      outputNote: isPixelleDown
-        ? `Dịch vụ Pixelle không phản hồi tại ${process.env.PIXELLE_BASE_URL || "http://127.0.0.1:8000"}. Hãy chạy lại Pixelle rồi bấm Thử lại.`
-        : isTtsError
-          ? "Pixelle không thể kết nối tới dịch vụ giọng đọc (Bing TTS). Video sẽ được render lại mà không có voiceover."
-          : message,
-      posterUrl: fallbackData.previews?.video?.posterUrl || "",
-      steps: [
-        {
-          name: "Brief to storyboard",
-          status: "done",
-          note: "Đã dựng storyboard và nội dung preview."
-        },
-        {
-          name: "Pixelle render",
-          status: isPixelleDown ? "queued" : "review",
-          note: isPixelleDown ? "Đang chờ Pixelle khởi chạy lại tại localhost:8000." : isTtsError ? "TTS không khả dụng — Bấm Thử lại để render không có voiceover." : message
-        },
-        {
-          name: isPixelleDown ? "Chờ Pixelle" : isTtsError ? "Retry không TTS" : "Safe recovery",
-          status: isPixelleDown ? "queued" : isTtsError ? "queued" : "done",
-          note: isPixelleDown ? "Bấm Thử lại để tiếp tục render sau khi Pixelle sẵn sàng." : isTtsError ? "Bấm Thử lại — video sẽ render thành công mà không cần giọng đọc." : "Ứng dụng đã chuyển về chế độ an toàn thay vì trả lỗi 500."
-        }
-      ]
-    };
-
-    if (fallbackData.previews?.video) {
-      fallbackData.previews.video.note = `Pixelle tạm lỗi nên đang hiển thị visual preview. Chi tiết: ${message}`;
-    }
-
-    res.json({
+    const status = error?.category === "provider_not_configured" ? 400 : 502;
+    res.status(status).json({
       ok: false,
-      error: message,
-      summary: fallbackData.summary,
-      previews: fallbackData.previews,
-      prompts: fallbackData.prompts,
-      videoBuilder: fallbackData.videoBuilder,
-      renderJob: fallbackData.renderJob
+      category: error?.category || "provider_unreachable",
+      error: String(error?.message || error)
     });
   }
 });
 
+app.post("/api/content-creator/render", async (req, res) => {
+  const jobId = await persistRenderJob(req.body || {}, "running");
+  try {
+    const requestData = req.body || {};
+    const data = getContentCreatorDashboard(requestData);
+    const wantsVideo = ["video", "both"].includes(normalizeText(requestData.assetType || data.summary.assetType).toLowerCase());
+    const wantsImage = ["image", "both"].includes(normalizeText(requestData.assetType || data.summary.assetType).toLowerCase());
+    const videoProvider = normalizeText(requestData.videoProvider || data.summary.videoProvider || "pixelle").toLowerCase();
+    const imageProvider = normalizeText(requestData.imageProvider || data.summary.imageProvider || "gpt-image-1").toLowerCase();
+
+    // ── Image generation ────────────────────────────────────────────────────
+    if (wantsImage) {
+      if (imageProvider === "gpt-image-1" && process.env.OPENAI_API_KEY) {
+        try {
+          const heroUrls = await callGptImageApi(data.prompts.imagePrompt, { size: "1792x1024", n: 1 });
+          const squareUrls = await callGptImageApi(`${data.prompts.imagePrompt} Tỉ lệ 4:5`, { size: "1024x1024", n: 1 });
+          data.previews.images = [
+            { label: "Hero Visual", url: heroUrls[0] || data.previews.images?.[0]?.url, caption: data.summary.visualStyle, source: "GPT Image 1" },
+            { label: "Social Banner", url: squareUrls[0] || data.previews.images?.[1]?.url, caption: (data.summary.channels || []).join(", "), source: "GPT Image 1" }
+          ].filter((item) => item.url);
+        } catch (imgErr) {
+          console.warn("GPT Image 1 failed, falling back to Pollinations:", imgErr.message);
+        }
+      } else if (imageProvider === "comfyui") {
+        try {
+          const heroUrl = await generateImageWithComfyUI(data.prompts.imagePrompt, { width: 1280, height: 720 });
+          const squareUrl = await generateImageWithComfyUI(`${data.prompts.imagePrompt} Tỉ lệ 4:5`, { width: 1024, height: 1280 });
+          data.previews.images = [
+            { label: "Hero Visual", url: heroUrl, caption: data.summary.visualStyle, source: "ComfyUI (local)" },
+            { label: "Social Banner", url: squareUrl, caption: (data.summary.channels || []).join(", "), source: "ComfyUI (local)" }
+          ].filter((item) => item.url);
+        } catch (imgErr) {
+          console.warn("ComfyUI image failed, falling back to Pollinations:", imgErr.message);
+          data.previews.images = (data.previews.images || []).map((item) => ({ ...item, note: `ComfyUI lỗi: ${imgErr.message}` }));
+        }
+      }
+    }
+
+    // ── Video generation ────────────────────────────────────────────────────
+    if (wantsVideo) {
+      if (videoProvider === "pixelle") {
+        const pixelleResult = await renderVideoWithPixelle(requestData);
+        data.previews.video = pixelleResult.previewVideo;
+        data.renderJob = pixelleResult.renderJob;
+      }
+    }
+
+    // ── Agent feedback (Gemini) ─────────────────────────────────────────────
+    const agentFeedback = await getAgentFeedback(data.summary.prompt, {
+      imageProvider,
+      videoProvider,
+      assetType: data.summary.assetType,
+      channels: data.summary.channels,
+      videoOutputType: data.summary.videoOutputType
+    });
+
+    // ── Persist completed job ───────────────────────────────────────────────
+    await updatePersistedJob(jobId, "done", {
+      imageProvider,
+      videoProvider,
+      renderJobStatus: data.renderJob?.status,
+      hasVoiceover: false
+    });
+
+    res.json({
+      ok: true,
+      jobId,
+      summary: data.summary,
+      previews: data.previews,
+      prompts: data.prompts,
+      videoBuilder: data.videoBuilder,
+      renderJob: data.renderJob,
+      voiceover: null,
+      agentFeedback
+    });
+  } catch (error) {
+    await updatePersistedJob(jobId, "failed", null, String(error?.message || error));
+    const category = error?.category || "provider_unreachable";
+    const message = String(error?.message || error);
+    console.error("Content creator render failed:", message);
+
+    const statusCode = category === "provider_not_configured" ? 400 : 502;
+
+    res.status(statusCode).json({
+      ok: false,
+      jobId,
+      category,
+      error: message,
+      details: error?.details || null
+    });
+  }
+});
+
+registerVisionistRoutes(app);
+registerLawyerRoutes(app);
+
 app.use(express.static(path.join(__dirname, "public")));
+
+app.get("/visionist-app/*", (_req, res) => {
+  res.sendFile(path.join(__dirname, "public", "visionist-app", "index.html"));
+});
 
 app.get("*", (_req, res) => {
   res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
-app.listen(port, () => {
-  console.log(`Sales dashboard is running on http://localhost:${port}`);
+app.listen(port, listenHost, () => {
+  console.log(`Sales dashboard is running on http://${listenHost}:${port}`);
+  if (blackboxApiToken) {
+    console.log("API token auth is enabled for /api/* (except MiroFish proxy routes).");
+  } else {
+    console.log("API token auth is disabled. Set BLACKBOX_API_TOKEN for remote clients.");
+  }
 });

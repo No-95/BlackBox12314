@@ -94,6 +94,90 @@ export const upsertOutreachCompanies = mutation({
   }
 });
 
+export const replaceOutreachCompanies = mutation({
+  args: {
+    tenantId: v.string(),
+    runId: v.optional(v.string()),
+    rows: v.array(
+      v.object({
+        stt: v.optional(v.string()),
+        companyName: v.string(),
+        address: v.optional(v.string()),
+        phone: v.optional(v.string()),
+        hotline: v.optional(v.string()),
+        sdtHotline: v.optional(v.string()),
+        email: v.optional(v.string()),
+        mainProduct: v.optional(v.string()),
+        website: v.optional(v.string()),
+        contactPerson: v.optional(v.string())
+      })
+    )
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const existing = await ctx.db
+      .query("outreachQueue")
+      .withIndex("by_status", (q) => q.eq("tenantId", args.tenantId))
+      .collect();
+
+    for (const record of existing) {
+      const events = await ctx.db
+        .query("emailEvents")
+        .withIndex("by_queue", (q) =>
+          q.eq("tenantId", args.tenantId).eq("queueId", record._id)
+        )
+        .collect();
+
+      for (const event of events) {
+        await ctx.db.delete(event._id);
+      }
+
+      await ctx.db.delete(record._id);
+    }
+
+    let inserted = 0;
+    let skipped = 0;
+
+    for (const row of args.rows) {
+      const companyName = normalizeText(row.companyName);
+      if (!companyName) {
+        skipped += 1;
+        continue;
+      }
+
+      const email = normalizeEmail(row.email);
+      const status: OutreachStatus = email ? "queued" : "skipped";
+
+      await ctx.db.insert("outreachQueue", {
+        tenantId: args.tenantId,
+        runId: args.runId,
+        stt: row.stt,
+        companyName,
+        address: normalizeText(row.address) || undefined,
+        phone: normalizeText(row.phone) || undefined,
+        hotline: normalizeText(row.hotline) || undefined,
+        sdtHotline: normalizeText(row.sdtHotline) || undefined,
+        email: email || undefined,
+        mainProduct: normalizeText(row.mainProduct) || undefined,
+        website: normalizeText(row.website) || undefined,
+        contactPerson: normalizeText(row.contactPerson) || undefined,
+        status,
+        attemptCount: 0,
+        createdAt: now,
+        updatedAt: now
+      });
+      inserted += 1;
+    }
+
+    return {
+      deleted: existing.length,
+      inserted,
+      skipped,
+      total: args.rows.length
+    };
+  }
+});
+
 export const listQueuedOutreach = query({
   args: {
     tenantId: v.string(),
@@ -184,6 +268,37 @@ export const saveGeneratedEmail = mutation({
       status: "drafted",
       updatedAt: now
     });
+    return args.queueId;
+  }
+});
+
+export const saveEmailHtml = mutation({
+  args: {
+    queueId: v.id("outreachQueue"),
+    emailHtml: v.string(),
+    emailSubject: v.optional(v.string()),
+    emailBody: v.optional(v.string())
+  },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const patch: {
+      emailHtml: string;
+      status: "drafted";
+      updatedAt: number;
+      emailSubject?: string;
+      emailBody?: string;
+    } = {
+      emailHtml: args.emailHtml,
+      status: "drafted",
+      updatedAt: now
+    };
+    if (typeof args.emailSubject === "string" && args.emailSubject.trim()) {
+      patch.emailSubject = args.emailSubject.trim();
+    }
+    if (typeof args.emailBody === "string" && args.emailBody.trim()) {
+      patch.emailBody = args.emailBody.trim();
+    }
+    await ctx.db.patch(args.queueId, patch);
     return args.queueId;
   }
 });

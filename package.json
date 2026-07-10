@@ -15,6 +15,14 @@
     "outreach:schedule": "powershell -ExecutionPolicy Bypass -File scripts/outreach/register-hourly-task.ps1",
     "outreach:webhook": "node scripts/outreach/receive-resend-events.js",
     "sales:dashboard": "node apps/sales-dashboard/server.js",
+    "sales:dashboard:build": "npm install --prefix apps/sales-dashboard/client && npm run build --prefix apps/sales-dashboard/client",
+    "blackbox:desktop:start": "npm start --prefix apps/blackbox-desktop",
+    "blackbox:desktop:build": "npm install --prefix apps/blackbox-desktop && npm run dist --prefix apps/blackbox-desktop",
+    "blackbox:server:pack": "node scripts/pack-ubuntu-server.js",
+    "visionist:build": "node scripts/build-visionist-frontend.mjs",
+    "visionist:build:all": "npm run sales:dashboard:build && npm run visionist:build",
+    "pixelle:mock": "node apps/pixelle-mock/server.js",
+    "mirofish:setup": "git clone --depth 1 https://github.com/666ghj/MiroFish.git apps/mirofish 2>nul || echo apps/mirofish already exists",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {

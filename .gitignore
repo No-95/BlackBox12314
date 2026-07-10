@@ -15,7 +15,10 @@ pnpm-debug.log*
 # Build output
 dist/
 build/
+apps/blackbox-desktop/defaults.json
 .next/
+apps/mirofish/
+apps/mirofish-upstream/
 
 # Convex local files
 .convex/

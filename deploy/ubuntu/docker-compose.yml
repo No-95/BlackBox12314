@@ -1,0 +1,48 @@
+version: "3.9"
+
+name: blackbox-server
+
+services:
+  sales-dashboard:
+    build:
+      context: ../..
+      dockerfile: deploy/ubuntu/Dockerfile.dashboard
+    container_name: blackbox-dashboard
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "5177:5177"
+    volumes:
+      - ../../:/app
+      - ./secrets:/data/secrets:ro
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    networks:
+      - blackbox-net
+
+  caddy:
+    image: caddy:2-alpine
+    container_name: blackbox-caddy
+    restart: unless-stopped
+    depends_on:
+      - sales-dashboard
+    ports:
+      - "80:80"
+      - "443:443"
+    environment:
+      BLACKBOX_DOMAIN: ${BLACKBOX_DOMAIN:-localhost}
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+      - caddy_config:/config
+    networks:
+      - blackbox-net
+
+networks:
+  blackbox-net:
+    driver: bridge
+
+volumes:
+  caddy_data:
+  caddy_config:

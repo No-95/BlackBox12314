@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+  --font-sans: "Be Vietnam Pro", "Segoe UI", system-ui, sans-serif;
+}
+
+#sidebar-root,
+#sidebar-root * {
+  font-family: var(--font-sans);
+}
+
+#sidebar-root button {
+  border: 0;
+  background: transparent;
+  color: inherit;
+  padding: 0;
+  cursor: pointer;
+  font: inherit;
+  font-weight: inherit;
+  text-align: inherit;
+}
+
+#sidebar-root button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.sidebar-shell {
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.sidebar-shell nav::-webkit-scrollbar {
+  width: 4px;
+}
+
+.sidebar-shell nav::-webkit-scrollbar-thumb {
+  background: rgb(255 255 255 / 0.08);
+  border-radius: 999px;
+}

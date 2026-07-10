@@ -4,15 +4,31 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Agent Box | Trung tâm điều hành CEO</title>
-    <link rel="stylesheet" href="/styles.css" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="./styles.css" />
+    <link rel="stylesheet" href="./sidebar/sidebar.css" />
+    <script src="./blackbox-config.js"></script>
   </head>
-  <body>
+  <body class="app-body">
+    <div id="sidebar-root"></div>
+
+    <div class="app-main">
     <div class="preview-modal" id="previewModal" style="display:none;">
       <div class="preview-modal-backdrop" id="previewBackdrop"></div>
       <div class="preview-modal-card">
         <div class="preview-modal-topbar">
-          <strong>Xem bản nháp email ở chế độ mở rộng</strong>
-          <button class="secondary" id="closePreviewModal">Đóng</button>
+          <div>
+            <strong id="previewModalTitle">Xem bản nháp email ở chế độ mở rộng</strong>
+            <p class="preview-modal-hint">Bấm vào nội dung để chỉnh sửa trực tiếp</p>
+          </div>
+          <div class="preview-modal-actions">
+            <button class="secondary" id="saveExpandedPreviewBtn" type="button">Lưu chỉnh sửa</button>
+            <button class="secondary" id="refreshExpandedPreviewBtn" type="button">Làm mới</button>
+            <button id="sendExpandedEmailBtn" type="button">Gửi email</button>
+            <button class="secondary" id="closePreviewModal" type="button">Đóng</button>
+          </div>
         </div>
         <iframe id="modalPreviewFrame" class="modal-email-frame" title="Bản xem trước email mở rộng"></iframe>
       </div>
@@ -53,113 +69,103 @@
       </div>
     </div>
 
-    <div class="wrap">
-      <header class="topbar">
-        <div>
-          <p class="eyebrow">Agent Box</p>
-          <h1>Điều hành doanh nghiệp từ một trung tâm duy nhất</h1>
-          <p class="sub">Giao việc cho tác nhân CEO, đặt KPI, rồi chuyển thẳng sang bảng điều khiển của đội sẽ thực thi công việc đó.</p>
-        </div>
-        <div class="status-pill">Hệ thống đang hoạt động</div>
-      </header>
-
-      <section class="hero panel">
-        <div class="hero-copy">
-          <span class="hero-badge">Tác nhân CEO</span>
-          <h2>Bắt đầu với một chỉ đạo rõ ràng</h2>
-          <p>Dùng khung chat CEO để mô tả công việc, độ ưu tiên và kết quả mong muốn cho đội ngũ.</p>
-
-          <div class="prompt-list">
-            <button class="prompt-chip" data-prompt="Khởi chạy chiến dịch tiếp cận B2B cho 50 khách hàng nội thất mới trong tuần này và theo dõi tỷ lệ phản hồi.">Khởi chạy tiếp cận</button>
-            <button class="prompt-chip" data-prompt="Chuẩn bị danh sách rà soát pháp lý cho hợp đồng nhà phân phối và đánh dấu các rủi ro khẩn cấp.">Rà soát pháp lý</button>
-            <button class="prompt-chip" data-prompt="Xây dựng kế hoạch nội dung 30 ngày để tăng số lượng khách hàng tiềm năng chất lượng.">Kế hoạch marketing</button>
-          </div>
-        </div>
-
-        <div class="hero-form">
-          <label for="ceoPrompt">Trao đổi với tác nhân CEO</label>
-          <textarea id="ceoPrompt" placeholder="Ví dụ: Lập kế hoạch bán hàng để tiếp cận 100 nhà nhập khẩu nội thất, mục tiêu tỷ lệ phản hồi 12% và hoàn thành trước thứ Sáu tuần sau."></textarea>
-
-          <div class="kpi-grid">
-            <div>
-              <label for="kpiGoal">Mục tiêu</label>
-              <input id="kpiGoal" placeholder="Tạo thêm cuộc hẹn chất lượng" />
-            </div>
-            <div>
-              <label for="kpiTarget">KPI kỳ vọng</label>
-              <input id="kpiTarget" placeholder="Tỷ lệ phản hồi 12%" />
-            </div>
-            <div>
-              <label for="kpiDeadline">Hạn chót</label>
-              <input id="kpiDeadline" type="date" />
-            </div>
-            <div>
-              <label for="kpiPriority">Mức ưu tiên</label>
-              <select id="kpiPriority">
-                <option>Cao</option>
-                <option selected>Trung bình</option>
-                <option>Thấp</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="hero-actions">
-            <button id="sendToCEO">Gửi cho CEO</button>
-            <button class="secondary" id="jumpToTeams">Xem các bảng điều khiển</button>
-          </div>
-
-          <div class="ceo-summary" id="ceoSummary">
-            <strong>Sẵn sàng phân công.</strong>
-            <span>Bản tóm tắt giao việc cho CEO và KPI sẽ hiển thị ở đây sau khi bạn gửi.</span>
-          </div>
-        </div>
-      </section>
-
-      <section class="team-section">
-        <div class="section-head">
+    <div class="wrap app-content">
+      <section class="dashboard-shell dashboard-shell--ceo" id="dashboardArea">
+        <header class="dashboard-header">
           <div>
-            <p class="eyebrow">Bảng điều khiển</p>
-            <h2>Chọn đội bạn muốn làm việc</h2>
+            <p class="eyebrow" id="activeTeamEyebrow">Trung tâm điều hành</p>
+            <h2 id="activeTeamTitle">Chỉ đạo chiến lược</h2>
+            <p class="muted" id="activeTeamDescription">Mô tả công việc, độ ưu tiên và kết quả mong muốn — CEO sẽ phân công cho đúng đội ngũ.</p>
           </div>
-          <p class="muted">Mỗi thẻ sẽ đưa bạn đến khu vực làm việc của đội tương ứng.</p>
-        </div>
+          <div class="status-pill" id="dashboardBadge">Điều phối</div>
+        </header>
 
-        <div class="team-grid" id="teamGrid">
-          <button class="team-card active" data-team="sales">
-            <span class="team-icon">📈</span>
-            <strong>Đội Kinh doanh</strong>
-            <span>Thực hiện tiếp cận, theo dõi phản hồi và cập nhật tiến độ chốt deal.</span>
-          </button>
-          <button class="team-card" data-team="marketing">
-            <span class="team-icon">📣</span>
-            <strong>Đội Marketing</strong>
-            <span>Lập kế hoạch chiến dịch, nội dung và thử nghiệm tăng trưởng.</span>
-          </button>
-          <button class="team-card" data-team="content">
-            <span class="team-icon">🎬</span>
-            <strong>Content Creator Team</strong>
-            <span>Tạo ảnh, video, voiceover và bộ nội dung sáng tạo từ một brief duy nhất.</span>
-          </button>
-          <button class="team-card" data-team="lawyer">
-            <span class="team-icon">⚖️</span>
-            <strong>Luật sư của tôi</strong>
-            <span>Rà soát hợp đồng, chính sách và rủi ro kinh doanh.</span>
-          </button>
-          <button class="team-card" data-team="supports">
-            <span class="team-icon">🛠️</span>
-            <strong>Đội Hỗ trợ</strong>
-            <span>Xử lý vận hành, hành chính và hỗ trợ thực thi công việc.</span>
-          </button>
-        </div>
-      </section>
+        <div id="ceoPanel" class="team-panel active ceo-pro">
+          <section class="ceo-command">
+            <header class="ceo-banner">
+              <div class="ceo-banner-copy">
+                <p class="ceo-eyebrow">Trung tâm điều hành</p>
+                <h2 class="ceo-title">Chỉ đạo chiến lược</h2>
+                <p class="ceo-desc">Mô tả công việc, độ ưu tiên và kết quả mong muốn — CEO sẽ phân công cho đúng đội ngũ.</p>
+              </div>
+              <div class="ceo-banner-meta">
+                <span class="ceo-status-dot" aria-hidden="true"></span>
+                <span class="ceo-status-label">Sẵn sàng nhận lệnh</span>
+              </div>
+            </header>
 
-      <section class="dashboard-shell" id="dashboardArea">
-        <div class="section-head">
-          <div>
-            <p class="eyebrow">Khu làm việc</p>
-            <h2 id="dashboardTitle">Bảng điều khiển Đội Kinh doanh</h2>
-          </div>
-          <span class="status-pill" id="dashboardBadge">Đang hoạt động</span>
+            <div class="ceo-workspace">
+              <div class="ceo-brief">
+                <div class="ceo-brief-head">
+                  <div>
+                    <h3 class="ceo-brief-title">Bản giao việc</h3>
+                    <p class="ceo-brief-sub">Viết chỉ đạo rõ ràng để đội ngũ thực thi đúng trọng tâm.</p>
+                  </div>
+                  <span class="ceo-brief-tag">Directive</span>
+                </div>
+
+                <label class="ceo-field-label" for="ceoPrompt">Nội dung chỉ đạo</label>
+                <textarea id="ceoPrompt" class="ceo-prompt" placeholder="Ví dụ: Lập kế hoạch bán hàng để tiếp cận 100 nhà nhập khẩu nội thất, mục tiêu tỷ lệ phản hồi 12% và hoàn thành trước thứ Sáu tuần sau."></textarea>
+
+                <div class="ceo-kpi-grid">
+                  <div class="ceo-field">
+                    <label for="kpiGoal">Mục tiêu</label>
+                    <input id="kpiGoal" placeholder="Tạo thêm cuộc hẹn chất lượng" />
+                  </div>
+                  <div class="ceo-field">
+                    <label for="kpiTarget">KPI kỳ vọng</label>
+                    <input id="kpiTarget" placeholder="Tỷ lệ phản hồi 12%" />
+                  </div>
+                  <div class="ceo-field">
+                    <label for="kpiDeadline">Hạn chót</label>
+                    <input id="kpiDeadline" type="date" />
+                  </div>
+                  <div class="ceo-field">
+                    <label for="kpiPriority">Mức ưu tiên</label>
+                    <select id="kpiPriority">
+                      <option>Cao</option>
+                      <option selected>Trung bình</option>
+                      <option>Thấp</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div class="ceo-actions">
+                  <button id="sendToCEO" type="button">Gửi cho CEO</button>
+                  <button class="secondary" id="jumpToTeams" type="button">Xem bảng Kinh doanh</button>
+                </div>
+              </div>
+
+              <aside class="ceo-rail">
+                <div class="ceo-rail-card">
+                  <h4 class="ceo-rail-title">Chỉ đạo nhanh</h4>
+                  <p class="ceo-rail-hint">Chọn mẫu để điền sẵn nội dung.</p>
+                  <div class="ceo-prompt-list">
+                    <button class="prompt-chip" type="button" data-prompt="Khởi chạy chiến dịch tiếp cận B2B cho 50 khách hàng nội thất mới trong tuần này và theo dõi tỷ lệ phản hồi.">
+                      <span class="prompt-chip-label">Khởi chạy tiếp cận</span>
+                      <span class="prompt-chip-meta">Sales · tuần này</span>
+                    </button>
+                    <button class="prompt-chip" type="button" data-prompt="Chuẩn bị danh sách rà soát pháp lý cho hợp đồng nhà phân phối và đánh dấu các rủi ro khẩn cấp.">
+                      <span class="prompt-chip-label">Rà soát pháp lý</span>
+                      <span class="prompt-chip-meta">Lawyer · ưu tiên cao</span>
+                    </button>
+                    <button class="prompt-chip" type="button" data-prompt="Xây dựng kế hoạch nội dung 30 ngày để tăng số lượng khách hàng tiềm năng chất lượng.">
+                      <span class="prompt-chip-label">Kế hoạch marketing</span>
+                      <span class="prompt-chip-meta">Marketing · 30 ngày</span>
+                    </button>
+                  </div>
+                </div>
+
+                <div class="ceo-summary" id="ceoSummary">
+                  <div class="ceo-summary-head">
+                    <strong>Sẵn sàng phân công</strong>
+                    <span class="ceo-summary-badge">Chưa gửi</span>
+                  </div>
+                  <p class="ceo-summary-body">Bản tóm tắt giao việc và KPI sẽ hiển thị tại đây sau khi bạn gửi chỉ đạo.</p>
+                </div>
+              </aside>
+            </div>
+          </section>
         </div>
 
         <div class="panel placeholder-panel" id="maintenancePanel" style="display:none;">
@@ -287,12 +293,12 @@
           </div>
         </div>
 
-        <div id="contentCreatorPanel" style="display:none;">
+        <div id="contentCreatorPanel" class="content-simple" style="display:none;">
           <div class="marketing-overview">
             <div class="panel">
               <h3>Content Creator Team</h3>
               <div class="detail">
-                <p class="muted">Nhập brief bạn muốn và chọn loại đầu ra. Bạn có thể chạy Safe mode để ưu tiên ổn định hoặc Full target mode để thử workflow visual chất lượng cao hơn.</p>
+                <p class="muted">Nhập brief, chọn đầu ra và bấm tạo. Các tuỳ chọn nâng cao có thể mở khi cần.</p>
                 <div class="planner-grid">
                   <div style="grid-column: 1 / -1;">
                     <label for="creatorPrompt">Bạn muốn tạo gì?</label>
@@ -318,6 +324,7 @@
                     <label for="creatorImageProvider">Bộ tạo ảnh</label>
                     <select id="creatorImageProvider">
                       <option value="gpt-image-1" selected>GPT Image 1</option>
+                      <option value="comfyui">ComfyUI (local)</option>
                       <option value="imagen">Google Imagen</option>
                       <option value="recraft">Recraft</option>
                       <option value="flux">Flux Pro</option>
@@ -330,60 +337,11 @@
                     </select>
                   </div>
                   <div>
-                    <label for="creatorPixelleMode">Chế độ render</label>
-                    <select id="creatorPixelleMode">
-                      <option value="full" selected>Full target mode</option>
-                      <option value="safe">Safe mode</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorScriptMode">Kịch bản Pixelle</label>
-                    <select id="creatorScriptMode">
-                      <option value="fixed" selected>Fixed scenes ổn định</option>
-                      <option value="generate">AI tự viết scene</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorAspectRatio">Tỷ lệ khung hình</label>
-                    <select id="creatorAspectRatio">
-                      <option value="portrait" selected>9:16 dọc</option>
-                      <option value="landscape">16:9 ngang</option>
-                      <option value="square">1:1 vuông</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorTemplate">Template Pixelle</label>
-                    <select id="creatorTemplate">
-                      <option value="auto" selected>Tự chọn tốt nhất</option>
-                      <option value="1080x1920/image_default.html">Portrait image_default</option>
-                      <option value="1080x1920/video_default.html">Portrait video_default</option>
-                      <option value="1080x1920/static_default.html">Portrait static_default</option>
-                      <option value="1920x1080/image_full.html">Landscape image_full</option>
-                      <option value="1080x1080/image_minimal_framed.html">Square image_minimal_framed</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorMediaWorkflow">Workflow visual</label>
-                    <select id="creatorMediaWorkflow">
-                      <option value="auto" selected>Tự chọn tốt nhất</option>
-                      <option value="selfhost/image_flux.json">Selfhost image_flux</option>
-                      <option value="selfhost/video_wan2.1_fusionx.json">Selfhost video_wan2.1_fusionx</option>
-                      <option value="none">Không dùng workflow visual</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorTtsWorkflow">Workflow voice</label>
-                    <select id="creatorTtsWorkflow">
-                      <option value="auto" selected>TTS local / auto</option>
-                      <option value="selfhost/tts_edge.json">Selfhost tts_edge</option>
-                      <option value="none">Không dùng workflow voice</option>
-                    </select>
-                  </div>
-                  <div>
-                    <label for="creatorAllowFallback">Fallback an toàn</label>
-                    <select id="creatorAllowFallback">
-                      <option value="true" selected>Cho phép fallback</option>
-                      <option value="false">Chỉ chạy full-target</option>
+                    <label for="creatorVideoOutputType">Kiểu đầu ra video</label>
+                    <select id="creatorVideoOutputType">
+                      <option value="podcast">Podcast</option>
+                      <option value="smooth-scene-changing" selected>Smooth scene changing</option>
+                      <option value="animation">Animation</option>
                     </select>
                   </div>
                   <div>
@@ -406,44 +364,165 @@
                     <label for="creatorChannels">Kênh sử dụng</label>
                     <input id="creatorChannels" placeholder="TikTok, Facebook, Website, LinkedIn" />
                   </div>
+                  <div style="grid-column: 1 / -1;">
+                    <label for="creatorVoiceScript">Audio script (ElevenLabs)</label>
+                    <textarea id="creatorVoiceScript" rows="4" placeholder="Nhập script đọc voiceover. Nếu để trống, hệ thống sẽ dùng prompt chính."></textarea>
+                  </div>
+                  <div>
+                    <label for="creatorVoicePreset">ElevenLabs voice</label>
+                    <select id="creatorVoicePreset">
+                      <option value="auto" selected>Auto (mặc định)</option>
+                      <option value="EXAVITQu4vr4xnSDxMaL">Bella</option>
+                      <option value="21m00Tcm4TlvDq8ikWAM">Rachel</option>
+                      <option value="pNInz6obpgDQGcFmaJgB">Adam</option>
+                      <option value="custom">Custom Voice ID</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label for="creatorCustomVoiceId">Custom Voice ID</label>
+                    <input id="creatorCustomVoiceId" placeholder="Dán Voice ID từ ElevenLabs" style="display:none;" />
+                  </div>
+                  <div>
+                    <label for="creatorVoiceStability">Voice stability (0-1)</label>
+                    <input id="creatorVoiceStability" type="number" min="0" max="1" step="0.05" value="0.5" />
+                  </div>
+                  <div>
+                    <label for="creatorVoiceSimilarity">Voice similarity (0-1)</label>
+                    <input id="creatorVoiceSimilarity" type="number" min="0" max="1" step="0.05" value="0.75" />
+                  </div>
+                  <div>
+                    <label for="creatorBrandName">Tên thương hiệu</label>
+                    <input id="creatorBrandName" placeholder="Ví dụ: HDP Holdings" />
+                  </div>
+                  <div style="display:flex; gap:8px; align-items:flex-end;">
+                    <div style="flex:1;">
+                      <label for="creatorBrandColor">Màu thương hiệu</label>
+                      <input id="creatorBrandColor" type="color" value="#1a56db" style="width:100%; height:38px; border-radius:6px; border:1px solid #ccc; padding:2px;" />
+                    </div>
+                    <div style="flex:2;">
+                      <label for="creatorBrandLogo">URL logo (tuỳ chọn)</label>
+                      <input id="creatorBrandLogo" type="url" placeholder="https://..." />
+                    </div>
+                  </div>
+                  <div style="grid-column: 1 / -1;">
+                    <details class="advanced-options">
+                      <summary>Tuỳ chọn nâng cao</summary>
+                      <div class="advanced-grid">
+                        <div>
+                          <label for="creatorPixelleMode">Chế độ render</label>
+                          <select id="creatorPixelleMode">
+                            <option value="full" selected>Full target mode</option>
+                            <option value="safe">Safe mode</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorScriptMode">Kịch bản Pixelle</label>
+                          <select id="creatorScriptMode">
+                            <option value="fixed" selected>Fixed scenes ổn định</option>
+                            <option value="generate">AI tự viết scene</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorAspectRatio">Tỷ lệ khung hình</label>
+                          <select id="creatorAspectRatio">
+                            <option value="portrait" selected>9:16 dọc</option>
+                            <option value="landscape">16:9 ngang</option>
+                            <option value="square">1:1 vuông</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorTemplate">Template Pixelle</label>
+                          <select id="creatorTemplate">
+                            <option value="auto" selected>Tự chọn tốt nhất</option>
+                            <option value="1080x1920/image_default.html">Portrait image_default</option>
+                            <option value="1080x1920/video_default.html">Portrait video_default</option>
+                            <option value="1080x1920/static_default.html">Portrait static_default</option>
+                            <option value="1920x1080/image_full.html">Landscape image_full</option>
+                            <option value="1080x1080/image_minimal_framed.html">Square image_minimal_framed</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorMediaWorkflow">Workflow visual</label>
+                          <select id="creatorMediaWorkflow">
+                            <option value="auto" selected>Tự chọn tốt nhất</option>
+                            <option value="selfhost/image_flux.json">Selfhost image_flux</option>
+                            <option value="selfhost/video_wan2.1_fusionx.json">Selfhost video_wan2.1_fusionx</option>
+                            <option value="none">Không dùng workflow visual</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorTtsWorkflow">Workflow voice</label>
+                          <select id="creatorTtsWorkflow">
+                            <option value="auto" selected>TTS local / auto</option>
+                            <option value="selfhost/tts_edge.json">Selfhost tts_edge</option>
+                            <option value="none">Không dùng workflow voice</option>
+                          </select>
+                        </div>
+                        <div>
+                          <label for="creatorAllowFallback">Fallback an toàn</label>
+                          <select id="creatorAllowFallback" disabled>
+                            <option value="false" selected>Đã tắt fallback (strict mode)</option>
+                          </select>
+                        </div>
+                      </div>
+                    </details>
+                  </div>
                   <div style="grid-column: 1 / -1;" id="creatorUploadWrap">
-                    <label for="creatorUploadInput">Tải ảnh lên cho video creator</label>
+                    <label for="creatorUploadInput">Tải ảnh tham chiếu (tuỳ chọn)</label>
                     <input id="creatorUploadInput" type="file" accept="image/*" multiple />
                     <div class="creator-upload-preview" id="creatorUploadPreview">
-                      <div class="muted">Bạn có thể tải ảnh sản phẩm, ảnh brand hoặc key visual lên đây.</div>
+                      <div class="muted">Bạn có thể tải ảnh sản phẩm hoặc key visual để tăng độ chính xác.</div>
                     </div>
                   </div>
                 </div>
                 <div class="hero-actions">
                   <button id="generateCreatorPlanBtn">Tạo content brief</button>
+                  <button id="previewScriptBtn" class="secondary">Xem &amp; chỉnh kịch bản</button>
                   <button id="startCreatorRenderBtn">Bắt đầu tạo video</button>
+                  <button class="secondary" id="generateVoiceoverBtn">Tạo audio ElevenLabs</button>
                   <button class="secondary" id="refreshCreatorBtn">Làm mới gợi ý</button>
                 </div>
-                <p class="muted" id="creatorRunStatus">Nhập yêu cầu rồi bấm Tạo content brief để xem kết quả ảnh và video.</p>
+                <p class="muted" id="voiceGenStatus">Voiceover chưa được tạo.</p>
+
+                <!-- Script Builder Panel -->
+                <div id="scriptBuilderPanel" style="display:none; margin-top:12px; padding:14px; background:#f8fafc; border:1px solid #d1d5db; border-radius:8px;">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                    <strong style="font-size:14px;">Kịch bản cảnh (có thể chỉnh sửa)</strong>
+                    <div style="display:flex;gap:8px;">
+                      <button id="addSceneBtn" class="secondary" style="font-size:12px;padding:4px 10px;">+ Thêm cảnh</button>
+                      <button id="resetScriptBtn" class="secondary" style="font-size:12px;padding:4px 10px;">Tự động lại</button>
+                      <button id="closeScriptBuilderBtn" class="secondary" style="font-size:12px;padding:4px 10px;">✕ Đóng</button>
+                    </div>
+                  </div>
+                  <div id="scriptSceneList" style="display:flex;flex-direction:column;gap:8px;"></div>
+                  <p class="muted" id="scriptBuilderStatus" style="margin-top:8px;font-size:12px;"></p>
+                </div>
+
+                <p class="muted" id="creatorRunStatus">Nhập yêu cầu và bấm Tạo content brief để xem kết quả.</p>
               </div>
             </div>
 
             <div class="panel">
-              <h3>Chuỗi tác nhân sáng tạo</h3>
+              <h3>Quy trình thực thi</h3>
               <div class="detail">
-                <ul class="agent-list">
+                <ol class="simple-steps">
                   <li>
-                    <strong>Creative Director</strong>
-                    <span>Biến yêu cầu thành concept, mood và hướng triển khai rõ ràng.</span>
+                    <strong>Phân tích brief</strong>
+                    <span>Xác định concept và mục tiêu nội dung.</span>
                   </li>
                   <li>
-                    <strong>Image Agent</strong>
-                    <span>Dùng Flux để dựng key visual, banner, ảnh social và thumbnail.</span>
+                    <strong>Tạo hình ảnh</strong>
+                    <span>Dựng key visual và ảnh social theo phong cách đã chọn.</span>
                   </li>
                   <li>
-                    <strong>Video Agent</strong>
-                    <span>Dùng Pixelle để dựng clip quảng bá ngắn, render video thật và xuất MP4 hoàn chỉnh.</span>
+                    <strong>Dựng video</strong>
+                    <span>Tạo video ngắn từ brief và cấu trúc cảnh.</span>
                   </li>
                   <li>
-                    <strong>Voice and Editor</strong>
-                    <span>Dùng ElevenLabs và CapCut để hoàn thiện voiceover, subtitle và nhịp dựng.</span>
+                    <strong>Xuất kết quả</strong>
+                    <span>Hoàn thiện output để dùng trên các kênh đã chọn.</span>
                   </li>
-                </ul>
+                </ol>
               </div>
             </div>
           </div>
@@ -452,7 +531,7 @@
           <div class="pipeline-grid" id="creatorTools"></div>
 
           <div class="panel sheet-preview-panel">
-            <h3>Video Structure Builder</h3>
+            <h3>Cấu trúc video</h3>
             <div class="table-wrap">
               <table>
                 <thead>
@@ -467,7 +546,7 @@
                 </thead>
                 <tbody id="videoStructureRows">
                   <tr>
-                    <td colspan="6" class="muted">Tạo brief để xem cấu trúc video tự động.</td>
+                    <td colspan="6" class="muted">Tạo brief để xem cấu trúc video tại đây.</td>
                   </tr>
                 </tbody>
               </table>
@@ -475,13 +554,20 @@
           </div>
 
           <div class="panel sheet-preview-panel">
-            <h3>Video Creator Pipeline</h3>
+            <h3>Trạng thái render</h3>
             <div class="detail">
               <div class="ceo-summary" id="creatorRenderStatus">
                 <strong>Chưa bắt đầu render</strong>
-                <span>Chọn bộ tạo ảnh, video creator rồi bấm Bắt đầu tạo video.</span>
+                <span>Chọn tuỳ chọn rồi bấm Bắt đầu tạo video.</span>
               </div>
               <div class="pipeline-grid" id="creatorRenderSteps"></div>
+            </div>
+          </div>
+
+          <div class="panel sheet-preview-panel" id="agentFeedbackPanel" style="display:none;">
+            <h3>Góc nhìn của Content Strategy Agent</h3>
+            <div class="detail">
+              <div class="pipeline-grid" id="agentFeedbackItems"></div>
             </div>
           </div>
 
@@ -509,11 +595,11 @@
             </div>
 
             <div class="panel">
-              <h3>Tóm tắt brief</h3>
+              <h3>Tóm tắt</h3>
               <div class="detail">
                 <div class="ceo-summary" id="creatorSummary">
                   <strong>Content Creator Team đã sẵn sàng.</strong>
-                  <span>Nhập yêu cầu của bạn để hệ thống đề xuất ảnh, video và prompt sản xuất.</span>
+                  <span>Nhập yêu cầu để hệ thống đề xuất ảnh, video và prompt sản xuất.</span>
                 </div>
                 <div class="creator-prompt-output" id="creatorPromptOutput"></div>
               </div>
@@ -526,13 +612,8 @@
               <div class="detail">
                 <div class="creator-visual-grid" id="creatorImageGallery">
                   <div class="creator-visual-card">
-                    <div class="creator-visual-artboard gradient-one">
-                      <div class="creator-art-text"><strong>Hero Visual</strong><span>Preview sẽ cập nhật theo brief của bạn</span></div>
-                    </div>
-                  </div>
-                  <div class="creator-visual-card">
-                    <div class="creator-visual-artboard gradient-two">
-                      <div class="creator-art-text"><strong>Social Banner</strong><span>Sẵn sàng hiển thị kết quả ảnh</span></div>
+                    <div class="creator-visual-artboard simple-placeholder">
+                      <div class="creator-art-text"><strong>Chưa có ảnh</strong><span>Kết quả sẽ hiển thị sau khi tạo brief</span></div>
                     </div>
                   </div>
                 </div>
@@ -544,14 +625,22 @@
               <div class="detail">
                 <div class="creator-video-preview" id="creatorVideoPreview">
                   <div class="video-mock-card">
-                    <div class="video-screen">
+                    <div class="video-screen simple-video-placeholder">
                       <div class="video-play">▶</div>
                       <div class="video-badge">30-45 giây</div>
                       <div class="video-overlay-text">
-                        <strong>Video preview</strong>
-                        <span>Bản xem trước sẽ cập nhật theo brief của bạn</span>
+                        <strong>Chưa có video</strong>
+                        <span>Bản xem trước sẽ xuất hiện sau khi render</span>
                       </div>
                     </div>
+                  </div>
+                </div>
+                <div id="creatorVoiceoverPanel" style="display:none; margin-top:16px;">
+                  <h4 style="margin:0 0 8px 0;">Voiceover</h4>
+                  <audio id="creatorVoiceoverAudio" controls style="width:100%; border-radius:8px;"></audio>
+                  <p class="muted" id="creatorVoiceoverSource" style="margin:6px 0 0 0;"></p>
+                  <div style="margin-top:6px;">
+                    <a id="creatorVoiceoverDownload" class="preview-link" href="#" download="voiceover.mp3">⬇ Tải voiceover MP3</a>
                   </div>
                 </div>
               </div>
@@ -559,51 +648,108 @@
           </div>
         </div>
 
-        <div id="salesPanel">
-          <div class="sales-overview">
-            <div class="panel">
-              <h3>Nhập khách hàng từ Google Sheet</h3>
-              <div class="detail">
-                <p class="muted">Dán đường dẫn Google Sheet và Đội Kinh doanh sẽ xem trước danh sách khách hàng, sắp xếp theo STT và lấy email từ dòng đầu tiên đến cuối cùng.</p>
-                <div class="sheet-bar">
-                  <input id="sheetUrlInput" placeholder="Dán URL Google Sheet hoặc mã sheet tại đây" />
-                  <button id="previewSheetBtn">Xem trước</button>
-                  <button class="secondary" id="importSheetBtn">Xếp hàng</button>
-                </div>
-                <p class="muted" id="sheetFeedback">Mỗi lần chỉ xếp hàng 5 công ty để tác nhân Sturdycase, thiết kế và copywriting tập trung xử lý trước.</p>
-                <div class="cards mini-cards" id="sheetStats"></div>
-              </div>
+        <div id="salesPanel" class="sales-pro">
+          <header class="sales-hero">
+            <div class="sales-hero-copy">
+              <p class="sales-eyebrow">Đội Kinh doanh · B2B Outreach</p>
+              <h3 class="sales-hero-title">Trung tâm tiếp cận &amp; chốt deal</h3>
+              <p class="sales-hero-desc">Nhập lead từ Google Sheet hoặc file CSV, AI soạn email cá nhân hóa, gửi qua Resend và theo dõi phản hồi — tất cả từ một bảng điều khiển.</p>
             </div>
+            <div class="sales-hero-meta">
+              <span class="automation-pill"><span class="pulse-dot" aria-hidden="true"></span>Tự động hóa sẵn sàng</span>
+              <span class="sales-batch-note">Batch 5 lead / lần</span>
+            </div>
+          </header>
 
-            <div class="panel">
-              <h3>Hệ tác nhân bán hàng</h3>
-              <div class="detail">
-                <ul class="agent-list">
-                  <li>
-                    <strong>Tác nhân AI chọn mục tiêu Sturdycase</strong>
-                    <span>Lọc ra các công ty phù hợp nhất và ưu tiên thứ tự tiếp cận.</span>
-                  </li>
-                  <li>
-                    <strong>Tác nhân thiết kế email kiểu landing page</strong>
-                    <span>Định hình bố cục email rõ ràng, trực quan và có tỷ lệ chuyển đổi tốt hơn.</span>
-                  </li>
-                  <li>
-                    <strong>Tác nhân viết nội dung</strong>
-                    <span>Viết tiêu đề và nội dung email B2B ngắn gọn, thuyết phục cho từng khách hàng.</span>
-                  </li>
-                  <li>
-                    <strong>Tác nhân gửi tự động</strong>
-                    <span>Gửi email theo lô và theo dõi kết quả ngay trong hàng chờ kinh doanh.</span>
-                  </li>
-                </ul>
+          <div class="sales-kpi-strip" id="metrics"></div>
+
+          <div class="sales-intake-grid">
+            <section class="sales-panel">
+              <div class="sales-panel-head">
+                <h4>Nguồn khách hàng</h4>
+                <span class="sales-panel-tag">Sheets · CSV</span>
               </div>
-            </div>
+              <div class="sales-panel-body">
+                <p class="sales-panel-desc">Dán link Google Sheet hoặc kéo thả file CSV để xem trước và đưa 5 công ty tiếp theo vào hàng chờ.</p>
+                <div class="sales-sheet-bar">
+                  <div class="sales-input-wrap">
+                    <svg class="sales-input-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6Z" stroke="currentColor" stroke-width="1.5"/><path d="M14 2v6h6M8 13h8M8 17h5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                    <input id="sheetUrlInput" class="sales-input" placeholder="https://docs.google.com/spreadsheets/d/..." />
+                  </div>
+                  <div class="sales-sheet-actions">
+                    <button type="button" class="secondary" id="previewSheetBtn">Xem trước</button>
+                    <button type="button" class="secondary" id="restoreSheetBtn">Tải từ Sheet</button>
+                    <button type="button" id="importSheetBtn">Xếp hàng 5 lead</button>
+                  </div>
+                </div>
+
+                <div class="sales-source-divider" aria-hidden="true"><span>hoặc</span></div>
+
+                <div class="sales-csv-dropzone" id="csvDropzone" tabindex="0" role="button" aria-label="Khu vực nhập CSV — kéo thả, dán hoặc chọn file">
+                  <input type="file" id="csvFileInput" accept=".csv,text/csv" hidden />
+                  <div class="sales-csv-dropzone-inner">
+                    <svg class="sales-csv-icon" width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                      <path d="M12 16V8m0 8-3-3m3 3 3-3" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                      <path d="M20 16.5V18a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-1.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"/>
+                      <path d="M7 10.5 12 6l5 4.5" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
+                    <p class="sales-csv-dropzone-title">Kéo thả, dán hoặc chọn file CSV</p>
+                    <p class="sales-csv-dropzone-hint">Nhấn vào vùng này rồi <strong>Ctrl+V</strong> để dán — danh sách cũ sẽ được thay bằng CSV mới. Cột gợi ý: <code>stt</code>, <code>company_name</code>, <code>email</code></p>
+                    <button type="button" class="sales-csv-browse" id="csvBrowseBtn">Chọn file CSV</button>
+                    <p class="sales-csv-filename" id="csvFileName" hidden></p>
+                  </div>
+                </div>
+                <p class="sales-feedback" id="sheetFeedback">Mỗi lần hệ thống xếp hàng 5 công ty để xử lý ổn định và dễ theo dõi.</p>
+                <div class="sales-mini-stats" id="sheetStats"></div>
+              </div>
+            </section>
+
+            <section class="sales-panel">
+              <div class="sales-panel-head">
+                <h4>Pipeline tự động</h4>
+                <span class="sales-panel-tag">4 bước</span>
+              </div>
+              <div class="sales-panel-body">
+                <ol class="sales-pipeline-steps">
+                  <li class="sales-step">
+                    <span class="sales-step-num">1</span>
+                    <div>
+                      <strong>Chọn &amp; xếp hàng</strong>
+                      <span>Ưu tiên lead có email hợp lệ từ sheet hoặc CSV.</span>
+                    </div>
+                  </li>
+                  <li class="sales-step">
+                    <span class="sales-step-num">2</span>
+                    <div>
+                      <strong>Soạn email AI</strong>
+                      <span>AI (ChatAnywhere) tạo tiêu đề và nội dung tiếng Việt.</span>
+                    </div>
+                  </li>
+                  <li class="sales-step">
+                    <span class="sales-step-num">3</span>
+                    <div>
+                      <strong>Thiết kế &amp; duyệt</strong>
+                      <span>Xem trước landing page trước khi gửi.</span>
+                    </div>
+                  </li>
+                  <li class="sales-step">
+                    <span class="sales-step-num">4</span>
+                    <div>
+                      <strong>Gửi &amp; theo dõi</strong>
+                      <span>Resend gửi mail, cập nhật mở / nhấp / phản hồi.</span>
+                    </div>
+                  </li>
+                </ol>
+              </div>
+            </section>
           </div>
 
-          <div class="panel sheet-preview-panel">
-            <h3>Danh sách email từ STT 1 đến hết</h3>
-            <div class="table-wrap">
-              <table>
+          <section class="sales-panel sales-preview-panel">
+            <div class="sales-panel-head">
+              <h4 id="previewPanelTitle">Danh sách xem trước</h4>
+            </div>
+            <div class="sales-table-wrap">
+              <table class="sales-table">
                 <thead>
                   <tr>
                     <th>STT</th>
@@ -611,82 +757,153 @@
                     <th>Email</th>
                     <th>Sản phẩm chính</th>
                     <th>Website</th>
-                    <th>Trạng thái hàng chờ</th>
+                    <th>Hàng chờ</th>
                   </tr>
                 </thead>
                 <tbody id="previewRows">
                   <tr>
-                    <td colspan="6" class="muted">Dán URL Google Sheet để xem trước danh sách email tại đây.</td>
+                    <td colspan="6" class="sales-empty">Dán URL Google Sheet hoặc kéo thả file CSV để hiển thị danh sách tại đây.</td>
                   </tr>
                 </tbody>
               </table>
             </div>
+          </section>
+
+          <div class="sales-toolbar">
+            <div class="sales-toolbar-left">
+              <button class="sales-icon-btn" id="refreshBtn" title="Làm mới dữ liệu">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><path d="M21 3v6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Làm mới
+              </button>
+            </div>
+            <div class="sales-toolbar-right">
+              <div class="sales-filter-wrap">
+                <select id="statusFilter" class="sales-select" aria-label="Lọc trạng thái">
+                  <option value="">Tất cả trạng thái</option>
+                  <option value="queued">Đang chờ</option>
+                  <option value="drafted">Đã soạn</option>
+                  <option value="sent">Đã gửi</option>
+                  <option value="failed">Lỗi</option>
+                  <option value="skipped">Bỏ qua</option>
+                </select>
+              </div>
+              <div class="sales-search-wrap">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="11" cy="11" r="7" stroke="currentColor" stroke-width="1.5"/><path d="m20 20-3.5-3.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+                <input id="searchInput" class="sales-search" placeholder="Tìm công ty hoặc email..." />
+              </div>
+            </div>
           </div>
 
-          <div class="bar">
-            <button id="refreshBtn">Làm mới</button>
-            <select id="statusFilter">
-              <option value="">Tất cả trạng thái</option>
-              <option value="queued">Đang chờ</option>
-              <option value="drafted">Đã soạn</option>
-              <option value="sent">Đã gửi</option>
-              <option value="failed">Lỗi</option>
-              <option value="skipped">Bỏ qua</option>
-            </select>
-            <input id="searchInput" placeholder="Tìm theo tên công ty hoặc email" />
-          </div>
-
-          <div class="cards" id="metrics"></div>
-
-          <div class="grid">
-            <div class="panel">
-              <h3>Danh sách tiếp cận</h3>
-              <div class="table-wrap">
-                <table>
+          <div class="sales-workspace">
+            <section class="sales-panel sales-records-panel">
+              <div class="sales-panel-head">
+                <h4>Danh sách tiếp cận</h4>
+                <span class="sales-record-count" id="recordCount">0 bản ghi</span>
+              </div>
+              <div class="sales-csv-view-banner" id="csvViewBanner" hidden>
+                <span id="csvViewBannerText">Đang xem dữ liệu CSV vừa tải.</span>
+                <button type="button" class="secondary sales-csv-view-exit" id="exitCsvViewBtn">Xem toàn bộ danh sách</button>
+              </div>
+              <div class="sales-table-wrap sales-table-wrap--tall">
+                <table class="sales-table sales-table--interactive">
                   <thead>
                     <tr>
                       <th>STT</th>
                       <th>Công ty</th>
                       <th>Email</th>
                       <th>Trạng thái</th>
-                      <th>Số lần thử</th>
+                      <th>Thử</th>
                       <th>Cập nhật</th>
                     </tr>
                   </thead>
                   <tbody id="rows"></tbody>
                 </table>
               </div>
+            </section>
+          </div>
+        </div>
+
+        <div id="lawyerPanel" class="lawyer-chat" style="display:none;">
+          <div class="lawyer-chat-shell">
+            <header class="lawyer-chat-topbar" id="lawyerChatTopbar" hidden>
+              <h2 class="lawyer-chat-topbar-title">Luật Sư Tại Hạ Xin Nhận Lệnh Ạ</h2>
+              <p class="lawyer-chat-topbar-subtitle">Trợ lý pháp lý &amp; tuân thủ cho doanh nghiệp</p>
+            </header>
+
+            <div class="lawyer-chat-scroll" id="lawyerChatScroll">
+              <div class="lawyer-chat-hero" id="lawyerChatHero">
+                <h1 class="lawyer-chat-title">Luật Sư Tại Hạ Xin Nhận Lệnh Ạ</h1>
+                <p class="lawyer-chat-subtitle">Rà soát hợp đồng, chính sách và rủi ro kinh doanh. Dán nội dung cần kiểm tra để nhận đánh giá pháp lý chi tiết.</p>
+              </div>
+              <div class="lawyer-chat-thread" id="lawyerChatLog" hidden></div>
             </div>
 
-            <div class="panel">
-              <h3>Chi tiết bản ghi</h3>
-              <div class="detail" id="detail">
-                <p class="muted">Hãy chọn một bản ghi trong bảng.</p>
+            <form class="lawyer-chat-composer" id="lawyerChatForm">
+              <div class="lawyer-chat-input-shell">
+                <textarea id="lawyerChatInput" rows="1" placeholder="Nhập câu hỏi hoặc dán nội dung cần rà soát..." aria-label="Tin nhắn gửi luật sư"></textarea>
+                <button type="submit" class="lawyer-chat-send" id="lawyerChatSend" aria-label="Gửi">
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m5 12 14-7-7 14-3-4-4-3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                </button>
               </div>
-            </div>
+              <p class="lawyer-chat-disclaimer">Đây không phải tư vấn pháp lý chính thức. Các vấn đề rủi ro cao cần luật sư con người duyệt.</p>
+            </form>
           </div>
+        </div>
+
+        <div id="visionistPanel" class="visionist-embed" style="display:none;">
+          <iframe id="visionistFrame" src="./visionist-app/" title="Visionist — Bói Toán Tại Hạ"></iframe>
         </div>
       </section>
     </div>
+    </div>
 
+    <script type="module" src="./sidebar/sidebar.js"></script>
     <script>
+      const apiFetch = (...args) =>
+        (window.BlackBox?.apiFetch || fetch.bind(window))(...args);
+      const visionistFrameEl = document.getElementById("visionistFrame");
+      if (visionistFrameEl && window.BlackBox?.visionistAppUrl) {
+        visionistFrameEl.src = window.BlackBox.visionistAppUrl();
+      }
+
       const metricsEl = document.getElementById("metrics");
       const rowsEl = document.getElementById("rows");
-      const detailEl = document.getElementById("detail");
       const previewRowsEl = document.getElementById("previewRows");
+      const previewModal = document.getElementById("previewModal");
+      const previewModalTitle = document.getElementById("previewModalTitle");
+      const modalPreviewFrame = document.getElementById("modalPreviewFrame");
+      const refreshExpandedPreviewBtn = document.getElementById("refreshExpandedPreviewBtn");
+      const saveExpandedPreviewBtn = document.getElementById("saveExpandedPreviewBtn");
+      const sendExpandedEmailBtn = document.getElementById("sendExpandedEmailBtn");
+      let previewEditable = false;
       const refreshBtn = document.getElementById("refreshBtn");
       const statusFilter = document.getElementById("statusFilter");
       const searchInput = document.getElementById("searchInput");
       const salesPanel = document.getElementById("salesPanel");
       const marketingPanel = document.getElementById("marketingPanel");
       const contentCreatorPanel = document.getElementById("contentCreatorPanel");
+      const visionistPanel = document.getElementById("visionistPanel");
+      const lawyerPanel = document.getElementById("lawyerPanel");
       const maintenancePanel = document.getElementById("maintenancePanel");
+      const ceoPanel = document.getElementById("ceoPanel");
       const dashboardArea = document.getElementById("dashboardArea");
-      const dashboardTitle = document.getElementById("dashboardTitle");
+      const activeTeamEyebrow = document.getElementById("activeTeamEyebrow");
+      const activeTeamTitle = document.getElementById("activeTeamTitle");
+      const activeTeamDescription = document.getElementById("activeTeamDescription");
       const dashboardBadge = document.getElementById("dashboardBadge");
       const placeholderHeading = document.getElementById("placeholderHeading");
       const placeholderTitle = document.getElementById("placeholderTitle");
       const placeholderText = document.getElementById("placeholderText");
+      const appContentWrap = document.querySelector(".wrap.app-content");
+      const lawyerChatLog = document.getElementById("lawyerChatLog");
+      const lawyerChatHero = document.getElementById("lawyerChatHero");
+      const lawyerChatTopbar = document.getElementById("lawyerChatTopbar");
+      const lawyerChatScroll = document.getElementById("lawyerChatScroll");
+      const lawyerChatInput = document.getElementById("lawyerChatInput");
+      const lawyerChatSend = document.getElementById("lawyerChatSend");
+      const lawyerChatForm = document.getElementById("lawyerChatForm");
+      let lawyerHistory = [];
+      let lawyerSending = false;
       const ceoPrompt = document.getElementById("ceoPrompt");
       const kpiGoal = document.getElementById("kpiGoal");
       const kpiTarget = document.getElementById("kpiTarget");
@@ -695,13 +912,22 @@
       const ceoSummary = document.getElementById("ceoSummary");
       const sendToCEO = document.getElementById("sendToCEO");
       const jumpToTeams = document.getElementById("jumpToTeams");
-      const teamCards = Array.from(document.querySelectorAll(".team-card"));
       const promptChips = Array.from(document.querySelectorAll(".prompt-chip"));
       const sheetUrlInput = document.getElementById("sheetUrlInput");
       const previewSheetBtn = document.getElementById("previewSheetBtn");
+      const restoreSheetBtn = document.getElementById("restoreSheetBtn");
       const importSheetBtn = document.getElementById("importSheetBtn");
       const sheetFeedback = document.getElementById("sheetFeedback");
       const sheetStats = document.getElementById("sheetStats");
+      const csvDropzone = document.getElementById("csvDropzone");
+      const csvFileInput = document.getElementById("csvFileInput");
+      const csvBrowseBtn = document.getElementById("csvBrowseBtn");
+      const csvFileName = document.getElementById("csvFileName");
+      const previewPanelTitle = document.getElementById("previewPanelTitle");
+      const csvViewBanner = document.getElementById("csvViewBanner");
+      const csvViewBannerText = document.getElementById("csvViewBannerText");
+      const exitCsvViewBtn = document.getElementById("exitCsvViewBtn");
+      const recordCount = document.getElementById("recordCount");
       const marketingMetrics = document.getElementById("marketingMetrics");
       const marketingPipeline = document.getElementById("marketingPipeline");
       const marketingTrendRows = document.getElementById("marketingTrendRows");
@@ -730,9 +956,18 @@
       const creatorInputMode = document.getElementById("creatorInputMode");
       const creatorImageProvider = document.getElementById("creatorImageProvider");
       const creatorVideoProvider = document.getElementById("creatorVideoProvider");
+      const creatorVideoOutputType = document.getElementById("creatorVideoOutputType");
       const creatorStyle = document.getElementById("creatorStyle");
       const creatorDuration = document.getElementById("creatorDuration");
       const creatorChannels = document.getElementById("creatorChannels");
+      const creatorVoiceScript = document.getElementById("creatorVoiceScript");
+      const creatorVoicePreset = document.getElementById("creatorVoicePreset");
+      const creatorCustomVoiceId = document.getElementById("creatorCustomVoiceId");
+      const creatorVoiceStability = document.getElementById("creatorVoiceStability");
+      const creatorVoiceSimilarity = document.getElementById("creatorVoiceSimilarity");
+      const creatorBrandName = document.getElementById("creatorBrandName");
+      const creatorBrandColor = document.getElementById("creatorBrandColor");
+      const creatorBrandLogo = document.getElementById("creatorBrandLogo");
       const creatorPixelleMode = document.getElementById("creatorPixelleMode");
       const creatorScriptMode = document.getElementById("creatorScriptMode");
       const creatorAspectRatio = document.getElementById("creatorAspectRatio");
@@ -745,6 +980,15 @@
       const creatorRenderStatus = document.getElementById("creatorRenderStatus");
       const creatorRenderSteps = document.getElementById("creatorRenderSteps");
       const startCreatorRenderBtn = document.getElementById("startCreatorRenderBtn");
+      const generateVoiceoverBtn = document.getElementById("generateVoiceoverBtn");
+      const voiceGenStatus = document.getElementById("voiceGenStatus");
+      const previewScriptBtn = document.getElementById("previewScriptBtn");
+      const scriptBuilderPanel = document.getElementById("scriptBuilderPanel");
+      const scriptSceneList = document.getElementById("scriptSceneList");
+      const scriptBuilderStatus = document.getElementById("scriptBuilderStatus");
+      const addSceneBtn = document.getElementById("addSceneBtn");
+      const resetScriptBtn = document.getElementById("resetScriptBtn");
+      const closeScriptBuilderBtn = document.getElementById("closeScriptBuilderBtn");
       const videoStructureModal = document.getElementById("videoStructureModal");
       const videoStructureBackdrop = document.getElementById("videoStructureBackdrop");
       const closeVideoStructureModal = document.getElementById("closeVideoStructureModal");
@@ -753,33 +997,57 @@
       const modalVideoStructureRows = document.getElementById("modalVideoStructureRows");
 
       let creatorUploadedAssets = [];
+      let activeCsvSource = null;
+      let csvViewRows = null;
 
       let records = [];
       let previewLoaded = false;
       let selectedDesignStyle = "vercel";
+      let selectedRecordId = null;
 
       const teamMeta = {
+        ceo: {
+          eyebrow: "Trung tâm điều hành",
+          title: "Chỉ đạo chiến lược",
+          description: "Mô tả công việc, độ ưu tiên và kết quả mong muốn — CEO sẽ phân công cho đúng đội ngũ.",
+          badge: "Điều phối"
+        },
         sales: {
+          eyebrow: "Đội Kinh doanh",
           title: "Bảng điều khiển Đội Kinh doanh",
+          description: "Thực hiện tiếp cận, theo dõi phản hồi và cập nhật tiến độ chốt deal.",
           badge: "Đang hoạt động"
         },
         marketing: {
+          eyebrow: "Đội Marketing",
           title: "Bảng điều khiển Đội Marketing",
+          description: "Pipeline xu hướng, lịch nội dung, cổng duyệt và KPI tăng trưởng.",
           badge: "Đang hoạt động",
           message: "Pipeline xu hướng, lịch nội dung, cổng duyệt và KPI tăng trưởng đang hoạt động tại đây."
         },
         content: {
+          eyebrow: "Content Creator",
           title: "Bảng điều khiển Content Creator Team",
+          description: "Tạo ảnh, video và hướng sản xuất nội dung sáng tạo từ một brief duy nhất.",
           badge: "Đang hoạt động",
           message: "Tạo ảnh, video và hướng sản xuất nội dung sáng tạo từ một brief duy nhất."
         },
+        visionist: {
+          eyebrow: "Visionist",
+          title: "Bảng điều khiển Visionist",
+          description: "Dự đoán kịch bản tương lai bằng mô phỏng đa tác nhân Bói Toán Tại Hạ.",
+          badge: "Bói Toán Tại Hạ"
+        },
         lawyer: {
-          title: "Bảng điều khiển Luật sư của tôi",
-          badge: "Sắp ra mắt",
-          message: "Các tác vụ rà soát hợp đồng, kiểm tra rủi ro và pháp lý sẽ được xử lý tại đây."
+          eyebrow: "Luật sư của tôi",
+          title: "Luật Sư Tại Hạ Xin Nhận Lệnh Ạ",
+          description: "Rà soát hợp đồng, chính sách và rủi ro kinh doanh tại Việt Nam.",
+          badge: "ChatAnywhere"
         },
         supports: {
+          eyebrow: "Đội Hỗ trợ",
           title: "Bảng điều khiển Đội Hỗ trợ",
+          description: "Xử lý vận hành, hành chính và hỗ trợ thực thi công việc.",
           badge: "Sắp ra mắt",
           message: "Các đầu việc vận hành, theo dõi hành chính và hỗ trợ thực thi sẽ hiển thị tại đây."
         }
@@ -793,10 +1061,265 @@
         skipped: "Bỏ qua"
       };
 
-      function setActiveTeam(team) {
-        teamCards.forEach((card) => {
-          card.classList.toggle("active", card.dataset.team === team);
-        });
+      function hideAllTeamPanels() {
+        ceoPanel.style.display = "none";
+        salesPanel.style.display = "none";
+        marketingPanel.style.display = "none";
+        contentCreatorPanel.style.display = "none";
+        visionistPanel.style.display = "none";
+        lawyerPanel.style.display = "none";
+        maintenancePanel.style.display = "none";
+        dashboardArea.classList.remove("dashboard-shell--lawyer");
+        dashboardArea.classList.remove("dashboard-shell--visionist");
+        dashboardArea.classList.remove("dashboard-shell--ceo");
+        appContentWrap?.classList.remove("wrap--lawyer");
+        appContentWrap?.classList.remove("wrap--visionist");
+        document.body.classList.remove("app-body--visionist");
+      }
+
+      function formatLawyerReply(text) {
+        return escapeHtml(text).replace(/\n/g, "<br>");
+      }
+
+      function resizeLawyerInput() {
+        if (!lawyerChatInput) return;
+        lawyerChatInput.style.height = "auto";
+        const nextHeight = Math.min(lawyerChatInput.scrollHeight, 160);
+        lawyerChatInput.style.height = `${nextHeight}px`;
+        lawyerChatInput.style.overflowY = "hidden";
+      }
+
+      function scrollLawyerChatToBottom() {
+        if (!lawyerChatScroll) return;
+        lawyerChatScroll.scrollTop = lawyerChatScroll.scrollHeight;
+      }
+
+      function buildLawyerMessageRow(msg, options = {}) {
+        const isUser = msg.role === "user";
+        const isThinking = options.thinking;
+        const rowId = options.id ? ` id="${options.id}"` : "";
+        const textClass = isThinking ? " lawyer-chat-bubble--thinking" : "";
+        const content = isUser
+          ? escapeHtml(msg.content)
+          : formatLawyerReply(msg.content || (isThinking ? "Đang soạn phản hồi..." : ""));
+
+        return `
+          <div class="lawyer-chat-row lawyer-chat-row--${isUser ? "user" : "assistant"}"${rowId}>
+            <div class="lawyer-chat-bubble${textClass}">${content}</div>
+          </div>
+        `;
+      }
+
+      function renderLawyerMessages(thinkingId = null) {
+        const hasMessages = lawyerHistory.length > 0 || thinkingId;
+
+        lawyerChatHero.style.display = hasMessages ? "none" : "";
+        lawyerChatTopbar.hidden = !hasMessages;
+        lawyerChatLog.hidden = !hasMessages;
+
+        if (!hasMessages) {
+          lawyerChatLog.innerHTML = "";
+          return;
+        }
+
+        lawyerChatLog.innerHTML = lawyerHistory.map((msg) => buildLawyerMessageRow(msg)).join("");
+
+        if (thinkingId) {
+          lawyerChatLog.insertAdjacentHTML(
+            "beforeend",
+            buildLawyerMessageRow({ role: "assistant", content: "" }, { thinking: true, id: thinkingId })
+          );
+        }
+
+        scrollLawyerChatToBottom();
+      }
+
+      function updateLawyerAssistantMessage(messageId, content, thinking = false) {
+        const node = document.getElementById(messageId);
+        if (!node) return;
+        const textNode = node.querySelector(".lawyer-chat-bubble");
+        if (!textNode) return;
+        textNode.classList.toggle("lawyer-chat-bubble--thinking", thinking);
+        textNode.innerHTML = thinking ? "Đang soạn phản hồi..." : formatLawyerReply(content);
+        scrollLawyerChatToBottom();
+      }
+
+      async function readLawyerStream(response, assistantIndex, messageId) {
+        const reader = response.body?.getReader();
+        if (!reader) {
+          throw new Error("Trình duyệt không hỗ trợ streaming.");
+        }
+
+        const decoder = new TextDecoder();
+        let buffer = "";
+        let reply = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          buffer += decoder.decode(value, { stream: true });
+          const events = buffer.split("\n\n");
+          buffer = events.pop() || "";
+
+          for (const event of events) {
+            const line = event
+              .split("\n")
+              .map((part) => part.trim())
+              .find((part) => part.startsWith("data:"));
+            if (!line) continue;
+
+            const payload = line.slice(5).trim();
+            if (!payload || payload === "[DONE]") continue;
+
+            let parsed;
+            try {
+              parsed = JSON.parse(payload);
+            } catch {
+              continue;
+            }
+
+            if (parsed.error) {
+              throw new Error(parsed.error);
+            }
+
+            if (parsed.delta) {
+              reply += parsed.delta;
+              lawyerHistory[assistantIndex].content = reply;
+              updateLawyerAssistantMessage(messageId, reply, !reply);
+            }
+          }
+        }
+
+        if (!reply.trim()) {
+          throw new Error("Không nhận được phản hồi từ mô hình.");
+        }
+
+        lawyerHistory[assistantIndex].content = reply.trim();
+        updateLawyerAssistantMessage(messageId, lawyerHistory[assistantIndex].content, false);
+      }
+
+      async function readLawyerJson(response) {
+        const contentType = response.headers.get("content-type") || "";
+        const raw = await response.text();
+
+        if (!contentType.includes("application/json")) {
+          if (raw.trim().startsWith("<!DOCTYPE") || raw.trim().startsWith("<html")) {
+            throw new Error("API chưa sẵn sàng. Hãy chạy lại sales dashboard bằng: npm run sales:dashboard");
+          }
+          throw new Error(raw.slice(0, 200) || "Phản hồi không hợp lệ từ máy chủ.");
+        }
+
+        let data;
+        try {
+          data = JSON.parse(raw);
+        } catch {
+          throw new Error("Không thể đọc phản hồi JSON từ máy chủ.");
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || "Không thể gửi tin nhắn.");
+        }
+
+        return data;
+      }
+
+      async function sendLawyerMessage(message) {
+        const trimmed = String(message || "").trim();
+        if (!trimmed || lawyerSending) return;
+
+        lawyerSending = true;
+        lawyerHistory.push({ role: "user", content: trimmed });
+        lawyerHistory.push({ role: "assistant", content: "" });
+        const assistantIndex = lawyerHistory.length - 1;
+        const thinkingId = `lawyer-thinking-${Date.now()}`;
+
+        renderLawyerMessages(thinkingId);
+        lawyerChatInput.value = "";
+        resizeLawyerInput();
+        lawyerChatSend.disabled = true;
+
+        try {
+          const response = await apiFetch("/api/lawyer/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              message: trimmed,
+              history: lawyerHistory.slice(0, -2),
+              stream: true
+            })
+          });
+
+          const contentType = response.headers.get("content-type") || "";
+
+          if (contentType.includes("text/event-stream") && response.ok) {
+            await readLawyerStream(response, assistantIndex, thinkingId);
+          } else {
+            const data = await readLawyerJson(response);
+            lawyerHistory[assistantIndex].content = data.reply;
+            updateLawyerAssistantMessage(thinkingId, data.reply, false);
+          }
+        } catch (error) {
+          lawyerHistory[assistantIndex].content = `Xin lỗi, đã xảy ra lỗi: ${error.message}`;
+          updateLawyerAssistantMessage(thinkingId, lawyerHistory[assistantIndex].content, false);
+        } finally {
+          lawyerSending = false;
+          lawyerChatSend.disabled = false;
+          lawyerChatInput.focus();
+        }
+      }
+
+      function updateDashboardHeader(meta) {
+        activeTeamEyebrow.textContent = meta.eyebrow || "Agent Box";
+        activeTeamTitle.textContent = meta.title;
+        activeTeamDescription.textContent = meta.description || "";
+        if (dashboardBadge && meta.badge) {
+          dashboardBadge.textContent = meta.badge;
+        }
+      }
+
+      async function openTeam(team, shouldScroll = true) {
+        const meta = teamMeta[team] || teamMeta.ceo;
+        updateDashboardHeader(meta);
+        window.location.hash = `team-${team}`;
+        window.dispatchEvent(
+          new CustomEvent("agentbox:team-changed", { detail: { team } })
+        );
+
+        hideAllTeamPanels();
+
+        if (team === "ceo") {
+          ceoPanel.style.display = "block";
+          dashboardArea.classList.add("dashboard-shell--ceo");
+        } else if (team === "sales") {
+          salesPanel.style.display = "block";
+          await refresh();
+        } else if (team === "marketing") {
+          marketingPanel.style.display = "block";
+          await loadMarketingDashboard();
+        } else if (team === "content") {
+          contentCreatorPanel.style.display = "block";
+          await loadContentCreatorDashboard();
+        } else if (team === "visionist") {
+          visionistPanel.style.display = "block";
+          dashboardArea.classList.add("dashboard-shell--visionist");
+          appContentWrap?.classList.add("wrap--visionist");
+          document.body.classList.add("app-body--visionist");
+        } else if (team === "lawyer") {
+          lawyerPanel.style.display = "block";
+          dashboardArea.classList.add("dashboard-shell--lawyer");
+          appContentWrap?.classList.add("wrap--lawyer");
+          lawyerChatInput?.focus();
+        } else {
+          maintenancePanel.style.display = "block";
+          placeholderHeading.textContent = meta.title;
+          placeholderTitle.textContent = `${meta.title} sẽ sẵn sàng tiếp theo.`;
+          placeholderText.textContent = meta.message;
+        }
+
+        if (shouldScroll && team !== "visionist") {
+          dashboardArea.scrollIntoView({ behavior: "smooth", block: "start" });
+        }
       }
 
       function escapeHtml(value) {
@@ -821,49 +1344,6 @@
         });
       }
 
-      async function openTeam(team, shouldScroll = true) {
-        const meta = teamMeta[team] || teamMeta.sales;
-        setActiveTeam(team);
-        dashboardTitle.textContent = meta.title;
-        dashboardBadge.textContent = meta.badge;
-        window.location.hash = `team-${team}`;
-
-        if (team === "sales") {
-          maintenancePanel.style.display = "none";
-          marketingPanel.style.display = "none";
-          contentCreatorPanel.style.display = "none";
-          salesPanel.style.display = "block";
-          await refresh();
-          if (!previewLoaded) {
-            await previewSheet(true);
-          }
-        } else if (team === "marketing") {
-          maintenancePanel.style.display = "none";
-          salesPanel.style.display = "none";
-          contentCreatorPanel.style.display = "none";
-          marketingPanel.style.display = "block";
-          await loadMarketingDashboard();
-        } else if (team === "content") {
-          maintenancePanel.style.display = "none";
-          salesPanel.style.display = "none";
-          marketingPanel.style.display = "none";
-          contentCreatorPanel.style.display = "block";
-          await loadContentCreatorDashboard();
-        } else {
-          salesPanel.style.display = "none";
-          marketingPanel.style.display = "none";
-          contentCreatorPanel.style.display = "none";
-          maintenancePanel.style.display = "block";
-          placeholderHeading.textContent = meta.title;
-          placeholderTitle.textContent = `${meta.title} sẽ sẵn sàng tiếp theo.`;
-          placeholderText.textContent = meta.message;
-        }
-
-        if (shouldScroll) {
-          dashboardArea.scrollIntoView({ behavior: "smooth", block: "start" });
-        }
-      }
-
       function formatDate(ts) {
         if (!ts) return "-";
         return new Date(ts).toLocaleString();
@@ -871,17 +1351,22 @@
 
       function renderMetrics(data) {
         const cards = [
-          ["Tổng số", data.total],
-          ["Đang chờ", data.queued],
-          ["Đã gửi", data.sent],
-          ["Lỗi", data.failed],
-          ["Tỷ lệ mở", data.openRate + "%"],
-          ["Tỷ lệ nhấp", data.clickRate + "%"],
-          ["Tỷ lệ phản hồi", data.replyRate + "%"],
-          ["Tỷ lệ lỗi", data.bounceRate + "%"]
+          { key: "Tổng lead", value: data.total ?? 0, tone: "neutral" },
+          { key: "Đang chờ", value: data.queued ?? 0, tone: "queued" },
+          { key: "Đã gửi", value: data.sent ?? 0, tone: "sent" },
+          { key: "Lỗi", value: data.failed ?? 0, tone: "failed" },
+          { key: "Tỷ lệ mở", value: `${data.openRate ?? 0}%`, tone: "rate" },
+          { key: "Tỷ lệ nhấp", value: `${data.clickRate ?? 0}%`, tone: "rate" },
+          { key: "Phản hồi", value: `${data.replyRate ?? 0}%`, tone: "rate" },
+          { key: "Bounce", value: `${data.bounceRate ?? 0}%`, tone: "warn" }
         ];
         metricsEl.innerHTML = cards
-          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .map((item) => `
+            <div class="sales-kpi-card sales-kpi-card--${item.tone}">
+              <span class="sales-kpi-label">${escapeHtml(item.key)}</span>
+              <span class="sales-kpi-value">${escapeHtml(item.value)}</span>
+            </div>
+          `)
           .join("");
       }
 
@@ -890,15 +1375,138 @@
         const validEmails = data.validEmails || 0;
         const missingEmails = Math.max(totalRows - validEmails, 0);
         const cards = [
-          ["Số dòng", totalRows],
-          ["Email hợp lệ", validEmails],
-          ["Thiếu email", missingEmails],
-          ["Giới hạn xếp hàng", 5]
+          { key: "Số dòng", value: totalRows },
+          { key: "Email hợp lệ", value: validEmails },
+          { key: "Thiếu email", value: missingEmails },
+          { key: "Giới hạn batch", value: 5 }
         ];
 
         sheetStats.innerHTML = cards
-          .map(([k, v]) => `<div class="card"><div class="k">${k}</div><div class="v">${v}</div></div>`)
+          .map((item) => `
+            <div class="sales-stat-chip">
+              <span class="sales-stat-chip-label">${escapeHtml(item.key)}</span>
+              <span class="sales-stat-chip-value">${escapeHtml(item.value)}</span>
+            </div>
+          `)
           .join("");
+      }
+
+      function getExistingEmailStatusMap() {
+        return new Map(
+          records
+            .filter((record) => record.email)
+            .map((record) => [String(record.email).toLowerCase(), record.status])
+        );
+      }
+
+      function renderCsvOutreachRows(csvRows) {
+        const sorted = sortRowsByStt(csvRows);
+        const existingStatus = getExistingEmailStatusMap();
+
+        if (recordCount) {
+          recordCount.textContent = `${sorted.length} dòng CSV`;
+        }
+
+        if (!sorted.length) {
+          rowsEl.innerHTML = `<tr><td colspan="6" class="sales-empty">CSV không có dòng hợp lệ. Kiểm tra cột company_name và email.</td></tr>`;
+          return;
+        }
+
+        rowsEl.innerHTML = sorted
+          .map((row) => {
+            const emailKey = String(row.email || "").toLowerCase();
+            const existing = existingStatus.get(emailKey);
+            let statusLabel = "Mới";
+            let statusClass = "ready";
+
+            if (existing === "drafted") {
+              statusLabel = "Đã soạn";
+              statusClass = "drafted";
+            } else if (existing === "sent") {
+              statusLabel = "Đã gửi";
+              statusClass = "sent";
+            } else if (existing === "queued") {
+              statusLabel = "Đang chờ";
+              statusClass = "queued";
+            } else if (existing === "failed") {
+              statusLabel = "Lỗi";
+              statusClass = "failed";
+            } else if (existing === "skipped") {
+              statusLabel = "Bỏ qua";
+              statusClass = "skipped";
+            } else if (!row.email) {
+              statusLabel = "Thiếu email";
+              statusClass = "skipped";
+            } else if (!row.companyName) {
+              statusLabel = "Thiếu tên";
+              statusClass = "skipped";
+            }
+
+            return `<tr class="sales-row-csv">
+              <td>${escapeHtml(row.stt || "-")}</td>
+              <td><strong>${escapeHtml(row.companyName || "-")}</strong></td>
+              <td class="sales-cell-email">${escapeHtml(row.email || "-")}</td>
+              <td><span class="sales-badge sales-badge--${escapeHtml(statusClass)}">${escapeHtml(statusLabel)}</span></td>
+              <td>-</td>
+              <td class="sales-cell-date">CSV</td>
+            </tr>`;
+          })
+          .join("");
+      }
+
+      function showCsvInOutreachList(rows, message = "") {
+        csvViewRows = rows || [];
+        if (csvViewBanner) {
+          csvViewBanner.hidden = false;
+          csvViewBannerText.textContent = message || `Đang xem ${csvViewRows.length} dòng từ CSV. Các dòng "Mới" sẽ được nhập khi bạn xếp hàng.`;
+        }
+        renderCsvOutreachRows(csvViewRows);
+        document.querySelector(".sales-records-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      function exitCsvView() {
+        csvViewRows = null;
+        if (csvViewBanner) csvViewBanner.hidden = true;
+        renderRows();
+        if (recordCount) {
+          recordCount.textContent = `${records.length} bản ghi`;
+        }
+      }
+
+      async function importCsvAfterPreview(previewData) {
+        if (!activeCsvSource?.text) return null;
+
+        const res = await apiFetch("/api/csv/import", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            csvText: activeCsvSource.text,
+            fileName: activeCsvSource.name
+          })
+        });
+
+        const data = await parseApiResponse(res);
+        if (!res.ok) {
+          throw new Error(data.error || "Không thể nhập CSV vào danh sách tiếp cận.");
+        }
+
+        await refresh();
+        showCsvInOutreachList(previewData.rows || [], buildCsvBannerMessage(previewData, data));
+        return data;
+      }
+
+      function buildCsvBannerMessage(previewData, importData) {
+        const total = previewData.totalRows || 0;
+        const queued = importData?.queued || 0;
+        const eligible = importData?.eligible ?? 0;
+
+        if (queued > 0) {
+          return `Đã nhập ${queued} lead mới từ CSV. Tổng ${total} dòng — ${eligible} đủ điều kiện, ${queued} vừa được thêm.`;
+        }
+        if (eligible === 0) {
+          return `CSV có ${total} dòng nhưng không có lead mới (email đã có trong hệ thống với trạng thái Đã soạn/Đã gửi).`;
+        }
+        return `CSV có ${total} dòng, ${eligible} đủ điều kiện nhưng chưa có lead mới được thêm lần này.`;
       }
 
       function renderSheetPreview(rows) {
@@ -913,7 +1521,7 @@
         if (!sorted.length) {
           previewRowsEl.innerHTML = `
             <tr>
-              <td colspan="6" class="muted">Chưa có dòng nào để hiển thị.</td>
+              <td colspan="6" class="sales-empty">Chưa có dòng nào để hiển thị.</td>
             </tr>
           `;
           return;
@@ -924,13 +1532,13 @@
             const key = `${row.stt || ""}-${row.email || row.companyName || ""}`;
             const queueReady = readyKeys.has(key);
             return `
-              <tr class="${queueReady ? "queue-ready" : ""}">
+              <tr class="${queueReady ? "sales-row-ready" : ""}">
                 <td>${escapeHtml(row.stt || "-")}</td>
-                <td>${escapeHtml(row.companyName || "-")}</td>
+                <td><strong>${escapeHtml(row.companyName || "-")}</strong></td>
                 <td>${escapeHtml(row.email || "-")}</td>
                 <td>${escapeHtml(row.mainProduct || "-")}</td>
-                <td>${escapeHtml(row.website || "-")}</td>
-                <td>${queueReady ? '<span class="queue-badge">5 dòng kế tiếp</span>' : '<span class="muted">Đang chờ</span>'}</td>
+                <td>${row.website ? `<a href="${escapeHtml(row.website)}" class="sales-link" target="_blank" rel="noopener">${escapeHtml(row.website)}</a>` : "-"}</td>
+                <td>${queueReady ? '<span class="sales-badge sales-badge--ready">Batch kế tiếp</span>' : '<span class="sales-badge sales-badge--muted">Chờ</span>'}</td>
               </tr>
             `;
           })
@@ -938,6 +1546,11 @@
       }
 
       function renderRows() {
+        if (csvViewRows) {
+          renderCsvOutreachRows(csvViewRows);
+          return;
+        }
+
         const keyword = searchInput.value.trim().toLowerCase();
         const filtered = sortRowsByStt(records).filter((r) => {
           const byKeyword = !keyword ||
@@ -946,20 +1559,29 @@
           return byKeyword;
         });
 
+        if (recordCount) {
+          recordCount.textContent = `${filtered.length} bản ghi`;
+        }
+
+        if (!filtered.length) {
+          rowsEl.innerHTML = `<tr><td colspan="6" class="sales-empty">Không có bản ghi phù hợp.</td></tr>`;
+          return;
+        }
+
         rowsEl.innerHTML = filtered
           .map(
-            (r) => `<tr data-id="${r._id}">
+            (r) => `<tr data-id="${r._id}" class="${selectedRecordId === r._id ? "sales-row-selected" : ""}">
               <td>${escapeHtml(r.stt || "-")}</td>
-              <td>${escapeHtml(r.companyName || "-")}</td>
-              <td>${escapeHtml(r.email || "-")}</td>
-              <td><span class="tag ${r.status}">${escapeHtml(statusLabels[r.status] || r.status)}</span></td>
+              <td class="sales-cell-company"><strong>${escapeHtml(r.companyName || "-")}</strong></td>
+              <td class="sales-cell-email">${escapeHtml(r.email || "-")}</td>
+              <td><span class="sales-badge sales-badge--${escapeHtml(r.status)}">${escapeHtml(statusLabels[r.status] || r.status)}</span></td>
               <td>${escapeHtml(r.attemptCount ?? 0)}</td>
-              <td>${escapeHtml(formatDate(r.updatedAt))}</td>
+              <td class="sales-cell-date">${escapeHtml(formatDate(r.updatedAt))}</td>
             </tr>`
           )
           .join("");
 
-        rowsEl.querySelectorAll("tr").forEach((row) => {
+        rowsEl.querySelectorAll("tr[data-id]").forEach((row) => {
           row.addEventListener("click", () => loadDetail(row.dataset.id));
         });
       }
@@ -1138,6 +1760,11 @@
           runway: "Runway",
           veo: "Google Veo"
         };
+        const videoOutputTypeMap = {
+          podcast: "Podcast",
+          "smooth-scene-changing": "Smooth scene changing",
+          animation: "Animation"
+        };
         const pixelleModeMap = {
           full: "Full target mode",
         };
@@ -1157,6 +1784,7 @@
           <span><b>Loại nội dung:</b> ${escapeHtml(typeMap[summary.assetType] || summary.assetType || "-")}</span>
           <span><b>Nguồn ảnh:</b> ${escapeHtml(modeMap[summary.inputMode] || summary.inputMode || "-")}</span>
           <span><b>Bộ tạo ảnh:</b> ${escapeHtml(imageProviderMap[summary.imageProvider] || summary.imageProvider || "-")} · <b>Video creator:</b> ${escapeHtml(videoProviderMap[summary.videoProvider] || summary.videoProvider || "-")}</span>
+          <span><b>Kiểu video:</b> ${escapeHtml(videoOutputTypeMap[summary.videoOutputType] || summary.videoOutputType || "-")}</span>
           <span><b>Phong cách:</b> ${escapeHtml(summary.visualStyle || "-")} · <b>Thời lượng:</b> ${escapeHtml(summary.duration || "-")}</span>
           <span><b>Profile:</b> ${escapeHtml(pixelleModeMap[summary.pixelleMode] || summary.pixelleMode || "-")} · <b>Render:</b> Visual render · <b>Kịch bản:</b> ${escapeHtml(scriptModeMap[summary.scriptMode] || summary.scriptMode || "-")} · <b>Khung hình:</b> ${escapeHtml(aspectRatioMap[summary.aspectRatio] || summary.aspectRatio || "-")}</span>
           <span><b>Template:</b> ${escapeHtml(summary.frameTemplate || "auto")} · <b>Workflow visual:</b> ${escapeHtml(summary.mediaWorkflow || "auto")} · <b>Voice:</b> ${escapeHtml(summary.ttsWorkflow || "auto")}</span>
@@ -1259,8 +1887,12 @@
                 </div>
                 <div class="creator-visual-caption">
                   <strong>${escapeHtml(item.label || `Ảnh ${index + 1}`)}</strong>
-                  <span>${escapeHtml(item.caption || style)}</span>
-                  <a class="preview-link" href="${escapeHtml(item.url || "")}" target="_blank" rel="noopener noreferrer">Mở ảnh gốc</a>
+                  <span>${escapeHtml(item.caption || style)}${item.source ? ` · ${escapeHtml(item.source)}` : ""}</span>
+                  <div style="display:flex; gap:8px; margin-top:4px;">
+                    <a class="preview-link" href="${escapeHtml(item.url || "")}" target="_blank" rel="noopener noreferrer">Mở ảnh gốc</a>
+                    ${item.url && !item.url.startsWith("data:") ? `<a class="preview-link" href="${escapeHtml(item.url)}" download="image-${index + 1}.png" target="_blank" rel="noopener noreferrer">⬇ Tải về</a>` : ""}
+                    ${item.url && item.url.startsWith("data:") ? `<a class="preview-link" href="${escapeHtml(item.url)}" download="image-${index + 1}.png">⬇ Tải về</a>` : ""}
+                  </div>
                 </div>
               </div>
             `)
@@ -1283,7 +1915,7 @@
           creatorVideoPreview.innerHTML = `
             <div class="video-mock-card">
               ${realVideoUrl ? `
-                <video class="rendered-video-player" controls preload="metadata" poster="${escapeHtml(video.posterUrl || "")}">
+                <video class="rendered-video-player" controls muted preload="metadata" poster="${escapeHtml(video.posterUrl || "")}">
                   <source src="${escapeHtml(realVideoUrl)}" type="video/mp4" />
                 </video>
               ` : `
@@ -1299,7 +1931,8 @@
               <div class="video-scenes">
                 ${(video.scenes || []).map((scene, index) => `<div><b>Cảnh ${index + 1}:</b> ${escapeHtml(scene)}</div>`).join("")}
                 <div><b>Trạng thái:</b> ${escapeHtml(video.note || "Preview video đã sẵn sàng")}</div>
-                ${realVideoUrl ? `<div><a class="preview-link" href="${escapeHtml(realVideoUrl)}" target="_blank" rel="noopener noreferrer">Mở video đã render</a></div>` : ""}
+                ${video.isMockRender ? `<div><b>Lưu ý:</b> Video preview hiện là <b>mock sample</b> để test pipeline; audio trong video không phải từ ElevenLabs.</div>` : ""}
+                ${realVideoUrl ? `<div><a class="preview-link" href="${escapeHtml(realVideoUrl)}" target="_blank" rel="noopener noreferrer">Mở video đã render</a> &nbsp; <a class="preview-link" href="${escapeHtml(realVideoUrl)}" download="rendered-video.mp4" target="_blank" rel="noopener noreferrer">⬇ Tải video</a></div>` : ""}
               </div>
             </div>
           `;
@@ -1369,18 +2002,83 @@
           inputMode: creatorInputMode.value,
           imageProvider: creatorImageProvider.value,
           videoProvider: creatorVideoProvider.value,
+          videoOutputType: creatorVideoOutputType.value,
           visualStyle: creatorStyle.value,
           duration: creatorDuration.value,
           channels: creatorChannels.value.trim(),
+          customVoiceScript: creatorVoiceScript.value.trim(),
+          voiceId: creatorVoicePreset.value,
+          customVoiceId: creatorCustomVoiceId.value.trim(),
+          stability: creatorVoiceStability.value,
+          similarityBoost: creatorVoiceSimilarity.value,
+          brandName: creatorBrandName.value.trim(),
+          brandColor: creatorBrandColor.value,
+          brandLogo: creatorBrandLogo.value.trim(),
           pixelleMode: creatorPixelleMode.value,
           scriptMode: creatorScriptMode.value,
           aspectRatio: creatorAspectRatio.value,
           frameTemplate: creatorTemplate.value,
           mediaWorkflow: creatorMediaWorkflow.value,
           ttsWorkflow: creatorTtsWorkflow.value,
-          allowFallback: creatorAllowFallback.value,
-          uploadedImages: creatorUploadedAssets.map((item) => ({ name: item.name }))
+          allowFallback: "false",
+          uploadedImages: creatorUploadedAssets.map((item) => ({ name: item.name })),
+          customScript: getCustomScript()
         };
+      }
+
+      // ── Script builder helpers ───────────────────────────────────────────────
+      function getCustomScript() {
+        if (scriptBuilderPanel.style.display === "none") return undefined;
+        const areas = scriptSceneList.querySelectorAll("textarea");
+        if (!areas.length) return undefined;
+        const text = Array.from(areas).map((ta) => ta.value.trim()).filter(Boolean).join("\n\n");
+        return text || undefined;
+      }
+
+      function renderScenes(scenes) {
+        scriptSceneList.innerHTML = scenes.map((scene, i) => `
+          <div class="script-scene-item" style="display:flex;gap:6px;align-items:flex-start;">
+            <span style="min-width:22px;font-size:13px;color:#6b7280;padding-top:8px;">${i + 1}.</span>
+            <textarea rows="3" style="flex:1;font-size:13px;padding:8px;border:1px solid #d1d5db;border-radius:6px;resize:vertical;">${escapeHtml(scene)}</textarea>
+            <button onclick="this.closest('.script-scene-item').remove(); renumberScenes();" class="secondary" style="font-size:11px;padding:4px 8px;margin-top:4px;">✕</button>
+          </div>
+        `).join("");
+      }
+
+      function renumberScenes() {
+        scriptSceneList.querySelectorAll(".script-scene-item").forEach((item, i) => {
+          const label = item.querySelector("span");
+          if (label) label.textContent = (i + 1) + ".";
+        });
+      }
+
+      async function previewScript() {
+        const prompt = creatorPrompt.value.trim();
+        if (!prompt) {
+          scriptBuilderStatus.textContent = "Nhập yêu cầu trước để xem kịch bản.";
+          scriptBuilderPanel.style.display = "block";
+          return;
+        }
+        scriptBuilderStatus.textContent = "Đang tải kịch bản...";
+        scriptBuilderPanel.style.display = "block";
+        try {
+          const res = await apiFetch("/api/content-creator/preview-script", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              prompt,
+              visualStyle: creatorStyle.value,
+              duration: creatorDuration.value,
+              videoOutputType: creatorVideoOutputType.value
+            })
+          });
+          const data = await res.json();
+          if (!data.ok) throw new Error(data.error || "Lỗi không xác định");
+          renderScenes(data.scenes);
+          scriptBuilderStatus.textContent = `${data.scenes.length} cảnh đã tải. Chỉnh sửa tuỳ ý, rồi nhấn Bắt đầu tạo video.`;
+        } catch (err) {
+          scriptBuilderStatus.textContent = "Lỗi: " + err.message;
+        }
       }
 
       async function loadContentCreatorDashboard(useCustom = false) {
@@ -1392,7 +2090,7 @@
         try {
           const payload = buildCreatorPayload();
 
-          const res = await fetch(useCustom ? "/api/content-creator/plan" : "/api/content-creator/dashboard", {
+          const res = await apiFetch(useCustom ? "/api/content-creator/plan" : "/api/content-creator/dashboard", {
             method: useCustom ? "POST" : "GET",
             headers: { "Content-Type": "application/json" },
             body: useCustom ? JSON.stringify(payload) : undefined
@@ -1443,7 +2141,7 @@
             channels: marketingChannels.value.trim()
           };
 
-          const res = await fetch(useCustom ? "/api/marketing/plan" : "/api/marketing/dashboard", {
+          const res = await apiFetch(useCustom ? "/api/marketing/plan" : "/api/marketing/dashboard", {
             method: useCustom ? "POST" : "GET",
             headers: { "Content-Type": "application/json" },
             body: useCustom ? JSON.stringify(payload) : undefined
@@ -1468,164 +2166,367 @@
         }
       }
 
-      async function loadDetail(id) {
-        detailEl.innerHTML = "Đang tải bản xem trước...";
-        let res = await fetch(`/api/records/${id}`);
+      function enablePreviewEditing() {
+        const doc = modalPreviewFrame?.contentDocument;
+        if (!doc || !doc.body) return;
+
+        doc.body.contentEditable = "true";
+        doc.body.spellcheck = true;
+        doc.body.style.outline = "none";
+        doc.body.style.cursor = "text";
+
+        if (!doc.getElementById("preview-edit-style")) {
+          const style = doc.createElement("style");
+          style.id = "preview-edit-style";
+          style.textContent = `
+            html, body { cursor: text; }
+            *:focus { outline: 2px solid rgba(15, 76, 129, 0.28); outline-offset: 2px; }
+            [contenteditable="true"] { -webkit-user-modify: read-write; }
+          `;
+          doc.head.appendChild(style);
+        }
+
+        previewEditable = true;
+      }
+
+      function getEditedPreviewHtml() {
+        const doc = modalPreviewFrame?.contentDocument;
+        if (!doc?.documentElement) return "";
+        return `<!DOCTYPE html>\n${doc.documentElement.outerHTML}`;
+      }
+
+      function getEditedPreviewText() {
+        const doc = modalPreviewFrame?.contentDocument;
+        return (doc?.body?.innerText || "").trim();
+      }
+
+      function openEmailPreviewModal(title, html, options = {}) {
+        const editable = options.editable !== false;
+        previewEditable = false;
+
+        if (previewModalTitle) {
+          previewModalTitle.textContent = title || "Xem bản nháp email ở chế độ mở rộng";
+        }
+        if (modalPreviewFrame) {
+          modalPreviewFrame.onload = () => {
+            if (editable) {
+              enablePreviewEditing();
+            }
+          };
+          modalPreviewFrame.srcdoc =
+            html ||
+            "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Bản xem trước sẽ hiển thị tại đây.</body></html>";
+        }
+        if (previewModal) {
+          previewModal.style.display = "flex";
+        }
+      }
+
+      function closeEmailPreviewModal() {
+        if (previewModal) {
+          previewModal.style.display = "none";
+        }
+        if (modalPreviewFrame) {
+          modalPreviewFrame.onload = null;
+          modalPreviewFrame.srcdoc = "";
+        }
+        previewEditable = false;
+        selectedRecordId = null;
+        renderRows();
+      }
+
+      async function saveEditedPreview() {
+        if (!selectedRecordId) {
+          throw new Error("Chưa chọn bản ghi.");
+        }
+        const emailHtml = getEditedPreviewHtml();
+        if (!emailHtml) {
+          throw new Error("Không đọc được nội dung đang chỉnh sửa.");
+        }
+
+        const res = await apiFetch(`/api/records/${selectedRecordId}/save-html`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            emailHtml,
+            emailBody: getEditedPreviewText()
+          })
+        });
+        const data = await res.json();
+        if (!res.ok) {
+          throw new Error(data.error || "Không thể lưu chỉnh sửa.");
+        }
+        return data.record;
+      }
+
+      async function prepareRecordPreview(id, force = false) {
+        let res = await apiFetch(`/api/records/${id}`);
         let data = await res.json();
 
         if (!data || !data.record) {
-          detailEl.innerHTML = "<p class='muted'>Không tìm thấy chi tiết.</p>";
-          return;
+          throw new Error("Không tìm thấy bản ghi.");
         }
 
-        if ((!data.record.emailSubject || !data.record.emailBody || !data.record.emailHtml) && data.record.email) {
-          const prepRes = await fetch(`/api/records/${id}/prepare`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ designStyle: selectedDesignStyle })
-          });
-          const prepData = await prepRes.json();
-          if (prepRes.ok && prepData.record) {
-            data = prepData;
-          }
-        }
+        const needsPrepare =
+          force ||
+          !data.record.emailSubject ||
+          !data.record.emailBody ||
+          !data.record.emailHtml;
 
-        const r = data.record;
-        const eventsHtml = (data.events || [])
-          .map((e) => `<div class="timeline-item"><b>${escapeHtml(e.eventType)}</b> - ${escapeHtml(formatDate(e.eventAt))}</div>`)
-          .join("");
-
-        detailEl.innerHTML = `
-          <p><b>STT:</b> ${escapeHtml(r.stt || "-")}</p>
-          <p><b>Công ty:</b> ${escapeHtml(r.companyName || "-")}</p>
-          <p><b>Email:</b> ${escapeHtml(r.email || "-")}</p>
-          <div class="email-preview-box">
-            <p class="muted"><b>Xem trước email kiểu landing page trước khi gửi</b></p>
-            <p><b>Tiêu đề:</b> ${escapeHtml(r.emailSubject || "Bản nháp sẽ được tạo tại đây.")}</p>
-            <div class="preview-body">${escapeHtml(r.emailBody || "Hãy bấm Làm mới bản nháp để tạo nội dung email. ").replace(/\n/g, "<br/>")}</div>
-            <div class="preview-toolbar">
-              <button class="secondary" id="expandPreviewBtn">Mở rộng bản xem trước</button>
-            </div>
-            <div class="rendered-preview-wrap">
-              <iframe
-                id="inlinePreviewFrame"
-                class="rendered-email-preview"
-                title="Bản xem trước email đã dựng"
-                srcdoc="${escapeHtml(r.emailHtml || "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Bản xem trước sẽ hiển thị tại đây.</body></html>")}">
-              </iframe>
-            </div>
-          </div>
-          <div class="detail-actions">
-            <input id="sendToEmail" placeholder="Gửi tới một địa chỉ email khác" value="${escapeHtml(r.email || "")}" />
-            <select id="designStyle">
-              <option value="vercel" ${selectedDesignStyle === "vercel" ? "selected" : ""}>Tác nhân giao diện kiểu Vercel</option>
-              <option value="landing" ${selectedDesignStyle === "landing" ? "selected" : ""}>Tác nhân thiết kế landing page</option>
-              <option value="executive" ${selectedDesignStyle === "executive" ? "selected" : ""}>Tác nhân phong cách tối giản</option>
-            </select>
-            <button id="refreshPreviewBtn">Làm mới bản nháp</button>
-            <button id="sendEmailBtn">Gửi email</button>
-            <button class="secondary" id="copyEmail">Sao chép email</button>
-          </div>
-          <p class="muted" id="sendStatus">Bản nháp đã sẵn sàng. Bạn có thể xem lại nội dung và thay đổi người nhận trước khi gửi.</p>
-          <div class="timeline">
-            <p><b>Lịch sử sự kiện</b></p>
-            ${eventsHtml || "<p class='muted'>Chưa có sự kiện nào.</p>"}
-          </div>
-          <div style="margin-top:12px;">
-            <textarea id="replyNote" placeholder="Ghi chú tùy chọn về phản hồi của khách hàng"></textarea>
-            <div style="margin-top:8px;display:flex;gap:8px;">
-              <button id="markReplied">Đánh dấu đã phản hồi</button>
-            </div>
-          </div>
-        `;
-
-        document.getElementById("refreshPreviewBtn").addEventListener("click", async () => {
-          const statusEl = document.getElementById("sendStatus");
-          statusEl.textContent = "Đang làm mới bản xem trước...";
-          const prepRes = await fetch(`/api/records/${id}/prepare`, {
+        if (needsPrepare && data.record.email) {
+          const prepRes = await apiFetch(`/api/records/${id}/prepare`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ designStyle: selectedDesignStyle })
           });
           const prepData = await prepRes.json();
           if (!prepRes.ok) {
-            statusEl.textContent = prepData.error || "Không thể làm mới bản xem trước email.";
-            return;
+            throw new Error(prepData.error || "Không thể tạo bản xem trước email.");
           }
-          await loadDetail(id);
-        });
-
-        document.getElementById("designStyle").addEventListener("change", async (event) => {
-          selectedDesignStyle = event.target.value;
-          document.getElementById("sendStatus").textContent = "Đang cập nhật giao diện bản xem trước...";
-          await loadDetail(id);
-        });
-
-        document.getElementById("expandPreviewBtn").addEventListener("click", () => {
-          const modal = document.getElementById("previewModal");
-          const modalFrame = document.getElementById("modalPreviewFrame");
-          modalFrame.srcdoc = r.emailHtml || "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Bản xem trước sẽ hiển thị tại đây.</body></html>";
-          modal.style.display = "flex";
-        });
-
-        document.getElementById("sendEmailBtn").addEventListener("click", async () => {
-          const statusEl = document.getElementById("sendStatus");
-          const to = document.getElementById("sendToEmail").value.trim();
-          statusEl.textContent = "Đang gửi email...";
-
-          const sendRes = await fetch(`/api/records/${id}/send`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ to, designStyle: selectedDesignStyle })
-          });
-          const sendData = await sendRes.json();
-
-          if (!sendRes.ok) {
-            statusEl.textContent = sendData.error || "Không thể gửi email.";
-            return;
+          if (prepData.record) {
+            data = prepData;
           }
+        }
 
-          statusEl.textContent = `Đã gửi email tới ${sendData.to}.`;
-          await refresh();
-          await loadDetail(id);
-        });
-
-        document.getElementById("markReplied").addEventListener("click", async () => {
-          const note = document.getElementById("replyNote").value;
-          await fetch(`/api/records/${id}/replied`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ note })
-          });
-          await refresh();
-          await loadDetail(id);
-        });
-
-        document.getElementById("copyEmail").addEventListener("click", async () => {
-          await navigator.clipboard.writeText(r.email || "");
-          alert("Đã sao chép email");
-        });
+        return data.record;
       }
 
-      async function previewSheet(useDefault = false) {
+      async function loadDetail(id) {
+        selectedRecordId = id;
+        renderRows();
+        openEmailPreviewModal(
+          "Đang tải bản xem trước...",
+          "<html><body style='font-family:Arial,sans-serif;padding:24px;'>Đang tải bản xem trước...</body></html>",
+          { editable: false }
+        );
+
+        try {
+          const record = await prepareRecordPreview(id);
+          openEmailPreviewModal(
+            record.companyName
+              ? `Chỉnh sửa bản nháp · ${record.companyName}`
+              : "Chỉnh sửa bản nháp email",
+            record.emailHtml,
+            { editable: true }
+          );
+        } catch (error) {
+          openEmailPreviewModal(
+            "Không thể tải bản xem trước",
+            `<html><body style="font-family:Arial,sans-serif;padding:24px;color:#b12f2f;">${escapeHtml(error.message)}</body></html>`,
+            { editable: false }
+          );
+        }
+      }
+
+      function getActiveLeadSource() {
         const sheetUrl = sheetUrlInput.value.trim();
-        if (!useDefault && !sheetUrl) {
-          sheetFeedback.textContent = "Hãy dán URL Google Sheet trước.";
+        if (sheetUrl) {
+          return { type: "sheet", sheetUrl };
+        }
+        if (activeCsvSource?.text) {
+          return { type: "csv", ...activeCsvSource };
+        }
+        return { type: "default" };
+      }
+
+      function setLeadSourceMode(mode) {
+        if (mode === "csv") {
+          sheetUrlInput.value = "";
+        } else {
+          activeCsvSource = null;
+          csvFileName.hidden = true;
+          csvFileName.textContent = "";
+          csvDropzone.classList.remove("has-file");
+        }
+      }
+
+      function isCsvFile(file) {
+        if (!file) return false;
+        const name = String(file.name || "").toLowerCase();
+        const type = String(file.type || "").toLowerCase();
+        return name.endsWith(".csv") || type.includes("csv") || type === "text/plain";
+      }
+
+      function looksLikeCsvText(text) {
+        const sample = String(text || "").trim();
+        if (!sample || sample.length < 4) return false;
+        if (sample.startsWith("http://") || sample.startsWith("https://")) return false;
+        const lines = sample.split(/\r?\n/).filter((line) => line.trim());
+        if (lines.length < 2) return false;
+        const header = lines[0].toLowerCase();
+        return header.includes(",") && lines.length >= 2;
+      }
+
+      async function readCsvPayload(csvText, name = "pasted.csv") {
+        if (!String(csvText || "").trim()) {
+          throw new Error("Nội dung CSV trống.");
+        }
+
+        activeCsvSource = {
+          text: csvText,
+          name
+        };
+        setLeadSourceMode("csv");
+        csvFileName.textContent = name;
+        csvFileName.hidden = false;
+        csvDropzone.classList.add("has-file");
+        await replaceCsvSource();
+      }
+
+      async function replaceCsvSource() {
+        if (!activeCsvSource?.text) {
+          sheetFeedback.textContent = "Hãy chọn hoặc dán file CSV trước.";
+          return;
+        }
+
+        const confirmed = window.confirm(
+          "Thao tác này sẽ xóa toàn bộ danh sách tiếp cận hiện tại và thay bằng dữ liệu CSV mới. Tiếp tục?"
+        );
+        if (!confirmed) {
+          sheetFeedback.textContent = "Đã hủy thay thế danh sách bằng CSV.";
           return;
         }
 
         previewSheetBtn.disabled = true;
         importSheetBtn.disabled = true;
+        sheetFeedback.textContent = "Đang thay thế danh sách bằng dữ liệu CSV...";
+
+        try {
+          const res = await apiFetch("/api/csv/replace", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              csvText: activeCsvSource.text,
+              fileName: activeCsvSource.name
+            })
+          });
+
+          const data = await parseApiResponse(res);
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể thay thế danh sách bằng CSV.");
+          }
+
+          csvViewRows = null;
+          if (csvViewBanner) csvViewBanner.hidden = true;
+
+          renderSheetStats(data);
+          renderSheetPreview(data.rows || []);
+          previewLoaded = true;
+          previewPanelTitle.textContent = `Danh sách xem trước · ${data.sheetTitle}`;
+
+          await refresh();
+          closeEmailPreviewModal();
+
+          sheetFeedback.textContent = `Đã xóa ${data.deleted ?? 0} bản ghi cũ và nhập ${data.inserted ?? 0} bản ghi mới từ CSV.`;
+          document.querySelector(".sales-records-panel")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        } finally {
+          previewSheetBtn.disabled = false;
+          importSheetBtn.disabled = false;
+        }
+      }
+
+      async function readCsvFile(file) {
+        if (!isCsvFile(file)) {
+          throw new Error("Vui lòng chọn file .csv hợp lệ.");
+        }
+
+        const csvText = await file.text();
+        await readCsvPayload(csvText, file.name || "CSV upload");
+      }
+
+      async function parseApiResponse(res) {
+        const contentType = res.headers.get("content-type") || "";
+        if (contentType.includes("application/json")) {
+          return res.json();
+        }
+        const text = await res.text();
+        if (res.status === 404) {
+          throw new Error("API CSV chưa sẵn sàng. Hãy khởi động lại dashboard: npm run sales:dashboard");
+        }
+        throw new Error(text || `Yêu cầu thất bại (${res.status}).`);
+      }
+
+      async function previewCsvSource(options = {}) {
+        const { autoImport = false } = options;
+
+        if (!activeCsvSource?.text) {
+          sheetFeedback.textContent = "Hãy chọn hoặc kéo thả file CSV trước.";
+          return;
+        }
+
+        previewSheetBtn.disabled = true;
+        importSheetBtn.disabled = true;
+        sheetFeedback.textContent = "Đang đọc file CSV...";
+
+        try {
+          const res = await apiFetch("/api/csv/preview", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              csvText: activeCsvSource.text,
+              fileName: activeCsvSource.name
+            })
+          });
+
+          const data = await parseApiResponse(res);
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể xem trước file CSV.");
+          }
+
+          renderSheetStats(data);
+          renderSheetPreview(data.rows || []);
+          previewLoaded = true;
+          previewPanelTitle.textContent = `Danh sách xem trước · ${data.sheetTitle}`;
+          showCsvInOutreachList(
+            data.rows || [],
+            `Đã tải ${data.totalRows} dòng từ CSV. Nhấn "Xếp hàng 5 lead" để nhập vào hệ thống.`
+          );
+          sheetFeedback.textContent = `Đã tải ${data.totalRows} dòng từ ${data.sheetTitle}. Nhấn "Xếp hàng 5 lead" để cập nhật danh sách tiếp cận.`;
+
+          if (autoImport) {
+            sheetFeedback.textContent = "Đang nhập CSV vào danh sách tiếp cận...";
+            const importData = await importCsvAfterPreview(data);
+            sheetFeedback.textContent = buildCsvBannerMessage(data, importData);
+          }
+        } catch (error) {
+          renderSheetStats({});
+          renderSheetPreview([]);
+          sheetFeedback.textContent = error.message;
+        } finally {
+          previewSheetBtn.disabled = false;
+          importSheetBtn.disabled = false;
+        }
+      }
+
+      async function previewSheet(useDefault = false) {
+        const source = getActiveLeadSource();
+
+        if (source.type === "csv") {
+          await previewCsvSource();
+          return;
+        }
+
+        if (!useDefault && source.type !== "sheet") {
+          sheetFeedback.textContent = "Hãy dán URL Google Sheet hoặc tải file CSV trước.";
+          return;
+        }
+
+        setLeadSourceMode("sheet");
+        exitCsvView();
+        previewSheetBtn.disabled = true;
+        importSheetBtn.disabled = true;
         sheetFeedback.textContent = "Đang đọc Google Sheet...";
 
         try {
-          const res = await fetch("/api/sheet/preview", {
+          const res = await apiFetch("/api/sheet/preview", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(useDefault ? {} : { sheetUrl })
+            body: JSON.stringify(source.type === "sheet" ? { sheetUrl: source.sheetUrl } : {})
           });
 
-          const data = await res.json();
+          const data = await parseApiResponse(res);
           if (!res.ok) {
             throw new Error(data.error || "Không thể xem trước Google Sheet.");
           }
@@ -1633,6 +2534,7 @@
           renderSheetStats(data);
           renderSheetPreview(data.rows || []);
           previewLoaded = true;
+          previewPanelTitle.textContent = `Danh sách xem trước · ${data.sheetTitle}`;
           sheetFeedback.textContent = `Đã tải ${data.totalRows} dòng từ sheet ${data.sheetTitle}.`;
         } catch (error) {
           renderSheetStats({});
@@ -1644,36 +2546,178 @@
         }
       }
 
-      async function importSheet() {
-        const sheetUrl = sheetUrlInput.value.trim();
+      async function restoreFromGoogleSheet() {
+        const source = getActiveLeadSource();
+        const sheetUrl = source.sheetUrl || "";
 
+        const confirmed = window.confirm(
+          "Thao tác này sẽ xóa toàn bộ danh sách tiếp cận hiện tại và tải lại từ Google Sheet. Tiếp tục?"
+        );
+        if (!confirmed) {
+          sheetFeedback.textContent = "Đã hủy tải lại từ Google Sheet.";
+          return;
+        }
+
+        restoreSheetBtn.disabled = true;
+        previewSheetBtn.disabled = true;
         importSheetBtn.disabled = true;
-        sheetFeedback.textContent = "Đang xếp hàng 5 công ty và tạo bản nháp email...";
+        sheetFeedback.textContent = "Đang tải danh sách thật từ Google Sheet...";
 
         try {
-          const res = await fetch("/api/sheet/import", {
+          const res = await apiFetch("/api/sheet/replace", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(sheetUrl ? { sheetUrl } : {})
           });
-
-          const data = await res.json();
+          const data = await parseApiResponse(res);
           if (!res.ok) {
-            throw new Error(data.error || "Không thể xếp hàng các công ty từ sheet.");
+            throw new Error(data.error || "Không thể tải danh sách từ Google Sheet.");
+          }
+
+          csvViewRows = null;
+          if (csvViewBanner) csvViewBanner.hidden = true;
+
+          renderSheetStats(data);
+          renderSheetPreview(data.rows || []);
+          previewLoaded = true;
+          previewPanelTitle.textContent = `Danh sách xem trước · ${data.sheetTitle}`;
+
+          await refresh();
+          closeEmailPreviewModal();
+          sheetFeedback.textContent = `Đã tải ${data.inserted ?? 0} lead thật từ Google Sheet (${data.sheetTitle}).`;
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        } finally {
+          restoreSheetBtn.disabled = false;
+          previewSheetBtn.disabled = false;
+          importSheetBtn.disabled = false;
+        }
+      }
+
+      async function importSheet() {
+        const source = getActiveLeadSource();
+        const useCsv = source.type === "csv";
+
+        importSheetBtn.disabled = true;
+        previewSheetBtn.disabled = true;
+        sheetFeedback.textContent = "Đang xếp hàng lead và tạo bản nháp email...";
+
+        try {
+          const endpoint = useCsv ? "/api/csv/import" : "/api/sheet/import";
+          const payload = useCsv
+            ? { csvText: source.text, fileName: source.name }
+            : (source.sheetUrl ? { sheetUrl: source.sheetUrl } : {});
+
+          const res = await apiFetch(endpoint, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await parseApiResponse(res);
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể xếp hàng các công ty.");
           }
 
           if (!data.queued) {
-            sheetFeedback.textContent = "Không có công ty mới nào được xếp hàng. Nhóm tiếp theo có thể đã được soạn hoặc đã gửi.";
+            sheetFeedback.textContent = "Không có công ty mới nào được xếp hàng. Các email có thể đã ở trạng thái Đã soạn hoặc Đã gửi.";
           } else {
             sheetFeedback.textContent = `Đã xếp hàng ${data.queued} công ty và chuẩn bị ${data.prepared} bản nháp.`;
           }
 
           await refresh();
-          await previewSheet(Boolean(sheetUrl) ? false : true);
+          exitCsvView();
+
+          if (useCsv && activeCsvSource?.text) {
+            const previewRes = await apiFetch("/api/csv/preview", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                csvText: activeCsvSource.text,
+                fileName: activeCsvSource.name
+              })
+            });
+            const previewData = await parseApiResponse(previewRes);
+            if (previewRes.ok) {
+              renderSheetStats(previewData);
+              renderSheetPreview(previewData.rows || []);
+            }
+          } else {
+            await previewSheet(useCsv ? false : !source.sheetUrl);
+          }
         } catch (error) {
           sheetFeedback.textContent = error.message;
         } finally {
           importSheetBtn.disabled = false;
+          previewSheetBtn.disabled = false;
+        }
+      }
+
+      function renderCreatorAgentFeedback(feedback = []) {
+        const panel = document.getElementById("agentFeedbackPanel");
+        const items = document.getElementById("agentFeedbackItems");
+        if (!panel || !items || !feedback.length) return;
+        items.innerHTML = feedback.map((f) => `
+          <div class="pipeline-card">
+            <div class="pipeline-top">
+              <strong>${escapeHtml(f.title || "Gợi ý")}</strong>
+              <span class="tag queued">agent</span>
+            </div>
+            <p class="muted">${escapeHtml(f.suggestion || "")}</p>
+          </div>
+        `).join("");
+        panel.style.display = "block";
+      }
+
+      function renderCreatorVoiceover(voiceover = {}) {
+        const panel = document.getElementById("creatorVoiceoverPanel");
+        const audio = document.getElementById("creatorVoiceoverAudio");
+        const dl = document.getElementById("creatorVoiceoverDownload");
+        const source = document.getElementById("creatorVoiceoverSource");
+        if (!voiceover.audioUrl || !panel || !audio) return;
+        audio.src = voiceover.audioUrl;
+        dl.href = voiceover.audioUrl;
+        if (source) {
+          const voiceInfo = voiceover.voiceId ? ` · Voice ID: ${voiceover.voiceId}` : "";
+          source.textContent = `Nguồn voiceover: ${voiceover.source || "Không xác định"}${voiceInfo}`;
+        }
+        panel.style.display = "block";
+      }
+
+      async function generateCreatorVoiceover() {
+        generateVoiceoverBtn.disabled = true;
+        voiceGenStatus.textContent = "Đang tạo audio từ ElevenLabs...";
+
+        try {
+          const payload = {
+            script: creatorVoiceScript.value.trim() || creatorPrompt.value.trim(),
+            voiceId: creatorVoicePreset.value,
+            customVoiceId: creatorCustomVoiceId.value.trim(),
+            stability: creatorVoiceStability.value,
+            similarityBoost: creatorVoiceSimilarity.value
+          };
+
+          if (!payload.script) {
+            throw new Error("Vui lòng nhập Audio script hoặc Prompt trước khi tạo voiceover.");
+          }
+
+          const res = await apiFetch("/api/content-creator/generate-voiceover", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(payload)
+          });
+
+          const data = await res.json();
+          if (!res.ok) {
+            throw new Error(data.error || "Không thể tạo voiceover.");
+          }
+
+          renderCreatorVoiceover(data.voiceover || {});
+          voiceGenStatus.textContent = "Đã tạo voiceover ElevenLabs thành công.";
+        } catch (error) {
+          voiceGenStatus.textContent = `Lỗi tạo voiceover: ${error.message}`;
+        } finally {
+          generateVoiceoverBtn.disabled = false;
         }
       }
 
@@ -1682,7 +2726,7 @@
         creatorRunStatus.textContent = "Đang gửi brief và storyboard sang Pixelle để render video thật...";
 
         try {
-          const res = await fetch("/api/content-creator/render", {
+          const res = await apiFetch("/api/content-creator/render", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(buildCreatorPayload())
@@ -1696,6 +2740,9 @@
           if (data.previews) {
             renderCreatorOutcome(data);
           }
+          if (Array.isArray(data.agentFeedback) && data.agentFeedback.length) {
+            renderCreatorAgentFeedback(data.agentFeedback);
+          }
           creatorRunStatus.textContent = data.renderJob?.statusText || "Đã gửi pipeline sang Pixelle.";
           creatorVideoPreview.scrollIntoView({ behavior: "smooth", block: "start" });
         } catch (error) {
@@ -1708,13 +2755,17 @@
       async function refresh() {
         const status = statusFilter.value;
         const [metricsRes, rowsRes] = await Promise.all([
-          fetch("/api/metrics"),
-          fetch(`/api/records${status ? `?status=${status}` : ""}`)
+          apiFetch("/api/metrics"),
+          apiFetch(`/api/records?limit=500${status ? `&status=${status}` : ""}`)
         ]);
         const [metrics, rows] = await Promise.all([metricsRes.json(), rowsRes.json()]);
         renderMetrics(metrics);
         records = rows;
-        renderRows();
+        if (csvViewRows) {
+          renderCsvOutreachRows(csvViewRows);
+        } else {
+          renderRows();
+        }
       }
 
       function submitCEOBrief() {
@@ -1725,21 +2776,130 @@
         const priority = kpiPriority.value;
 
         ceoSummary.innerHTML = `
-          <strong>Bản giao việc cho CEO đã sẵn sàng</strong>
-          <span><b>Công việc:</b> ${escapeHtml(prompt)}</span>
-          <span><b>Mục tiêu:</b> ${escapeHtml(goal)} · <b>KPI:</b> ${escapeHtml(target)} · <b>Hạn chót:</b> ${escapeHtml(deadline)} · <b>Ưu tiên:</b> ${escapeHtml(priority)}</span>
+          <div class="ceo-summary-head">
+            <strong>Bản giao việc đã sẵn sàng</strong>
+            <span class="ceo-summary-badge ceo-summary-badge--ready">Đã gửi</span>
+          </div>
+          <p class="ceo-summary-body"><b>Công việc:</b> ${escapeHtml(prompt)}</p>
+          <div class="ceo-summary-kpis">
+            <div><span>Mục tiêu</span><b>${escapeHtml(goal)}</b></div>
+            <div><span>KPI</span><b>${escapeHtml(target)}</b></div>
+            <div><span>Hạn chót</span><b>${escapeHtml(deadline)}</b></div>
+            <div><span>Ưu tiên</span><b>${escapeHtml(priority)}</b></div>
+          </div>
         `;
+        ceoSummary.classList.add("ceo-summary--ready");
       }
 
       refreshBtn.addEventListener("click", refresh);
       statusFilter.addEventListener("change", refresh);
       searchInput.addEventListener("input", renderRows);
-      previewSheetBtn.addEventListener("click", () => previewSheet(false));
-      importSheetBtn.addEventListener("click", importSheet);
+      previewSheetBtn?.addEventListener("click", () => previewSheet(false));
+      restoreSheetBtn?.addEventListener("click", restoreFromGoogleSheet);
+      importSheetBtn?.addEventListener("click", importSheet);
+      sheetUrlInput?.addEventListener("input", () => {
+        if (sheetUrlInput.value.trim()) {
+          setLeadSourceMode("sheet");
+        }
+      });
+
+      exitCsvViewBtn?.addEventListener("click", exitCsvView);
+      csvBrowseBtn?.addEventListener("click", () => csvFileInput?.click());
+      csvDropzone?.addEventListener("click", (event) => {
+        if (event.target.closest("#csvBrowseBtn")) return;
+        csvDropzone.focus();
+      });
+      csvFileInput?.addEventListener("change", async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+        try {
+          await readCsvFile(file);
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        } finally {
+          csvFileInput.value = "";
+        }
+      });
+
+      if (csvDropzone) {
+      ["dragenter", "dragover"].forEach((eventName) => {
+        csvDropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          csvDropzone.classList.add("is-dragover");
+        });
+      });
+
+      ["dragleave", "drop"].forEach((eventName) => {
+        csvDropzone.addEventListener(eventName, (event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          csvDropzone.classList.remove("is-dragover");
+        });
+      });
+
+      csvDropzone.addEventListener("drop", async (event) => {
+        const file = event.dataTransfer?.files?.[0];
+        if (!file) return;
+        try {
+          await readCsvFile(file);
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        }
+      });
+      }
+
+      if (csvDropzone) {
+      csvDropzone.addEventListener("paste", async (event) => {
+        const clipboard = event.clipboardData;
+        if (!clipboard) return;
+
+        const file = Array.from(clipboard.files || []).find((item) => isCsvFile(item));
+        if (file) {
+          event.preventDefault();
+          try {
+            await readCsvFile(file);
+          } catch (error) {
+            sheetFeedback.textContent = error.message;
+          }
+          return;
+        }
+
+        const pastedText = clipboard.getData("text/plain");
+        if (!looksLikeCsvText(pastedText)) return;
+
+        event.preventDefault();
+        try {
+          await readCsvPayload(pastedText, "pasted.csv");
+        } catch (error) {
+          sheetFeedback.textContent = error.message;
+        }
+      });
+      }
+
       buildMarketingPlanBtn.addEventListener("click", () => loadMarketingDashboard(true));
       refreshMarketingBtn.addEventListener("click", () => loadMarketingDashboard(false));
       generateCreatorPlanBtn.addEventListener("click", () => loadContentCreatorDashboard(true));
       startCreatorRenderBtn.addEventListener("click", startCreatorRender);
+      generateVoiceoverBtn.addEventListener("click", generateCreatorVoiceover);
+      previewScriptBtn.addEventListener("click", previewScript);
+      creatorVoicePreset.addEventListener("change", () => {
+        creatorCustomVoiceId.style.display = creatorVoicePreset.value === "custom" ? "block" : "none";
+        if (creatorVoicePreset.value !== "custom") {
+          creatorCustomVoiceId.value = "";
+        }
+      });
+      addSceneBtn.addEventListener("click", () => {
+        const div = document.createElement("div");
+        div.className = "script-scene-item";
+        div.style.cssText = "display:flex;gap:6px;align-items:flex-start;";
+        const n = scriptSceneList.querySelectorAll(".script-scene-item").length + 1;
+        div.innerHTML = `<span style="min-width:22px;font-size:13px;color:#6b7280;padding-top:8px;">${n}.</span><textarea rows="3" style="flex:1;font-size:13px;padding:8px;border:1px solid #d1d5db;border-radius:6px;resize:vertical;" placeholder="Nhập nội dung cảnh..."></textarea><button onclick="this.closest('.script-scene-item').remove(); renumberScenes();" class="secondary" style="font-size:11px;padding:4px 8px;margin-top:4px;">✕</button>`;
+        scriptSceneList.appendChild(div);
+        div.querySelector("textarea").focus();
+      });
+      resetScriptBtn.addEventListener("click", previewScript);
+      closeScriptBuilderBtn.addEventListener("click", () => { scriptBuilderPanel.style.display = "none"; });
       refreshCreatorBtn.addEventListener("click", () => loadContentCreatorDashboard(false));
       creatorInputMode.addEventListener("change", () => {
         document.getElementById("creatorUploadWrap").style.display = ["upload", "hybrid"].includes(creatorInputMode.value) ? "block" : "none";
@@ -1756,12 +2916,13 @@
           : "Chưa có ảnh nào được tải lên.";
       });
       sendToCEO.addEventListener("click", submitCEOBrief);
-      jumpToTeams.addEventListener("click", () => {
-        document.getElementById("teamGrid").scrollIntoView({ behavior: "smooth", block: "start" });
-      });
+      jumpToTeams.addEventListener("click", () => openTeam("sales"));
 
-      teamCards.forEach((card) => {
-        card.addEventListener("click", () => openTeam(card.dataset.team));
+      window.addEventListener("agentbox:navigate", (event) => {
+        const team = event.detail?.team;
+        if (team && teamMeta[team]) {
+          openTeam(team);
+        }
       });
 
       promptChips.forEach((chip) => {
@@ -1771,12 +2932,88 @@
         });
       });
 
-      document.getElementById("closePreviewModal").addEventListener("click", () => {
-        document.getElementById("previewModal").style.display = "none";
+      document.getElementById("closePreviewModal").addEventListener("click", closeEmailPreviewModal);
+
+      document.getElementById("previewBackdrop").addEventListener("click", closeEmailPreviewModal);
+
+      saveExpandedPreviewBtn?.addEventListener("click", async () => {
+        if (!selectedRecordId || !previewEditable) return;
+        saveExpandedPreviewBtn.disabled = true;
+        try {
+          await saveEditedPreview();
+          alert("Đã lưu chỉnh sửa.");
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          saveExpandedPreviewBtn.disabled = false;
+        }
       });
 
-      document.getElementById("previewBackdrop").addEventListener("click", () => {
-        document.getElementById("previewModal").style.display = "none";
+      refreshExpandedPreviewBtn?.addEventListener("click", async () => {
+        if (!selectedRecordId) return;
+        if (previewEditable && !confirm("Làm mới sẽ tạo lại bản nháp và ghi đè nội dung đang chỉnh. Tiếp tục?")) {
+          return;
+        }
+        refreshExpandedPreviewBtn.disabled = true;
+        try {
+          const record = await prepareRecordPreview(selectedRecordId, true);
+          openEmailPreviewModal(
+            record.companyName
+              ? `Chỉnh sửa bản nháp · ${record.companyName}`
+              : "Chỉnh sửa bản nháp email",
+            record.emailHtml,
+            { editable: true }
+          );
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          refreshExpandedPreviewBtn.disabled = false;
+        }
+      });
+
+      sendExpandedEmailBtn?.addEventListener("click", async () => {
+        if (!selectedRecordId) return;
+        const record = records.find((item) => item._id === selectedRecordId);
+        const to = record?.email || "";
+        if (!to) {
+          alert("Bản ghi này chưa có email người nhận.");
+          return;
+        }
+
+        sendExpandedEmailBtn.disabled = true;
+        try {
+          const emailHtml = getEditedPreviewHtml();
+          if (previewEditable && emailHtml) {
+            await saveEditedPreview();
+          }
+
+          const sendRes = await apiFetch(`/api/records/${selectedRecordId}/send`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              to,
+              designStyle: selectedDesignStyle,
+              emailHtml: emailHtml || undefined
+            })
+          });
+          const sendData = await sendRes.json();
+          if (!sendRes.ok) {
+            throw new Error(sendData.error || "Không thể gửi email.");
+          }
+          alert(`Đã gửi email tới ${sendData.to}.`);
+          await refresh();
+          await loadDetail(selectedRecordId);
+        } catch (error) {
+          alert(error.message);
+        } finally {
+          sendExpandedEmailBtn.disabled = false;
+        }
+      });
+
+      document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && previewModal?.style.display === "flex") {
+          closeEmailPreviewModal();
+        }
       });
 
       closeVideoStructureModal.addEventListener("click", () => {
@@ -1797,12 +3034,28 @@
         startCreatorRender();
       });
 
+      lawyerChatForm?.addEventListener("submit", (event) => {
+        event.preventDefault();
+        sendLawyerMessage(lawyerChatInput.value);
+      });
+
+      lawyerChatInput?.addEventListener("input", resizeLawyerInput);
+
+      lawyerChatInput?.addEventListener("keydown", (event) => {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendLawyerMessage(lawyerChatInput.value);
+        }
+      });
+
+      resizeLawyerInput();
+
       renderSheetStats({});
       renderUploadedAssets();
       renderCreatorRenderJob();
       document.getElementById("creatorUploadWrap").style.display = ["upload", "hybrid"].includes(creatorInputMode.value) ? "block" : "none";
       const teamFromHash = (window.location.hash || "").replace("#team-", "");
-      openTeam(teamMeta[teamFromHash] ? teamFromHash : "sales", false);
+      openTeam(teamMeta[teamFromHash] ? teamFromHash : "ceo", false);
     </script>
   </body>
 </html>

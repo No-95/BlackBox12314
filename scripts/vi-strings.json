@@ -1,0 +1,2534 @@
+[
+  [
+    "common.confirm",
+    "Confirm"
+  ],
+  [
+    "common.cancel",
+    "Cancel"
+  ],
+  [
+    "common.loading",
+    "Loading..."
+  ],
+  [
+    "common.error",
+    "Error"
+  ],
+  [
+    "common.success",
+    "Success"
+  ],
+  [
+    "common.completed",
+    "Completed"
+  ],
+  [
+    "common.processing",
+    "Generating"
+  ],
+  [
+    "common.pending",
+    "Pending"
+  ],
+  [
+    "common.ready",
+    "Ready"
+  ],
+  [
+    "common.running",
+    "Running"
+  ],
+  [
+    "common.failed",
+    "Failed"
+  ],
+  [
+    "common.unknown",
+    "Unknown"
+  ],
+  [
+    "common.unknownError",
+    "Unknown error"
+  ],
+  [
+    "common.none",
+    "None"
+  ],
+  [
+    "common.close",
+    "Close"
+  ],
+  [
+    "common.back",
+    "Back"
+  ],
+  [
+    "common.next",
+    "Next"
+  ],
+  [
+    "common.retry",
+    "Retry"
+  ],
+  [
+    "common.noData",
+    "No data available"
+  ],
+  [
+    "common.hours",
+    "hours"
+  ],
+  [
+    "common.minutes",
+    "minutes"
+  ],
+  [
+    "common.rounds",
+    "rounds"
+  ],
+  [
+    "common.items",
+    "items"
+  ],
+  [
+    "common.files",
+    "files"
+  ],
+  [
+    "meta.title",
+    "MiroFish - Predict Everything"
+  ],
+  [
+    "meta.description",
+    "MiroFish - Social Media Opinion Simulation System"
+  ],
+  [
+    "nav.visitGithub",
+    "Visit our Github page"
+  ],
+  [
+    "home.tagline",
+    "Concise & Universal Swarm Intelligence Engine"
+  ],
+  [
+    "home.version",
+    "/ v0.1-Preview"
+  ],
+  [
+    "home.heroTitle1",
+    "Upload Reports,"
+  ],
+  [
+    "home.heroTitle2",
+    "Predict the Future"
+  ],
+  [
+    "home.heroDesc",
+    "From a single document, {brand} extracts reality seeds to auto-generate a parallel world with up to {agentScale}. Inject variables from a god's-eye view to find the {optimalSolution} in complex group dynamics."
+  ],
+  [
+    "home.heroDescBrand",
+    "MiroFish"
+  ],
+  [
+    "home.heroDescAgentScale",
+    "million-scale Agents"
+  ],
+  [
+    "home.heroDescOptimalSolution",
+    "\"local optimum\""
+  ],
+  [
+    "home.slogan",
+    "Let Agents rehearse the future, let decisions prevail"
+  ],
+  [
+    "home.systemStatus",
+    "System Status"
+  ],
+  [
+    "home.systemReady",
+    "Ready"
+  ],
+  [
+    "home.systemReadyDesc",
+    "Prediction engine on standby. Upload unstructured data to initialize a simulation sequence."
+  ],
+  [
+    "home.metricLowCost",
+    "Low Cost"
+  ],
+  [
+    "home.metricLowCostDesc",
+    "Avg. $5/sim"
+  ],
+  [
+    "home.metricHighAvail",
+    "Scalable"
+  ],
+  [
+    "home.metricHighAvailDesc",
+    "Millions of Agents"
+  ],
+  [
+    "home.workflowSequence",
+    "Workflow"
+  ],
+  [
+    "home.step01Title",
+    "Graph Build"
+  ],
+  [
+    "home.step01Desc",
+    "Seed extraction & memory injection & GraphRAG construction"
+  ],
+  [
+    "home.step02Title",
+    "Env Setup"
+  ],
+  [
+    "home.step02Desc",
+    "Entity extraction & persona generation & Agent config injection"
+  ],
+  [
+    "home.step03Title",
+    "Simulation"
+  ],
+  [
+    "home.step03Desc",
+    "Dual-platform parallel sim & auto-parse requirements & temporal memory"
+  ],
+  [
+    "home.step04Title",
+    "Report"
+  ],
+  [
+    "home.step04Desc",
+    "ReportAgent interacts with the post-simulation environment via rich tools"
+  ],
+  [
+    "home.step05Title",
+    "Interaction"
+  ],
+  [
+    "home.step05Desc",
+    "Chat with any simulated individual & converse with ReportAgent"
+  ],
+  [
+    "home.realitySeed",
+    "01 / Reality Seed"
+  ],
+  [
+    "home.supportedFormats",
+    "Formats: PDF, MD, TXT"
+  ],
+  [
+    "home.dragToUpload",
+    "Drag files to upload"
+  ],
+  [
+    "home.orBrowse",
+    "or click to browse files"
+  ],
+  [
+    "home.inputParams",
+    "Input Parameters"
+  ],
+  [
+    "home.simulationPrompt",
+    ">_ 02 / Simulation Prompt"
+  ],
+  [
+    "home.promptPlaceholder",
+    "// Describe your simulation or prediction requirement in natural language"
+  ],
+  [
+    "home.engineBadge",
+    "Engine: MiroFish-V1.0"
+  ],
+  [
+    "home.startEngine",
+    "Start Engine"
+  ],
+  [
+    "home.initializing",
+    "Initializing..."
+  ],
+  [
+    "main.layoutGraph",
+    "Graph"
+  ],
+  [
+    "main.layoutSplit",
+    "Split"
+  ],
+  [
+    "main.layoutWorkbench",
+    "Workbench"
+  ],
+  [
+    "main.stepNames[0]",
+    "Graph Build"
+  ],
+  [
+    "main.stepNames[1]",
+    "Env Setup"
+  ],
+  [
+    "main.stepNames[2]",
+    "Run Simulation"
+  ],
+  [
+    "main.stepNames[3]",
+    "Report Generation"
+  ],
+  [
+    "main.stepNames[4]",
+    "Deep Interaction"
+  ],
+  [
+    "step1.ontologyGeneration",
+    "Ontology Generation"
+  ],
+  [
+    "step1.ontologyCompleted",
+    "Completed"
+  ],
+  [
+    "step1.ontologyGenerating",
+    "Generating"
+  ],
+  [
+    "step1.ontologyPending",
+    "Pending"
+  ],
+  [
+    "step1.ontologyDesc",
+    "LLM analyzes document content and simulation requirements, extracts reality seeds, and auto-generates a suitable ontology structure"
+  ],
+  [
+    "step1.analyzingDocs",
+    "Analyzing documents..."
+  ],
+  [
+    "step1.graphRagBuild",
+    "GraphRAG Build"
+  ],
+  [
+    "step1.graphRagDesc",
+    "Based on the generated ontology, documents are auto-chunked and sent to Zep to build a knowledge graph, extracting entities and relations, forming temporal memory and community summaries"
+  ],
+  [
+    "step1.entityNodes",
+    "Entity Nodes"
+  ],
+  [
+    "step1.relationEdges",
+    "Relation Edges"
+  ],
+  [
+    "step1.schemaTypes",
+    "Schema Types"
+  ],
+  [
+    "step1.buildComplete",
+    "Build Complete"
+  ],
+  [
+    "step1.buildCompleteDesc",
+    "Graph build is complete. Proceed to the next step for simulation environment setup."
+  ],
+  [
+    "step1.inProgress",
+    "In Progress"
+  ],
+  [
+    "step1.creating",
+    "Creating..."
+  ],
+  [
+    "step1.enterEnvSetup",
+    "Enter Environment Setup"
+  ],
+  [
+    "step1.createSimulationFailed",
+    "Failed to create simulation: {error}"
+  ],
+  [
+    "step1.createSimulationException",
+    "Simulation creation error: {error}"
+  ],
+  [
+    "step2.simInstanceInit",
+    "Simulation Instance Initialization"
+  ],
+  [
+    "step2.simInstanceDesc",
+    "Create a new simulation instance and pull world parameter templates"
+  ],
+  [
+    "step2.asyncTaskDone",
+    "Async task completed"
+  ],
+  [
+    "step2.generateAgentPersona",
+    "Generate Agent Personas"
+  ],
+  [
+    "step2.generateAgentPersonaDesc",
+    "Combine context to auto-extract entities and relations from the knowledge graph, initialize simulated individuals, and assign unique behaviors and memories based on reality seeds"
+  ],
+  [
+    "step2.currentAgentCount",
+    "Current Agents"
+  ],
+  [
+    "step2.expectedAgentTotal",
+    "Expected Total Agents"
+  ],
+  [
+    "step2.relatedTopicsCount",
+    "Reality Seed Related Topics"
+  ],
+  [
+    "step2.generatedAgentPersonas",
+    "Generated Agent Personas"
+  ],
+  [
+    "step2.unknownProfession",
+    "Unknown profession"
+  ],
+  [
+    "step2.noBio",
+    "No bio available"
+  ],
+  [
+    "step2.dualPlatformConfig",
+    "Generate Dual-Platform Config"
+  ],
+  [
+    "step2.dualPlatformConfigDesc",
+    "LLM intelligently sets world time flow, recommendation algorithms, each individual's active hours, posting frequency, event triggers, and more based on requirements and reality seeds"
+  ],
+  [
+    "step2.simulationDuration",
+    "Simulation Duration"
+  ],
+  [
+    "step2.roundDuration",
+    "Round Duration"
+  ],
+  [
+    "step2.totalRounds",
+    "Total Rounds"
+  ],
+  [
+    "step2.activePerHour",
+    "Active Per Hour"
+  ],
+  [
+    "step2.peakHours",
+    "Peak Hours"
+  ],
+  [
+    "step2.workHours",
+    "Work Hours"
+  ],
+  [
+    "step2.morningHours",
+    "Morning Hours"
+  ],
+  [
+    "step2.offPeakHours",
+    "Off-Peak Hours"
+  ],
+  [
+    "step2.agentConfig",
+    "Agent Config"
+  ],
+  [
+    "step2.activeTimePeriod",
+    "Active Hours"
+  ],
+  [
+    "step2.postsPerHour",
+    "Posts/hr"
+  ],
+  [
+    "step2.commentsPerHour",
+    "Comments/hr"
+  ],
+  [
+    "step2.responseDelay",
+    "Response Delay"
+  ],
+  [
+    "step2.activityLevel",
+    "Activity Level"
+  ],
+  [
+    "step2.sentimentBias",
+    "Sentiment Bias"
+  ],
+  [
+    "step2.influenceWeight",
+    "Influence"
+  ],
+  [
+    "step2.recommendAlgoConfig",
+    "Recommendation Algorithm Config"
+  ],
+  [
+    "step2.platform1Name",
+    "Platform 1: Plaza / Feed"
+  ],
+  [
+    "step2.platform2Name",
+    "Platform 2: Topic / Community"
+  ],
+  [
+    "step2.recencyWeight",
+    "Recency Weight"
+  ],
+  [
+    "step2.popularityWeight",
+    "Popularity Weight"
+  ],
+  [
+    "step2.relevanceWeight",
+    "Relevance Weight"
+  ],
+  [
+    "step2.viralThreshold",
+    "Viral Threshold"
+  ],
+  [
+    "step2.echoChamberStrength",
+    "Echo Chamber Strength"
+  ],
+  [
+    "step2.llmConfigReasoning",
+    "LLM Config Reasoning"
+  ],
+  [
+    "step2.initialActivation",
+    "Initial Activation Orchestration"
+  ],
+  [
+    "step2.initialActivationDesc",
+    "Auto-generate initial activation events and hot topics based on narrative direction to guide the simulation world's initial state"
+  ],
+  [
+    "step2.orchestrating",
+    "Orchestrating"
+  ],
+  [
+    "step2.narrativeDirection",
+    "Narrative Direction"
+  ],
+  [
+    "step2.initialHotTopics",
+    "Initial Hot Topics"
+  ],
+  [
+    "step2.initialActivationSeq",
+    "Initial Activation Sequence ({count})"
+  ],
+  [
+    "step2.setupComplete",
+    "Setup Complete"
+  ],
+  [
+    "step2.setupCompleteDesc",
+    "Simulation environment is ready. You can now start the simulation."
+  ],
+  [
+    "step2.roundsConfig",
+    "Simulation Rounds Configuration"
+  ],
+  [
+    "step2.roundsConfigDesc",
+    "MiroFish auto-plans to simulate {hours} real-world hours, each round representing {minutesPerRound} minutes of elapsed time"
+  ],
+  [
+    "step2.customToggle",
+    "Custom"
+  ],
+  [
+    "step2.roundsUnit",
+    "rounds"
+  ],
+  [
+    "step2.estimatedDuration",
+    "For 100 Agents: est. ~{minutes} minutes"
+  ],
+  [
+    "step2.estimatedDurationFull",
+    "For 100 Agents: est. {minutes} minutes"
+  ],
+  [
+    "step2.recommendedRounds",
+    "{rounds} (recommended)"
+  ],
+  [
+    "step2.customTip",
+    "For first-time runs, we strongly recommend switching to 'Custom Mode' to reduce rounds for a quick preview and lower error risk"
+  ],
+  [
+    "step2.backToGraphBuild",
+    "Back to Graph Build"
+  ],
+  [
+    "step2.startDualWorldSim",
+    "Start Dual-World Parallel Simulation"
+  ],
+  [
+    "step2.profileModalAge",
+    "Apparent Age"
+  ],
+  [
+    "step2.profileModalGender",
+    "Apparent Gender"
+  ],
+  [
+    "step2.profileModalCountry",
+    "Country/Region"
+  ],
+  [
+    "step2.profileModalMbti",
+    "Apparent MBTI"
+  ],
+  [
+    "step2.profileModalBio",
+    "Persona Bio"
+  ],
+  [
+    "step2.profileModalTopics",
+    "Reality Seed Related Topics"
+  ],
+  [
+    "step2.profileModalPersona",
+    "Detailed Persona Background"
+  ],
+  [
+    "step2.personaDimExperience",
+    "Full Event Experience"
+  ],
+  [
+    "step2.personaDimExperienceDesc",
+    "Complete behavioral trajectory in this event"
+  ],
+  [
+    "step2.personaDimBehavior",
+    "Behavioral Profile"
+  ],
+  [
+    "step2.personaDimBehaviorDesc",
+    "Experience summary and behavioral preferences"
+  ],
+  [
+    "step2.personaDimMemory",
+    "Unique Memory Imprint"
+  ],
+  [
+    "step2.personaDimMemoryDesc",
+    "Memories formed from reality seeds"
+  ],
+  [
+    "step2.personaDimSocial",
+    "Social Network"
+  ],
+  [
+    "step2.personaDimSocialDesc",
+    "Individual connections and interaction graph"
+  ],
+  [
+    "step2.genderMale",
+    "Male"
+  ],
+  [
+    "step2.genderFemale",
+    "Female"
+  ],
+  [
+    "step2.genderOther",
+    "Other"
+  ],
+  [
+    "step2.yearsOld",
+    "years old"
+  ],
+  [
+    "step2.initializing",
+    "Initializing"
+  ],
+  [
+    "step2.generating",
+    "Generating"
+  ],
+  [
+    "step3.startGenerateReport",
+    "Generate Report"
+  ],
+  [
+    "step3.generatingReport",
+    "Starting..."
+  ],
+  [
+    "step3.waitingForActions",
+    "Waiting for agent actions..."
+  ],
+  [
+    "step3.errorMissingSimId",
+    "Error: missing simulationId"
+  ],
+  [
+    "step3.startingDualSim",
+    "Starting dual-platform parallel simulation..."
+  ],
+  [
+    "step3.graphMemoryUpdateEnabled",
+    "Dynamic graph memory update enabled"
+  ],
+  [
+    "step3.setMaxRounds",
+    "Max simulation rounds set to: {rounds}"
+  ],
+  [
+    "step3.oldSimCleared",
+    "Old simulation logs cleared, restarting simulation"
+  ],
+  [
+    "step3.engineStarted",
+    "Simulation engine started successfully"
+  ],
+  [
+    "step3.startFailed",
+    "Start failed: {error}"
+  ],
+  [
+    "step3.startException",
+    "Start error: {error}"
+  ],
+  [
+    "step3.stoppingSim",
+    "Stopping simulation..."
+  ],
+  [
+    "step3.simStopped",
+    "Simulation stopped"
+  ],
+  [
+    "step3.stopFailed",
+    "Stop failed: {error}"
+  ],
+  [
+    "step3.stopException",
+    "Stop error: {error}"
+  ],
+  [
+    "step3.allPlatformsCompleted",
+    "All platform simulations have ended"
+  ],
+  [
+    "step3.simCompleted",
+    "Simulation completed"
+  ],
+  [
+    "step3.graphRealtimeRefresh",
+    "Graph real-time refresh enabled (30s)"
+  ],
+  [
+    "step3.graphRefreshStopped",
+    "Graph real-time refresh stopped"
+  ],
+  [
+    "step3.preparingGoBack",
+    "Preparing to return to Step 2, closing simulation..."
+  ],
+  [
+    "step3.closingSimEnv",
+    "Closing simulation environment..."
+  ],
+  [
+    "step3.simEnvClosed",
+    "Simulation environment closed"
+  ],
+  [
+    "step3.closeFailed",
+    "Failed to close simulation environment, attempting force stop..."
+  ],
+  [
+    "step3.stoppingProcess",
+    "Stopping simulation process..."
+  ],
+  [
+    "step3.checkStatusFailed",
+    "Failed to check simulation status: {error}"
+  ],
+  [
+    "step3.forceStopSuccess",
+    "Simulation force stopped"
+  ],
+  [
+    "step3.forceStopFailed",
+    "Force stop failed: {error}"
+  ],
+  [
+    "step3.startGenerateReportBtn",
+    "Generate Report"
+  ],
+  [
+    "step3.generatingReportBtn",
+    "Starting..."
+  ],
+  [
+    "step4.generatingSection",
+    "Generating {title}..."
+  ],
+  [
+    "step4.goToInteraction",
+    "Enter Deep Interaction"
+  ],
+  [
+    "step4.waitingForReportAgent",
+    "Waiting for Report Agent..."
+  ],
+  [
+    "step4.collapse",
+    "Collapse ▲"
+  ],
+  [
+    "step4.expandAll",
+    "Show all {count} ▼"
+  ],
+  [
+    "step4.expandAllEntities",
+    "Show all {count} ▼"
+  ],
+  [
+    "step4.scenarioLabel",
+    "Scenario: "
+  ],
+  [
+    "step4.tabKeyFacts",
+    "Key Facts ({count})"
+  ],
+  [
+    "step4.tabCoreEntities",
+    "Core Entities ({count})"
+  ],
+  [
+    "step4.tabRelationChains",
+    "Relation Chains ({count})"
+  ],
+  [
+    "step4.tabSubQueries",
+    "Sub-queries ({count})"
+  ],
+  [
+    "step4.panelKeyFacts",
+    "Latest key facts from temporal memory"
+  ],
+  [
+    "step4.totalCount",
+    "{count} total"
+  ],
+  [
+    "step4.totalEntityCount",
+    "{count} total"
+  ],
+  [
+    "step4.panelCoreEntities",
+    "Core Entities"
+  ],
+  [
+    "step4.factCount",
+    "{count} facts"
+  ],
+  [
+    "step4.panelRelationChains",
+    "Relation Chains"
+  ],
+  [
+    "step4.panelSubQueries",
+    "Drift query analysis sub-questions"
+  ],
+  [
+    "step4.emptyKeyFacts",
+    "No key facts available"
+  ],
+  [
+    "step4.emptyCoreEntities",
+    "No core entities available"
+  ],
+  [
+    "step4.emptyRelationChains",
+    "No relation chains available"
+  ],
+  [
+    "step4.tabActiveFacts",
+    "Active Facts ({count})"
+  ],
+  [
+    "step4.tabHistoricalFacts",
+    "Historical Facts ({count})"
+  ],
+  [
+    "step4.tabEntities",
+    "Entities ({count})"
+  ],
+  [
+    "step4.panelActiveFacts",
+    "Active Facts"
+  ],
+  [
+    "step4.emptyActiveFacts",
+    "No active facts available"
+  ],
+  [
+    "step4.panelHistoricalFacts",
+    "Historical Facts"
+  ],
+  [
+    "step4.emptyHistoricalFacts",
+    "No historical facts available"
+  ],
+  [
+    "step4.panelEntities",
+    "Entities"
+  ],
+  [
+    "step4.emptyEntities",
+    "No entities available"
+  ],
+  [
+    "step4.searchLabel",
+    "Search: "
+  ],
+  [
+    "step4.tabFacts",
+    "Facts ({count})"
+  ],
+  [
+    "step4.tabEdges",
+    "Edges ({count})"
+  ],
+  [
+    "step4.tabNodes",
+    "Nodes ({count})"
+  ],
+  [
+    "step4.panelSearchResults",
+    "Search Results"
+  ],
+  [
+    "step4.emptySearchResults",
+    "No results found"
+  ],
+  [
+    "step4.panelRelatedEdges",
+    "Related Edges"
+  ],
+  [
+    "step4.panelRelatedNodes",
+    "Related Nodes"
+  ],
+  [
+    "step4.world1",
+    "World 1"
+  ],
+  [
+    "step4.world2",
+    "World 2"
+  ],
+  [
+    "step5.interactiveTools",
+    "Interactive Tools"
+  ],
+  [
+    "step5.agentsAvailable",
+    "{count} agents available"
+  ],
+  [
+    "step5.chatWithReportAgent",
+    "Chat with Report Agent"
+  ],
+  [
+    "step5.chatWithAgent",
+    "Chat with any individual in the world"
+  ],
+  [
+    "step5.selectChatTarget",
+    "Select chat target"
+  ],
+  [
+    "step5.sendSurvey",
+    "Send survey to the world"
+  ],
+  [
+    "step5.reportAgentChat",
+    "Report Agent - Chat"
+  ],
+  [
+    "step5.reportAgentDesc",
+    "A conversational version of the report generation agent with access to 4 professional tools and MiroFish's complete memory"
+  ],
+  [
+    "step5.toolInsightForge",
+    "InsightForge Deep Attribution"
+  ],
+  [
+    "step5.toolInsightForgeDesc",
+    "Aligns real-world seed data with simulation state, combining Global/Local Memory for cross-temporal deep attribution analysis"
+  ],
+  [
+    "step5.toolPanoramaSearch",
+    "PanoramaSearch Full Tracking"
+  ],
+  [
+    "step5.toolPanoramaSearchDesc",
+    "Graph-based BFS algorithm that reconstructs event propagation paths, capturing the full topology of information flow"
+  ],
+  [
+    "step5.toolQuickSearch",
+    "QuickSearch Fast Retrieval"
+  ],
+  [
+    "step5.toolQuickSearchDesc",
+    "GraphRAG-based instant query interface with optimized indexing for fast extraction of node attributes and discrete facts"
+  ],
+  [
+    "step5.toolInterviewSubAgent",
+    "InterviewSubAgent Virtual Interview"
+  ],
+  [
+    "step5.toolInterviewSubAgentDesc",
+    "Autonomous interviews that conduct parallel multi-round dialogues with simulated individuals, collecting unstructured opinion data and psychological states"
+  ],
+  [
+    "step5.profileBio",
+    "Bio"
+  ],
+  [
+    "step5.chatEmptyReportAgent",
+    "Chat with Report Agent to explore report content in depth"
+  ],
+  [
+    "step5.chatEmptyAgent",
+    "Chat with simulated individuals to understand their perspectives"
+  ],
+  [
+    "step5.chatInputPlaceholder",
+    "Type your question..."
+  ],
+  [
+    "step5.selectSurveyTarget",
+    "Select survey targets"
+  ],
+  [
+    "step5.selectedCount",
+    "Selected {selected} / {total}"
+  ],
+  [
+    "step5.surveyQuestions",
+    "Survey Questions"
+  ],
+  [
+    "step5.surveyInputPlaceholder",
+    "Enter the question you want to ask all selected targets..."
+  ],
+  [
+    "step5.submitSurvey",
+    "Send Survey"
+  ],
+  [
+    "step5.surveyResults",
+    "Survey Results"
+  ],
+  [
+    "step5.surveyResultsCount",
+    "{count} responses"
+  ],
+  [
+    "step5.selectAll",
+    "Select All"
+  ],
+  [
+    "step5.clearSelection",
+    "Clear"
+  ],
+  [
+    "step5.errorOccurred",
+    "Sorry, an error occurred: {error}"
+  ],
+  [
+    "step5.noResponse",
+    "No response"
+  ],
+  [
+    "step5.requestFailed",
+    "Request failed"
+  ],
+  [
+    "step5.selectAgentFirst",
+    "Please select a simulated individual first"
+  ],
+  [
+    "graph.panelTitle",
+    "Graph Relationship Visualization"
+  ],
+  [
+    "graph.refreshGraph",
+    "Refresh Graph"
+  ],
+  [
+    "graph.graphMemoryRealtime",
+    "GraphRAG short/long-term memory updating in real-time"
+  ],
+  [
+    "graph.realtimeUpdating",
+    "Updating in real-time..."
+  ],
+  [
+    "graph.pendingContentHint",
+    "Some content is still processing. Consider refreshing the graph manually later."
+  ],
+  [
+    "graph.nodeDetails",
+    "Node Details"
+  ],
+  [
+    "graph.relationship",
+    "Relationship"
+  ],
+  [
+    "graph.graphDataLoading",
+    "Loading graph data..."
+  ],
+  [
+    "graph.waitingOntology",
+    "Waiting for ontology generation..."
+  ],
+  [
+    "graph.toggleMaximize",
+    "Maximize/Restore"
+  ],
+  [
+    "graph.closeHint",
+    "Close hint"
+  ],
+  [
+    "history.title",
+    "Simulation History"
+  ],
+  [
+    "history.graphBuild",
+    "Graph Build"
+  ],
+  [
+    "history.envSetup",
+    "Env Setup"
+  ],
+  [
+    "history.analysisReport",
+    "Analysis Report"
+  ],
+  [
+    "history.moreFiles",
+    "+{count} files"
+  ],
+  [
+    "history.noFiles",
+    "No files"
+  ],
+  [
+    "history.loadingText",
+    "Loading..."
+  ],
+  [
+    "history.simRequirement",
+    "Simulation Requirement"
+  ],
+  [
+    "history.relatedFiles",
+    "Related Files"
+  ],
+  [
+    "history.noRelatedFiles",
+    "No related files"
+  ],
+  [
+    "history.replayTitle",
+    "Simulation Replay"
+  ],
+  [
+    "history.step1Button",
+    "Graph Build"
+  ],
+  [
+    "history.step2Button",
+    "Env Setup"
+  ],
+  [
+    "history.step4Button",
+    "Analysis Report"
+  ],
+  [
+    "history.replayHint",
+    "Step 3 'Run Simulation' and Step 5 'Deep Interaction' must be started during runtime and do not support history replay"
+  ],
+  [
+    "history.notStarted",
+    "Not started"
+  ],
+  [
+    "history.roundsProgress",
+    "{current}/{total} rounds"
+  ],
+  [
+    "history.untitledSimulation",
+    "Untitled simulation"
+  ],
+  [
+    "history.unknownFile",
+    "Unknown file"
+  ],
+  [
+    "api.projectNotFound",
+    "Project not found: {id}"
+  ],
+  [
+    "api.projectDeleteFailed",
+    "Project not found or deletion failed: {id}"
+  ],
+  [
+    "api.projectDeleted",
+    "Project deleted: {id}"
+  ],
+  [
+    "api.projectReset",
+    "Project reset: {id}"
+  ],
+  [
+    "api.requireSimulationRequirement",
+    "Please provide a simulation requirement (simulation_requirement)"
+  ],
+  [
+    "api.requireFileUpload",
+    "Please upload at least one document file"
+  ],
+  [
+    "api.noDocProcessed",
+    "No documents were processed successfully. Please check file formats."
+  ],
+  [
+    "api.requireProjectId",
+    "Please provide project_id"
+  ],
+  [
+    "api.configError",
+    "Configuration error: {details}"
+  ],
+  [
+    "api.zepApiKeyMissing",
+    "ZEP_API_KEY not configured"
+  ],
+  [
+    "api.ontologyNotGenerated",
+    "Ontology not yet generated. Please call /ontology/generate first."
+  ],
+  [
+    "api.graphBuilding",
+    "Graph build in progress. Do not resubmit. To force rebuild, add force: true."
+  ],
+  [
+    "api.textNotFound",
+    "Extracted text content not found"
+  ],
+  [
+    "api.ontologyNotFound",
+    "Ontology definition not found"
+  ],
+  [
+    "api.graphBuildStarted",
+    "Graph build task started. Query progress via /task/{taskId}."
+  ],
+  [
+    "api.graphBuildComplete",
+    "Graph build complete"
+  ],
+  [
+    "api.buildFailed",
+    "Build failed: {error}"
+  ],
+  [
+    "api.taskNotFound",
+    "Task not found: {id}"
+  ],
+  [
+    "api.graphDeleted",
+    "Graph deleted: {id}"
+  ],
+  [
+    "api.entityNotFound",
+    "Entity not found: {id}"
+  ],
+  [
+    "api.graphNotBuilt",
+    "Graph not yet built. Please call /api/graph/build first."
+  ],
+  [
+    "api.requireSimulationId",
+    "Please provide simulation_id"
+  ],
+  [
+    "api.simulationNotFound",
+    "Simulation not found: {id}"
+  ],
+  [
+    "api.projectMissingRequirement",
+    "Project missing simulation requirement (simulation_requirement)"
+  ],
+  [
+    "api.prepareStarted",
+    "Preparation task started. Query progress via /api/simulation/prepare/status."
+  ],
+  [
+    "api.alreadyPrepared",
+    "Preparation already complete. No need to regenerate."
+  ],
+  [
+    "api.notStartedPrepare",
+    "Preparation not started. Please call /api/simulation/prepare."
+  ],
+  [
+    "api.taskCompletedPrepared",
+    "Task completed (preparation already exists)"
+  ],
+  [
+    "api.requireTaskOrSimId",
+    "Please provide task_id or simulation_id"
+  ],
+  [
+    "api.configNotFound",
+    "Simulation config not found. Please call /prepare first."
+  ],
+  [
+    "api.configFileNotFound",
+    "Config file not found. Please call /prepare first."
+  ],
+  [
+    "api.unknownScript",
+    "Unknown script: {name}. Available: {allowed}"
+  ],
+  [
+    "api.scriptFileNotFound",
+    "Script file not found: {name}"
+  ],
+  [
+    "api.requireGraphId",
+    "Please provide graph_id"
+  ],
+  [
+    "api.noMatchingEntities",
+    "No matching entities found"
+  ],
+  [
+    "api.maxRoundsPositive",
+    "max_rounds must be a positive integer"
+  ],
+  [
+    "api.maxRoundsInvalid",
+    "max_rounds must be a valid integer"
+  ],
+  [
+    "api.invalidPlatform",
+    "Invalid platform type: {platform}. Options: twitter/reddit/parallel"
+  ],
+  [
+    "api.simRunningForceHint",
+    "Simulation is running. Stop it first via /stop, or use force=true to restart."
+  ],
+  [
+    "api.simNotReady",
+    "Simulation not ready. Current status: {status}. Please call /prepare first."
+  ],
+  [
+    "api.graphIdRequiredForMemory",
+    "Graph memory update requires a valid graph_id. Ensure the graph is built."
+  ],
+  [
+    "api.dbNotExist",
+    "Database does not exist. The simulation may not have run yet."
+  ],
+  [
+    "api.requireMessage",
+    "Please provide a message"
+  ],
+  [
+    "api.missingGraphId",
+    "Missing graph ID"
+  ],
+  [
+    "api.missingGraphIdEnsure",
+    "Missing graph ID. Please ensure the graph has been built."
+  ],
+  [
+    "api.missingSimRequirement",
+    "Missing simulation requirement description"
+  ],
+  [
+    "api.reportAlreadyExists",
+    "Report already exists"
+  ],
+  [
+    "api.reportGenerateStarted",
+    "Report generation task started. Query progress via /api/report/generate/status."
+  ],
+  [
+    "api.reportGenerated",
+    "Report generated"
+  ],
+  [
+    "api.reportNotFound",
+    "Report not found: {id}"
+  ],
+  [
+    "api.noReportForSim",
+    "No report found for this simulation: {id}"
+  ],
+  [
+    "api.reportDeleted",
+    "Report deleted: {id}"
+  ],
+  [
+    "api.reportGenerateFailed",
+    "Report generation failed"
+  ],
+  [
+    "api.sectionNotFound",
+    "Section not found: section_{index}.md"
+  ],
+  [
+    "api.reportProgressNotAvail",
+    "Report not found or progress unavailable: {id}"
+  ],
+  [
+    "api.requireAgentId",
+    "Please provide agent_id"
+  ],
+  [
+    "api.requirePrompt",
+    "Please provide a prompt (interview question)"
+  ],
+  [
+    "api.invalidInterviewPlatform",
+    "Platform must be either 'twitter' or 'reddit'"
+  ],
+  [
+    "api.envNotRunning",
+    "Simulation environment not running or closed. Ensure simulation is complete and in command-wait mode."
+  ],
+  [
+    "api.interviewTimeout",
+    "Interview response timed out: {error}"
+  ],
+  [
+    "api.requireInterviews",
+    "Please provide interviews (interview list)"
+  ],
+  [
+    "api.interviewListMissingAgentId",
+    "Interview list item {index} missing agent_id"
+  ],
+  [
+    "api.interviewListMissingPrompt",
+    "Interview list item {index} missing prompt"
+  ],
+  [
+    "api.interviewListInvalidPlatform",
+    "Interview list item {index} platform must be 'twitter' or 'reddit'"
+  ],
+  [
+    "api.batchInterviewTimeout",
+    "Batch interview response timed out: {error}"
+  ],
+  [
+    "api.globalInterviewTimeout",
+    "Global interview response timed out: {error}"
+  ],
+  [
+    "api.envRunning",
+    "Environment is running and ready for Interview commands"
+  ],
+  [
+    "api.envNotRunningShort",
+    "Environment not running or closed"
+  ],
+  [
+    "api.requireGraphIdAndQuery",
+    "Please provide graph_id and query"
+  ],
+  [
+    "api.initReportAgent",
+    "Initializing Report Agent..."
+  ],
+  [
+    "progress.initGraphService",
+    "Initializing graph build service..."
+  ],
+  [
+    "progress.textChunking",
+    "Chunking text..."
+  ],
+  [
+    "progress.creatingZepGraph",
+    "Creating Zep graph..."
+  ],
+  [
+    "progress.settingOntology",
+    "Setting ontology definition..."
+  ],
+  [
+    "progress.addingChunks",
+    "Adding {count} text chunks..."
+  ],
+  [
+    "progress.waitingZepProcess",
+    "Waiting for Zep to process data..."
+  ],
+  [
+    "progress.fetchingGraphData",
+    "Fetching graph data..."
+  ],
+  [
+    "progress.graphBuildComplete",
+    "Graph build complete"
+  ],
+  [
+    "progress.buildFailed",
+    "Build failed: {error}"
+  ],
+  [
+    "progress.startBuildingGraph",
+    "Starting graph build..."
+  ],
+  [
+    "progress.graphCreated",
+    "Graph created: {graphId}"
+  ],
+  [
+    "progress.ontologySet",
+    "Ontology set"
+  ],
+  [
+    "progress.textSplit",
+    "Text split into {count} chunks"
+  ],
+  [
+    "progress.fetchingGraphInfo",
+    "Fetching graph info..."
+  ],
+  [
+    "progress.sendingBatch",
+    "Sending batch {current}/{total} ({chunks} chunks)..."
+  ],
+  [
+    "progress.batchFailed",
+    "Batch {batch} failed: {error}"
+  ],
+  [
+    "progress.noEpisodesWait",
+    "No episodes to wait for"
+  ],
+  [
+    "progress.waitingEpisodes",
+    "Waiting for {count} text chunks to process..."
+  ],
+  [
+    "progress.episodesTimeout",
+    "Some chunks timed out, {completed}/{total} completed"
+  ],
+  [
+    "progress.zepProcessing",
+    "Zep processing... {completed}/{total} done, {pending} pending ({elapsed}s)"
+  ],
+  [
+    "progress.processingComplete",
+    "Processing complete: {completed}/{total}"
+  ],
+  [
+    "progress.taskComplete",
+    "Task complete"
+  ],
+  [
+    "progress.taskFailed",
+    "Task failed"
+  ],
+  [
+    "progress.startPreparingEnv",
+    "Preparing simulation environment..."
+  ],
+  [
+    "progress.connectingZepGraph",
+    "Connecting to Zep graph..."
+  ],
+  [
+    "progress.readingNodeData",
+    "Reading node data..."
+  ],
+  [
+    "progress.readingComplete",
+    "Done, {count} entities found"
+  ],
+  [
+    "progress.startGenerating",
+    "Starting generation..."
+  ],
+  [
+    "progress.analyzingRequirements",
+    "Analyzing simulation requirements..."
+  ],
+  [
+    "progress.generatingOutline",
+    "Generating report outline..."
+  ],
+  [
+    "progress.parsingOutline",
+    "Parsing outline structure..."
+  ],
+  [
+    "progress.outlinePlanComplete",
+    "Outline planning complete"
+  ],
+  [
+    "progress.deepSearchAndWrite",
+    "Deep search & writing ({current}/{max})"
+  ],
+  [
+    "progress.initReport",
+    "Initializing report..."
+  ],
+  [
+    "progress.startPlanningOutline",
+    "Planning report outline..."
+  ],
+  [
+    "progress.outlineDone",
+    "Outline complete, {count} sections"
+  ],
+  [
+    "progress.generatingSection",
+    "Generating section: {title} ({current}/{total})"
+  ],
+  [
+    "progress.sectionDone",
+    "Section {title} complete"
+  ],
+  [
+    "progress.assemblingReport",
+    "Assembling full report..."
+  ],
+  [
+    "progress.reportComplete",
+    "Report generation complete"
+  ],
+  [
+    "progress.reportFailed",
+    "Report generation failed: {error}"
+  ],
+  [
+    "progress.savingProfiles",
+    "Saving profile files..."
+  ],
+  [
+    "progress.profilesComplete",
+    "Done, {count} profiles generated"
+  ],
+  [
+    "progress.callingLLMConfig",
+    "Calling LLM to generate config..."
+  ],
+  [
+    "progress.savingConfigFiles",
+    "Saving config files..."
+  ],
+  [
+    "progress.configComplete",
+    "Config generation complete"
+  ],
+  [
+    "progress.generatingTimeConfig",
+    "Generating time config..."
+  ],
+  [
+    "progress.generatingEventConfig",
+    "Generating event config and hot topics..."
+  ],
+  [
+    "progress.generatingAgentConfig",
+    "Generating agent config ({start}-{end}/{total})..."
+  ],
+  [
+    "progress.generatingPlatformConfig",
+    "Generating platform config..."
+  ],
+  [
+    "progress.zepSearchQuery",
+    "All information, activities, events, relationships and background about {name}"
+  ],
+  [
+    "progress.timeConfigLabel",
+    "Time Config"
+  ],
+  [
+    "progress.eventConfigLabel",
+    "Event Config"
+  ],
+  [
+    "progress.agentConfigResult",
+    "Agent Config: {count} generated"
+  ],
+  [
+    "progress.postAssignResult",
+    "Post Assignment: {count} posts assigned"
+  ],
+  [
+    "progress.profileGenerated",
+    "[Generated] {name} ({type})"
+  ],
+  [
+    "progress.readingGraphEntities",
+    "Reading Graph Entities"
+  ],
+  [
+    "progress.generatingProfiles",
+    "Generating Agent Profiles"
+  ],
+  [
+    "progress.generatingSimConfig",
+    "Generating Simulation Config"
+  ],
+  [
+    "progress.preparingScripts",
+    "Preparing Scripts"
+  ],
+  [
+    "log.preparingGoBack",
+    "Preparing to return to Step 2, closing simulation..."
+  ],
+  [
+    "log.closingSimEnv",
+    "Closing simulation environment..."
+  ],
+  [
+    "log.simEnvClosed",
+    "✓ Simulation environment closed"
+  ],
+  [
+    "log.closeSimEnvFailed",
+    "Failed to close simulation environment, attempting force stop..."
+  ],
+  [
+    "log.simForceStopSuccess",
+    "✓ Simulation force stopped"
+  ],
+  [
+    "log.forceStopFailed",
+    "Force stop failed: {error}"
+  ],
+  [
+    "log.stoppingSimProcess",
+    "Stopping simulation process..."
+  ],
+  [
+    "log.simStopped",
+    "✓ Simulation stopped"
+  ],
+  [
+    "log.stopSimFailed",
+    "Failed to stop simulation: {error}"
+  ],
+  [
+    "log.checkStatusFailed",
+    "Failed to check simulation status: {error}"
+  ],
+  [
+    "log.enterStep4",
+    "Entering Step 4: Report Generation"
+  ],
+  [
+    "log.loadingSimData",
+    "Loading simulation data: {id}"
+  ],
+  [
+    "log.timeConfig",
+    "Time config: {minutes} minutes per round"
+  ],
+  [
+    "log.timeConfigFetchFailed",
+    "Failed to fetch time config, using default: {minutes} min/round"
+  ],
+  [
+    "log.projectLoadSuccess",
+    "Project loaded: {id}"
+  ],
+  [
+    "log.loadSimDataFailed",
+    "Failed to load simulation data: {error}"
+  ],
+  [
+    "log.loadException",
+    "Load error: {error}"
+  ],
+  [
+    "log.graphDataLoadSuccess",
+    "Graph data loaded successfully"
+  ],
+  [
+    "log.graphLoadFailed",
+    "Graph load failed: {error}"
+  ],
+  [
+    "log.graphRealtimeRefreshStart",
+    "Graph real-time refresh enabled (30s)"
+  ],
+  [
+    "log.graphRealtimeRefreshStop",
+    "Graph real-time refresh stopped"
+  ],
+  [
+    "log.simRunViewInit",
+    "SimulationRunView initialized"
+  ],
+  [
+    "log.customRounds",
+    "Custom simulation rounds: {rounds}"
+  ],
+  [
+    "log.enterStep3",
+    "Entering Step 3: Run Simulation"
+  ],
+  [
+    "log.customRoundsConfig",
+    "Custom simulation rounds: {rounds} rounds"
+  ],
+  [
+    "log.useAutoRounds",
+    "Using auto-configured simulation rounds"
+  ],
+  [
+    "log.detectedSimEnvRunning",
+    "Detected running simulation environment, closing..."
+  ],
+  [
+    "log.closeSimEnvFailedWithError",
+    "Failed to close simulation environment: {error}"
+  ],
+  [
+    "log.closeSimEnvException",
+    "Simulation environment close error: {error}"
+  ],
+  [
+    "log.detectedSimRunning",
+    "Detected simulation is running, stopping..."
+  ],
+  [
+    "log.forceStopSimFailed",
+    "Force stop simulation failed: {error}"
+  ],
+  [
+    "log.forceStopSimException",
+    "Force stop simulation error: {error}"
+  ],
+  [
+    "log.simViewInit",
+    "SimulationView initialized"
+  ],
+  [
+    "log.errorMissingSimId",
+    "Error: missing simulationId"
+  ],
+  [
+    "log.simInstanceCreated",
+    "Simulation instance created: {id}"
+  ],
+  [
+    "log.preparingSimEnv",
+    "Preparing simulation environment..."
+  ],
+  [
+    "log.detectedExistingPrep",
+    "Detected existing preparation, using it directly"
+  ],
+  [
+    "log.prepareTaskStarted",
+    "Preparation task started"
+  ],
+  [
+    "log.prepareTaskId",
+    "  └─ Task ID: {taskId}"
+  ],
+  [
+    "log.zepEntitiesFound",
+    "Found {count} entities from Zep graph"
+  ],
+  [
+    "log.entityTypes",
+    "  └─ Entity types: {types}"
+  ],
+  [
+    "log.startPollingProgress",
+    "Polling preparation progress..."
+  ],
+  [
+    "log.prepareFailed",
+    "Preparation failed: {error}"
+  ],
+  [
+    "log.prepareException",
+    "Preparation error: {error}"
+  ],
+  [
+    "log.prepareComplete",
+    "✓ Preparation complete"
+  ],
+  [
+    "log.prepareFailedWithError",
+    "✗ Preparation failed: {error}"
+  ],
+  [
+    "log.startGeneratingConfig",
+    "Generating dual-platform simulation config..."
+  ],
+  [
+    "log.generatingAgentProfileConfig",
+    "Generating agent persona config..."
+  ],
+  [
+    "log.generatingLLMConfig",
+    "Calling LLM to generate simulation config parameters..."
+  ],
+  [
+    "log.configComplete",
+    "✓ Simulation config generated"
+  ],
+  [
+    "log.configSummaryAgents",
+    "  ├─ Agents: {count}"
+  ],
+  [
+    "log.configSummaryHours",
+    "  ├─ Duration: {hours} hours"
+  ],
+  [
+    "log.configSummaryPosts",
+    "  ├─ Initial posts: {count}"
+  ],
+  [
+    "log.configSummaryTopics",
+    "  ├─ Hot topics: {count}"
+  ],
+  [
+    "log.configSummaryPlatforms",
+    "  └─ Platforms: Twitter {twitter}, Reddit {reddit}"
+  ],
+  [
+    "log.timeConfigDetail",
+    "Time config: {minutes} min/round, {rounds} rounds total"
+  ],
+  [
+    "log.narrativeDirection",
+    "Narrative direction: {direction}"
+  ],
+  [
+    "log.envSetupComplete",
+    "✓ Environment setup complete, ready to simulate"
+  ],
+  [
+    "log.startSimCustomRounds",
+    "Starting simulation, custom rounds: {rounds}"
+  ],
+  [
+    "log.startSimAutoRounds",
+    "Starting simulation, auto-configured rounds: {rounds}"
+  ],
+  [
+    "log.startGeneratingAgentProfiles",
+    "Generating agent personas..."
+  ],
+  [
+    "log.agentProfile",
+    "→ Agent persona {current}/{total}: {name} ({profession})"
+  ],
+  [
+    "log.allProfilesComplete",
+    "✓ All {count} agent personas generated"
+  ],
+  [
+    "log.loadingExistingConfig",
+    "Loading existing config data..."
+  ],
+  [
+    "log.loadedAgentProfiles",
+    "Loaded {count} agent personas"
+  ],
+  [
+    "log.configLoadSuccess",
+    "✓ Simulation config loaded"
+  ],
+  [
+    "log.configSummaryPostsAlt",
+    "  └─ Initial posts: {count}"
+  ],
+  [
+    "log.configGenerating",
+    "Config generating, polling..."
+  ],
+  [
+    "log.loadConfigFailed",
+    "Failed to load config: {error}"
+  ],
+  [
+    "log.step2Init",
+    "Step 2 environment setup initialized"
+  ],
+  [
+    "log.step3Init",
+    "Step 3 simulation run initialized"
+  ],
+  [
+    "log.startingDualSim",
+    "Starting dual-platform parallel simulation..."
+  ],
+  [
+    "log.setMaxRounds",
+    "Max simulation rounds set to: {rounds}"
+  ],
+  [
+    "log.graphMemoryUpdateEnabled",
+    "Dynamic graph memory update enabled"
+  ],
+  [
+    "log.oldSimCleared",
+    "✓ Old simulation logs cleared, restarting simulation"
+  ],
+  [
+    "log.engineStarted",
+    "✓ Simulation engine started successfully"
+  ],
+  [
+    "log.startFailed",
+    "✗ Start failed: {error}"
+  ],
+  [
+    "log.startException",
+    "✗ Start error: {error}"
+  ],
+  [
+    "log.stoppingSim",
+    "Stopping simulation..."
+  ],
+  [
+    "log.simStoppedSuccess",
+    "✓ Simulation stopped"
+  ],
+  [
+    "log.stopFailed",
+    "Stop failed: {error}"
+  ],
+  [
+    "log.stopException",
+    "Stop error: {error}"
+  ],
+  [
+    "log.allPlatformsCompleted",
+    "✓ All platform simulations have ended"
+  ],
+  [
+    "log.simCompleted",
+    "✓ Simulation completed"
+  ],
+  [
+    "log.reportRequestSent",
+    "Report generation request sent, please wait..."
+  ],
+  [
+    "log.startingReportGen",
+    "Starting report generation..."
+  ],
+  [
+    "log.reportGenTaskStarted",
+    "✓ Report generation task started: {reportId}"
+  ],
+  [
+    "log.reportGenFailed",
+    "✗ Failed to start report generation: {error}"
+  ],
+  [
+    "log.reportGenException",
+    "✗ Report generation error: {error}"
+  ],
+  [
+    "log.step5Init",
+    "Step 5 deep interaction initialized"
+  ],
+  [
+    "log.selectChatTarget",
+    "Selected chat target: {name}"
+  ],
+  [
+    "log.sendFailed",
+    "Send failed: {error}"
+  ],
+  [
+    "log.sendToReportAgent",
+    "Sent to Report Agent: {message}..."
+  ],
+  [
+    "log.reportAgentReplied",
+    "Report Agent replied"
+  ],
+  [
+    "log.sendToAgent",
+    "Sent to {name}: {message}..."
+  ],
+  [
+    "log.agentReplied",
+    "{name} replied"
+  ],
+  [
+    "log.sendSurvey",
+    "Sending survey to {count} targets..."
+  ],
+  [
+    "log.receivedReplies",
+    "Received {count} replies"
+  ],
+  [
+    "log.surveySendFailed",
+    "Survey send failed: {error}"
+  ],
+  [
+    "log.loadReportData",
+    "Loading report data: {id}"
+  ],
+  [
+    "log.loadReportFailed",
+    "Failed to load report: {error}"
+  ],
+  [
+    "log.reportDataLoaded",
+    "Report data loaded"
+  ],
+  [
+    "log.loadReportLogFailed",
+    "Failed to load report logs: {error}"
+  ],
+  [
+    "log.loadedProfiles",
+    "Loaded {count} simulated individuals"
+  ],
+  [
+    "log.loadProfilesFailed",
+    "Failed to load simulated individuals: {error}"
+  ],
+  [
+    "log.interactionViewInit",
+    "InteractionView initialized"
+  ],
+  [
+    "log.reportViewInit",
+    "ReportView initialized"
+  ],
+  [
+    "log.getReportInfoFailed",
+    "Failed to get report info: {error}"
+  ],
+  [
+    "log.enterStep",
+    "Entering Step {step}: {name}"
+  ],
+  [
+    "log.returnToStep",
+    "Returning to Step {step}: {name}"
+  ],
+  [
+    "log.customSimRounds",
+    "Custom simulation rounds: {rounds} rounds"
+  ],
+  [
+    "report.taskStarted",
+    "Report generation task started"
+  ],
+  [
+    "report.planningStart",
+    "Starting report outline planning"
+  ],
+  [
+    "report.fetchSimContext",
+    "Fetching simulation context"
+  ],
+  [
+    "report.planningComplete",
+    "Outline planning complete"
+  ],
+  [
+    "report.sectionStart",
+    "Starting section generation: {title}"
+  ],
+  [
+    "report.reactThought",
+    "ReACT round {iteration} thinking"
+  ],
+  [
+    "report.toolCall",
+    "Calling tool: {toolName}"
+  ],
+  [
+    "report.toolResult",
+    "Tool {toolName} returned result"
+  ],
+  [
+    "report.llmResponse",
+    "LLM response (tool calls: {hasToolCalls}, final answer: {hasFinalAnswer})"
+  ],
+  [
+    "report.sectionContentDone",
+    "Section {title} content generation complete"
+  ],
+  [
+    "report.sectionComplete",
+    "Section {title} generation complete"
+  ],
+  [
+    "report.reportComplete",
+    "Report generation complete"
+  ],
+  [
+    "report.errorOccurred",
+    "Error occurred: {error}"
+  ],
+  [
+    "report.agentInitDone",
+    "ReportAgent initialized: graph_id={graphId}, simulation_id={simulationId}"
+  ],
+  [
+    "report.executingTool",
+    "Executing tool: {toolName}, params: {params}"
+  ],
+  [
+    "report.toolExecFailed",
+    "Tool execution failed: {toolName}, error: {error}"
+  ],
+  [
+    "report.startPlanningOutline",
+    "Starting report outline planning..."
+  ],
+  [
+    "report.outlinePlanDone",
+    "Outline planning complete: {count} sections"
+  ],
+  [
+    "report.outlinePlanFailed",
+    "Outline planning failed: {error}"
+  ],
+  [
+    "report.reactGenerateSection",
+    "ReACT generating section: {title}"
+  ],
+  [
+    "report.sectionIterNone",
+    "Section {title} iteration {iteration}: LLM returned None"
+  ],
+  [
+    "report.sectionConflict",
+    "Section {title} round {iteration}: LLM output both tool call and Final Answer (conflict #{conflictCount})"
+  ],
+  [
+    "report.sectionConflictDowngrade",
+    "Section {title}: {conflictCount} consecutive conflicts, downgrading to truncate and execute first tool call"
+  ],
+  [
+    "report.sectionGenDone",
+    "Section {title} generation complete (tool calls: {count})"
+  ],
+  [
+    "report.multiToolOnlyFirst",
+    "LLM attempted {total} tool calls, executing only the first: {toolName}"
+  ],
+  [
+    "report.sectionNoPrefix",
+    "Section {title} missing 'Final Answer:' prefix, adopting LLM output as final content (tool calls: {count})"
+  ],
+  [
+    "report.sectionMaxIter",
+    "Section {title} reached max iterations, forcing generation"
+  ],
+  [
+    "report.sectionForceFailed",
+    "Section {title} force-finish LLM returned None, using default error message"
+  ],
+  [
+    "report.sectionGenFailedContent",
+    "(This section failed to generate: LLM returned empty response, please retry later)"
+  ],
+  [
+    "report.outlineSavedToFile",
+    "Outline saved to file: {reportId}/outline.json"
+  ],
+  [
+    "report.sectionSaved",
+    "Section saved: {reportId}/section_{sectionNum}.md"
+  ],
+  [
+    "report.reportGenDone",
+    "Report generation complete: {reportId}"
+  ],
+  [
+    "report.reportGenFailed",
+    "Report generation failed: {error}"
+  ],
+  [
+    "report.agentChat",
+    "Report Agent chat: {message}..."
+  ],
+  [
+    "report.fetchReportFailed",
+    "Failed to fetch report content: {error}"
+  ],
+  [
+    "report.outlineSaved",
+    "Outline saved: {reportId}"
+  ],
+  [
+    "report.sectionFileSaved",
+    "Section saved: {reportId}/{fileSuffix}"
+  ],
+  [
+    "report.fullReportAssembled",
+    "Full report assembled: {reportId}"
+  ],
+  [
+    "report.reportSaved",
+    "Report saved: {reportId}"
+  ],
+  [
+    "report.reportFolderDeleted",
+    "Report folder deleted: {reportId}"
+  ],
+  [
+    "report.redirectToQuickSearch",
+    "search_graph redirected to quick_search"
+  ],
+  [
+    "report.redirectToInsightForge",
+    "get_simulation_context redirected to insight_forge"
+  ],
+  [
+    "console.zepToolsInitialized",
+    "ZepToolsService initialized"
+  ],
+  [
+    "console.zepRetryAttempt",
+    "Zep {operation} attempt {attempt} failed: {error}, retrying in {delay}s..."
+  ],
+  [
+    "console.zepAllRetriesFailed",
+    "Zep {operation} failed after {retries} attempts: {error}"
+  ],
+  [
+    "console.graphSearch",
+    "Graph search: graph_id={graphId}, query={query}..."
+  ],
+  [
+    "console.graphSearchOp",
+    "Graph search (graph={graphId})"
+  ],
+  [
+    "console.searchComplete",
+    "Search complete: found {count} relevant facts"
+  ],
+  [
+    "console.zepSearchApiFallback",
+    "Zep Search API failed, falling back to local search: {error}"
+  ],
+  [
+    "console.usingLocalSearch",
+    "Using local search: query={query}..."
+  ],
+  [
+    "console.localSearchComplete",
+    "Local search complete: found {count} relevant facts"
+  ],
+  [
+    "console.localSearchFailed",
+    "Local search failed: {error}"
+  ],
+  [
+    "console.fetchingAllNodes",
+    "Fetching all nodes for graph {graphId}..."
+  ],
+  [
+    "console.fetchedNodes",
+    "Fetched {count} nodes"
+  ],
+  [
+    "console.fetchingAllEdges",
+    "Fetching all edges for graph {graphId}..."
+  ],
+  [
+    "console.fetchedEdges",
+    "Fetched {count} edges"
+  ],
+  [
+    "console.fetchingNodeDetail",
+    "Fetching node detail: {uuid}..."
+  ],
+  [
+    "console.fetchNodeDetailOp",
+    "Fetch node detail (uuid={uuid}...)"
+  ],
+  [
+    "console.fetchNodeDetailFailed",
+    "Failed to fetch node detail: {error}"
+  ],
+  [
+    "console.fetchingNodeEdges",
+    "Fetching edges for node {uuid}..."
+  ],
+  [
+    "console.foundNodeEdges",
+    "Found {count} edges related to node"
+  ],
+  [
+    "console.fetchNodeEdgesFailed",
+    "Failed to fetch node edges: {error}"
+  ],
+  [
+    "console.fetchingEntitiesByType",
+    "Fetching entities of type {type}..."
+  ],
+  [
+    "console.foundEntitiesByType",
+    "Found {count} entities of type {type}"
+  ],
+  [
+    "console.fetchingEntitySummary",
+    "Fetching relationship summary for entity {name}..."
+  ],
+  [
+    "console.fetchingGraphStats",
+    "Fetching statistics for graph {graphId}..."
+  ],
+  [
+    "console.fetchingSimContext",
+    "Fetching simulation context: {requirement}..."
+  ],
+  [
+    "console.insightForgeStart",
+    "InsightForge deep insight retrieval: {query}..."
+  ],
+  [
+    "console.generatedSubQueries",
+    "Generated {count} sub-queries"
+  ],
+  [
+    "console.insightForgeComplete",
+    "InsightForge complete: {facts} facts, {entities} entities, {relationships} relationships"
+  ],
+  [
+    "console.generateSubQueriesFailed",
+    "Failed to generate sub-queries: {error}, using defaults"
+  ],
+  [
+    "console.panoramaSearchStart",
+    "PanoramaSearch broad search: {query}..."
+  ],
+  [
+    "console.panoramaSearchComplete",
+    "PanoramaSearch complete: {active} active, {historical} historical"
+  ],
+  [
+    "console.quickSearchStart",
+    "QuickSearch simple search: {query}..."
+  ],
+  [
+    "console.quickSearchComplete",
+    "QuickSearch complete: {count} results"
+  ],
+  [
+    "console.interviewAgentsStart",
+    "InterviewAgents deep interview (real API): {requirement}..."
+  ],
+  [
+    "console.profilesNotFound",
+    "Profiles not found for simulation {simId}"
+  ],
+  [
+    "console.loadedProfiles",
+    "Loaded {count} agent profiles"
+  ],
+  [
+    "console.selectedAgentsForInterview",
+    "Selected {count} agents for interview: {indices}"
+  ],
+  [
+    "console.generatedInterviewQuestions",
+    "Generated {count} interview questions"
+  ],
+  [
+    "console.callingBatchInterviewApi",
+    "Calling batch interview API (dual platform): {count} agents"
+  ],
+  [
+    "console.interviewApiReturned",
+    "Interview API returned: {count} results, success={success}"
+  ],
+  [
+    "console.interviewApiReturnedFailure",
+    "Interview API returned failure: {error}"
+  ],
+  [
+    "console.interviewApiCallFailed",
+    "Interview API call failed (env not running?): {error}"
+  ],
+  [
+    "console.interviewApiCallException",
+    "Interview API call exception: {error}"
+  ],
+  [
+    "console.interviewAgentsComplete",
+    "InterviewAgents complete: interviewed {count} agents (dual platform)"
+  ],
+  [
+    "console.loadedRedditProfiles",
+    "Loaded {count} profiles from reddit_profiles.json"
+  ],
+  [
+    "console.readRedditProfilesFailed",
+    "Failed to read reddit_profiles.json: {error}"
+  ],
+  [
+    "console.loadedTwitterProfiles",
+    "Loaded {count} profiles from twitter_profiles.csv"
+  ],
+  [
+    "console.readTwitterProfilesFailed",
+    "Failed to read twitter_profiles.csv: {error}"
+  ],
+  [
+    "console.llmSelectAgentFailed",
+    "LLM agent selection failed, using default selection: {error}"
+  ],
+  [
+    "console.generateInterviewQuestionsFailed",
+    "Failed to generate interview questions: {error}"
+  ],
+  [
+    "console.generateInterviewSummaryFailed",
+    "Failed to generate interview summary: {error}"
+  ]
+]

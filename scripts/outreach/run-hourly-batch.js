@@ -4,11 +4,17 @@ const { ConvexHttpClient } = require("convex/browser");
 const { Resend } = require("resend");
 const { buildHandshakeEmailHtml } = require("./templates/HandshakeEmail");
 
-async function generateProposal({ companyName, mainProduct, website }) {
-  const apiKey = process.env.GEMINI_API_KEY;
-  if (!apiKey) throw new Error("Missing GEMINI_API_KEY");
+function getOpenAiCompatConfig() {
+  const apiKey = (process.env.OPENAI_API_KEY || process.env.CHATANYWHERE_API_KEY || "").trim();
+  const baseUrl = (process.env.OPENAI_BASE_URL || "https://api.chatanywhere.tech/v1").replace(/\/+$/, "");
+  const model = (process.env.AI_DRAFT_MODEL || process.env.OPENAI_DRAFT_MODEL || "gpt-4o-mini").trim();
+  return { apiKey, baseUrl, model };
+}
 
-  const model = process.env.GEMINI_MODEL || "gemini-1.5-flash";
+async function generateProposal({ companyName, mainProduct, website }) {
+  const { apiKey, baseUrl, model } = getOpenAiCompatConfig();
+  if (!apiKey) throw new Error("Missing OPENAI_API_KEY (ChatAnywhere)");
+
   const field = mainProduct || "giải pháp nội thất và thương mại B2B";
 
   const prompt = [
@@ -22,25 +28,26 @@ async function generateProposal({ companyName, mainProduct, website }) {
     'Chỉ trả về JSON hợp lệ với 2 khóa: "email_subject" và "email_body". Giá trị phải là tiếng Việt tự nhiên.'
   ].filter(Boolean).join("\n");
 
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: prompt }] }],
-        generationConfig: { responseMimeType: "application/json" }
-      })
-    }
-  );
+  const response = await fetch(`${baseUrl}/chat/completions`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`
+    },
+    body: JSON.stringify({
+      model,
+      messages: [{ role: "user", content: prompt }],
+      response_format: { type: "json_object" }
+    })
+  });
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(`Gemini error ${response.status}: ${text}`);
+    throw new Error(`AI draft error ${response.status}: ${text.slice(0, 200)}`);
   }
 
   const data = await response.json();
-  const rawText = data?.candidates?.[0]?.content?.parts?.[0]?.text || "{}";
+  const rawText = data?.choices?.[0]?.message?.content || "{}";
 
   let parsed;
   try {

@@ -1,0 +1,4 @@
+{$BLACKBOX_DOMAIN:localhost} {
+	encode gzip
+	reverse_proxy sales-dashboard:5177
+}
