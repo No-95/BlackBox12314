@@ -29,6 +29,8 @@ sudo ufw allow 443/tcp
 sudo ufw enable
 ```
 
+The startup script now attempts to open those ports automatically when UFW is active. If you host this on a VPS or cloud provider, make sure the provider firewall also allows TCP/80 and TCP/443.
+
 Keep `5177` private (only Caddy should reach it on the Docker network). The compose file publishes 5177 for debugging; remove that port mapping in production if desired.
 
 ## Client setup (Computer C)
