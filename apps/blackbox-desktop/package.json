@@ -31,11 +31,6 @@
         "from": "../sales-dashboard/public",
         "to": "ui",
         "filter": ["**/*"]
-      },
-      {
-        "from": "tunnel.bat",
-        "to": "tunnel.bat",
-        "filter": ["tunnel.bat"]
       }
     ],
     "win": {

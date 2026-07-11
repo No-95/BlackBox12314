@@ -73,9 +73,13 @@ function startTunnel() {
     return null;
   }
 
-  const tunnelScript = path.join(process.resourcesPath || __dirname, "tunnel.bat");
   try {
-    const child = spawn("cmd.exe", ["/c", tunnelScript], {
+    const child = spawn("C:\\Windows\\System32\\OpenSSH\\ssh.exe", [
+      "-N",
+      "-L",
+      "5178:localhost:5178",
+      "n00bie@171.225.204.101"
+    ], {
       windowsHide: true,
       detached: true,
       stdio: "ignore"
@@ -86,7 +90,7 @@ function startTunnel() {
   } catch {
     return null;
   }
-}
+
 
 function stopTunnel() {
   if (!tunnelProcess) return;
