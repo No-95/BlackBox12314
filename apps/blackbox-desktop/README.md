@@ -17,4 +17,4 @@ npm run blackbox:desktop:build
 
 Output: `apps/blackbox-desktop/dist/BlackBox-Setup-1.0.0.exe`
 
-Built-in defaults live in `defaults.json` (`serverUrl` + `apiToken`).
+Built-in defaults live in `defaults.json` (`serverUrl` + `apiToken`). The desktop app now defaults to the local SSH-tunnel URL `http://localhost:5178` so it does not depend on the public domain for this flow.

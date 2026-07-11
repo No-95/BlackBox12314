@@ -1,4 +1,4 @@
 {
-  "serverUrl": "https://blackbox.hdpholdings.com.vn",
-  "apiToken": "your-BLACKBOX_API_TOKEN-here"
+  "serverUrl": "http://localhost:5178",
+  "apiToken": ""
 }
