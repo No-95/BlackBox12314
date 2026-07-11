@@ -1,10 +1,12 @@
 const { app, BrowserWindow, ipcMain, session, Menu } = require("electron");
 const fs = require("fs");
 const path = require("path");
+const { spawn } = require("child_process");
 
 const isDev = !app.isPackaged;
 let mainWindow = null;
 let authFilterRegistered = false;
+let tunnelProcess = null;
 
 function getConfigPath() {
   return path.join(app.getPath("userData"), "config.json");
@@ -64,6 +66,38 @@ function getUiRoot() {
     return path.join(__dirname, "../sales-dashboard/public");
   }
   return path.join(process.resourcesPath, "ui");
+}
+
+function startTunnel() {
+  if (tunnelProcess || process.platform !== "win32") {
+    return null;
+  }
+
+  const tunnelScript = path.join(process.resourcesPath || __dirname, "tunnel.bat");
+  try {
+    const child = spawn("cmd.exe", ["/c", tunnelScript], {
+      windowsHide: true,
+      detached: true,
+      stdio: "ignore"
+    });
+    child.unref();
+    tunnelProcess = child;
+    return child;
+  } catch {
+    return null;
+  }
+}
+
+function stopTunnel() {
+  if (!tunnelProcess) return;
+  try {
+    if (process.platform === "win32") {
+      spawn("taskkill", ["/PID", String(tunnelProcess.pid), "/T", "/F"], {
+        stdio: "ignore"
+      });
+    }
+  } catch {}
+  tunnelProcess = null;
 }
 
 function getAppIconPath() {
@@ -169,6 +203,7 @@ ipcMain.handle("app:setup", async () => {
 
 app.whenReady().then(async () => {
   Menu.setApplicationMenu(null);
+  startTunnel();
   createWindow();
   await showApp();
 
@@ -181,7 +216,12 @@ app.whenReady().then(async () => {
 });
 
 app.on("window-all-closed", () => {
+  stopTunnel();
   if (process.platform !== "darwin") {
     app.quit();
   }
+});
+
+app.on("before-quit", () => {
+  stopTunnel();
 });
