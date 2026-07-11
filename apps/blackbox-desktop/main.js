@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain, session, Menu } = require("electron");
+const { app, BrowserWindow, ipcMain, session, Menu, dialog } = require("electron");
 const fs = require("fs");
 const path = require("path");
 const { spawn } = require("child_process");
@@ -69,7 +69,20 @@ function getUiRoot() {
 }
 
 function getTunnelLogPath() {
-  return path.join(app.getPath("userData"), "blackbox-ssh.log");
+  const candidates = [
+    path.join(app.getPath("userData"), "blackbox-ssh.log"),
+    path.join(app.getPath("appData"), "BlackBox", "blackbox-ssh.log"),
+    path.join(process.env.USERPROFILE || "C:\\Users\\Default", "AppData", "Roaming", "BlackBox", "blackbox-ssh.log")
+  ];
+
+  for (const candidate of candidates) {
+    try {
+      fs.mkdirSync(path.dirname(candidate), { recursive: true });
+      return candidate;
+    } catch {}
+  }
+
+  return candidates[0];
 }
 
 function appendTunnelLog(message) {
@@ -77,6 +90,12 @@ function appendTunnelLog(message) {
     const logPath = getTunnelLogPath();
     const timestamp = new Date().toISOString();
     fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`, "utf8");
+  } catch {}
+}
+
+function notifyTunnelFailure(message) {
+  try {
+    dialog.showErrorBox("BlackBox connection failed", `${message}\n\nCheck the log file at ${getTunnelLogPath()} for details.`);
   } catch {}
 }
 
@@ -106,8 +125,16 @@ function startTunnel() {
 
     child.stdout?.on("data", (chunk) => appendTunnelLog(chunk.toString()));
     child.stderr?.on("data", (chunk) => appendTunnelLog(chunk.toString()));
-    child.on("error", (error) => appendTunnelLog(`ssh spawn error: ${error.message}`));
-    child.on("exit", (code, signal) => appendTunnelLog(`ssh exited code=${code} signal=${signal}`));
+    child.on("error", (error) => {
+      appendTunnelLog(`ssh spawn error: ${error.message}`);
+      notifyTunnelFailure(`SSH tunnel failed to start.\n${error.message}`);
+    });
+    child.on("exit", (code, signal) => {
+      appendTunnelLog(`ssh exited code=${code} signal=${signal}`);
+      if (code !== 0 && code !== null) {
+        notifyTunnelFailure(`SSH tunnel disconnected unexpectedly.\nExit code: ${code}`);
+      }
+    });
 
     child.unref();
     tunnelProcess = child;
