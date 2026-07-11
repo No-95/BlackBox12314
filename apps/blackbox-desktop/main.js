@@ -90,7 +90,7 @@ function startTunnel() {
   } catch {
     return null;
   }
-
+}
 
 function stopTunnel() {
   if (!tunnelProcess) return;
