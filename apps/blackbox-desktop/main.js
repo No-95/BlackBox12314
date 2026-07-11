@@ -68,26 +68,53 @@ function getUiRoot() {
   return path.join(process.resourcesPath, "ui");
 }
 
+function getTunnelLogPath() {
+  return path.join(app.getPath("userData"), "blackbox-ssh.log");
+}
+
+function appendTunnelLog(message) {
+  try {
+    const logPath = getTunnelLogPath();
+    const timestamp = new Date().toISOString();
+    fs.appendFileSync(logPath, `[${timestamp}] ${message}\n`, "utf8");
+  } catch {}
+}
+
 function startTunnel() {
   if (tunnelProcess || process.platform !== "win32") {
     return null;
   }
 
   try {
-    const child = spawn("C:\\Windows\\System32\\OpenSSH\\ssh.exe", [
+    const sshPath = "C:\\Windows\\System32\\OpenSSH\\ssh.exe";
+    const child = spawn(sshPath, [
       "-N",
+      "-o",
+      "BatchMode=yes",
+      "-o",
+      "StrictHostKeyChecking=no",
+      "-o",
+      "ConnectTimeout=10",
       "-L",
       "5178:127.0.0.1:5177",
       "blackbox@171.225.204.101"
     ], {
       windowsHide: true,
       detached: true,
-      stdio: "ignore"
+      stdio: ["ignore", "pipe", "pipe"]
     });
+
+    child.stdout?.on("data", (chunk) => appendTunnelLog(chunk.toString()));
+    child.stderr?.on("data", (chunk) => appendTunnelLog(chunk.toString()));
+    child.on("error", (error) => appendTunnelLog(`ssh spawn error: ${error.message}`));
+    child.on("exit", (code, signal) => appendTunnelLog(`ssh exited code=${code} signal=${signal}`));
+
     child.unref();
     tunnelProcess = child;
+    appendTunnelLog("ssh tunnel launch requested");
     return child;
-  } catch {
+  } catch (error) {
+    appendTunnelLog(`ssh launch exception: ${error && error.message ? error.message : String(error)}`);
     return null;
   }
 }
